@@ -12,8 +12,8 @@ export const profile = {
   nameKo: '전현기',
   role: 'Houdini FX TD & AI Contents PD',
   tagline: {
-    ko: '헐리우드 VFX에서 10년 동안 쌓은 FX 경험과, 최신 AI 기술로 효율적인 방식으로 작업합니다.',
-    en: 'Ten years of FX experience from Hollywood VFX, combined with the latest AI tools for an efficient way of working.',
+    ko: '한국영화를 거쳐 헐리우드 VFX까지 15년 동안 쌓은 FX 경험과, 최신 AI 기술로 효율적인 방식으로 작업합니다.',
+    en: 'Fifteen years of FX experience, from Korean films to Hollywood VFX, combined with the latest AI tools for an efficient way of working.',
   } as Text,
 };
 
