@@ -1,11 +1,11 @@
 :root {
-  --bg: #0f172a;
-  --surface: #172036;
-  --border: #263247;
-  --text: #e2e8f0;
-  --muted: #94a3b8;
-  --accent: #5eead4;
-  --accent-soft: rgba(45, 212, 191, 0.1);
+  --bg: #141619;
+  --surface: #1c1f23;
+  --border: #2c3036;
+  --text: #d4d6da;
+  --muted: #8d929a;
+  --accent: #f26b1d;
+  --accent-soft: rgba(242, 107, 29, 0.12);
   --font: 'Pretendard', 'Apple SD Gothic Neo', 'Malgun Gothic', system-ui, sans-serif;
   --mono: ui-monospace, 'Cascadia Code', Consolas, monospace;
   color-scheme: dark;

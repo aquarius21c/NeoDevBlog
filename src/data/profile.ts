@@ -2,7 +2,9 @@
 
 export const profile = {
   name: 'Neo Atelier',
-  owner: 'HG',
+  keywords: 'Houdini · VFX · AI Automation',
+  nameEn: 'HYUNGI JEON',
+  nameKo: '전현기',
   role: 'Founder & Houdini FX Artist',
   tagline: '영화 VFX에서 쌓은 FX 경험과 AI 에이전트로, 혼자서도 스튜디오처럼 작업합니다.',
 };
@@ -11,6 +13,13 @@ export const profile = {
 export const contacts = {
   email: 'aquarius21c@gmail.com',
   linkedin: 'https://www.linkedin.com/in/hyungijeon/',
+};
+
+// 소개 섹션에 넣는 FX 릴 (Vimeo 공개 영상)
+export const reel = {
+  vimeoId: '878370325',
+  title: 'Hyungi Jeon FX Reel 2023',
+  caption: '영화 VFX에서 작업한 FX를 모은 릴 · 1분 55초',
 };
 
 export const experience = [

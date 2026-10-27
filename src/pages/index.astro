@@ -1,8 +1,9 @@
 ---
 import Base from '../layouts/Base.astro';
 import '../styles/home.css';
+import NodeGraph from '../components/NodeGraph.astro';
 import { formatDate, getPosts, url } from '../utils';
-import { contacts, experience, profile, projects } from '../data/profile';
+import { contacts, experience, profile, projects, reel } from '../data/profile';
 
 const posts = await getPosts();
 const isExternal = (link: string) => /^https?:\/\//.test(link);
@@ -26,7 +27,11 @@ const sections = [
   <div class="home">
     <header class="intro">
       <div>
-        <h1><a href={url('')}>{profile.name}</a></h1>
+        <NodeGraph class="node-graph" />
+        <span class="brand-bar" aria-hidden="true"></span>
+        <h1><a href={url('')} aria-label={profile.name}>Neo<span class="dot">.</span>Atelier</a></h1>
+        <p class="keywords">{profile.keywords}</p>
+        <p class="person"><span>{profile.nameEn}</span><span lang="ko">{profile.nameKo}</span></p>
         <p class="role">{profile.role}</p>
         <p class="tagline">{profile.tagline}</p>
         <nav class="section-nav" aria-label="홈 섹션">
@@ -61,7 +66,7 @@ const sections = [
       <section id="about" aria-label="소개">
         <h2 class="section-title">About</h2>
         <p>
-          안녕하세요, <strong>{profile.owner}</strong>입니다. 국내와 할리우드 작품을 포함해 10년 넘게
+          안녕하세요, <strong>{profile.nameKo}</strong>입니다. 국내와 할리우드 작품을 포함해 10년 넘게
           <strong>영화 VFX</strong>에서 폭발, 연기, 파편 같은 FX를 만들어 왔습니다.
         </p>
         <p>
@@ -73,6 +78,21 @@ const sections = [
           지금은 이 구조로 언리얼 엔진 슈터 게임 <strong>UrbanStrike</strong>를 만들고 있고, 만드는 과정은 이 블로그와
           유튜브에 기록하고 있습니다.
         </p>
+        <figure class="reel">
+          <div class="reel-frame">
+            <iframe
+              src={`https://player.vimeo.com/video/${reel.vimeoId}?dnt=1&title=0&byline=0&portrait=0`}
+              title={reel.title}
+              loading="lazy"
+              allow="autoplay; fullscreen; picture-in-picture"
+              allowfullscreen
+            ></iframe>
+          </div>
+          <figcaption>
+            <a href={`https://vimeo.com/${reel.vimeoId}`} rel="noopener" target="_blank">{reel.title} <span aria-hidden="true">↗</span></a>
+            <span>{reel.caption}</span>
+          </figcaption>
+        </figure>
       </section>
 
       <section id="experience" aria-label="경력">

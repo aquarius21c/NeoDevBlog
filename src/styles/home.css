@@ -9,7 +9,7 @@ body.bare { line-height: 1.7; }
   z-index: 0;
   opacity: 0;
   transition: opacity 0.4s;
-  background: radial-gradient(560px circle at var(--x, 50%) var(--y, 30%), rgba(29, 78, 216, 0.15), transparent 70%);
+  background: radial-gradient(560px circle at var(--x, 50%) var(--y, 30%), rgba(242, 107, 29, 0.06), transparent 70%);
 }
 .spotlight.on { opacity: 1; }
 
@@ -21,10 +21,30 @@ body.bare { line-height: 1.7; }
   padding: 48px 16px;
 }
 
-.intro h1 { margin: 0; font-size: clamp(2.2rem, 6vw, 3rem); line-height: 1.15; letter-spacing: -0.02em; }
+.intro > div { position: relative; }
+.node-graph { display: block; width: min(220px, 55%); margin: 0 0 8px auto; color: var(--accent); opacity: 0.9; }
+.brand-bar { display: block; width: 36px; height: 4px; margin-bottom: 14px; background: var(--accent); }
+.intro h1 { margin: 0; font-size: clamp(2.4rem, 6vw, 3.2rem); font-weight: 800; line-height: 1.1; letter-spacing: -0.02em; }
 .intro h1 a { color: var(--text); }
+.intro h1 .dot { color: var(--accent); }
+.keywords { margin: 10px 0 0; font-size: 0.95rem; font-weight: 600; color: var(--muted); letter-spacing: 0.01em; }
+.person {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 16px;
+  max-width: 26rem;
+  margin: 22px 0 0;
+  padding: 12px 0;
+  border-top: 1px solid var(--accent);
+  border-bottom: 1px solid var(--accent);
+  font-weight: 800;
+  color: var(--text);
+}
+.person span:first-child { font-size: clamp(1.4rem, 3.4vw, 1.75rem); letter-spacing: 0.01em; }
+.person span:last-child { font-size: 1.05rem; }
 .intro h1 a:hover { text-decoration: none; }
-.role { margin: 12px 0 0; font-size: clamp(1.1rem, 2.4vw, 1.25rem); font-weight: 500; color: var(--text); }
+.role { margin: 18px 0 0; font-size: clamp(1.1rem, 2.4vw, 1.25rem); font-weight: 500; color: var(--text); }
 .tagline { margin: 14px 0 0; max-width: 22rem; color: var(--muted); }
 
 .section-nav { display: none; }
@@ -66,7 +86,7 @@ body.bare { line-height: 1.7; }
   letter-spacing: 0.12em;
   text-transform: uppercase;
   color: var(--text);
-  background: rgba(15, 23, 42, 0.8);
+  background: rgba(20, 22, 25, 0.85);
   backdrop-filter: blur(8px);
 }
 
@@ -100,6 +120,13 @@ body.bare { line-height: 1.7; }
 .more a { color: var(--text); font-weight: 600; }
 .more a:hover { color: var(--accent); text-decoration: none; }
 
+.reel { margin: 28px 0 0; }
+.reel-frame { position: relative; aspect-ratio: 16 / 9; max-width: 100%; border-radius: 6px; overflow: hidden; border: 1px solid var(--border); background: #000; }
+.reel-frame iframe { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; }
+.reel figcaption { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 4px 16px; margin-top: 10px; font-size: 0.85rem; color: var(--muted); }
+.reel figcaption a { color: var(--text); font-weight: 600; }
+.reel figcaption a:hover { color: var(--accent); text-decoration: none; }
+
 .home-footer { color: var(--muted); font-size: 0.85rem; padding-bottom: 24px; }
 
 @media (min-width: 768px) {
@@ -116,7 +143,7 @@ body.bare { line-height: 1.7; }
     transition: background 0.2s, border-color 0.2s;
     z-index: -1;
   }
-  .card:hover::before { background: rgba(30, 41, 59, 0.5); border-color: var(--border); }
+  .card:hover::before { background: rgba(40, 44, 50, 0.45); border-color: var(--border); }
   /* 카드 하나에 올리면 나머지는 흐리게 */
   .cards:hover > .card:not(:hover) { opacity: 0.5; }
   .card { transition: opacity 0.2s; }
@@ -133,7 +160,7 @@ body.bare { line-height: 1.7; }
     justify-content: space-between;
     width: 44%;
     max-height: 100vh;
-    padding: 96px 0;
+    padding: 64px 0;
   }
   .section-nav { display: block; }
   .contacts { margin-top: 0; }
