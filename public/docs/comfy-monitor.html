@@ -1,0 +1,260 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>comfy-monitor</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=IBM+Plex+Sans+KR:wght@400;500;700&family=JetBrains+Mono:wght@400;600&display=swap">
+<style>
+/* Layout: one reading column, a terminal-like status strip as hero, mock panel, then reference tables */
+:root{
+  --bg:#f5f3f0; --surface:#ffffff; --ink:#1f1d1b; --muted:#6b645d; --line:#e3ddd6;
+  --accent:#e8692a; --accent-soft:#fbe6da; --term:#1c1b1a; --term-ink:#ece7e1; --ok:#2f9e5b; --off:#9a928a;
+  --display:"Bricolage Grotesque","IBM Plex Sans KR",system-ui,sans-serif;
+  --body:"IBM Plex Sans KR",system-ui,-apple-system,"Malgun Gothic",sans-serif;
+  --mono:"JetBrains Mono",ui-monospace,Consolas,monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#1a1918; --surface:#232120; --ink:#ece7e1; --muted:#a59d95; --line:#38342f;
+  --accent:#f07a3c; --accent-soft:#3a2518; --term:#111010; --term-ink:#ece7e1; --ok:#4cc27d; --off:#8a827a; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#1a1918; --surface:#232120; --ink:#ece7e1; --muted:#a59d95; --line:#38342f;
+  --accent:#f07a3c; --accent-soft:#3a2518; --term:#111010; --term-ink:#ece7e1; --ok:#4cc27d; --off:#8a827a; color-scheme:dark}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font:16px/1.7 var(--body);padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:40px 72px}
+.wrap{max-width:880px;margin:0 auto;display:flex;flex-direction:column;gap:56px}
+h1,h2,h3{font-family:var(--display);line-height:1.2;text-wrap:balance;margin:0}
+h1{font-size:clamp(2.2rem,6vw,3.4rem);letter-spacing:-.02em}
+h2{font-size:1.6rem;display:flex;gap:.6em;align-items:baseline}
+h2 .k{font:600 .78rem var(--mono);color:var(--accent);letter-spacing:.08em}
+h3{font-size:1.08rem}
+p{margin:0;max-width:66ch}
+section{display:flex;flex-direction:column;gap:18px}
+.eyebrow{font:600 .74rem var(--mono);letter-spacing:.14em;text-transform:uppercase;color:var(--accent)}
+.lead{font-size:1.1rem;color:var(--muted)}
+code,.mono{font-family:var(--mono);font-size:.88em}
+p code,td code,li code{background:var(--accent-soft);padding:.05em .35em;border-radius:4px}
+.hero{display:flex;flex-direction:column;gap:18px}
+.meta{display:flex;flex-wrap:wrap;gap:8px}
+.chip{font:500 .8rem var(--mono);border:1px solid var(--line);border-radius:999px;padding:3px 11px;color:var(--muted);background:var(--surface)}
+.chip.on{border-color:var(--accent);color:var(--accent)}
+.term{background:var(--term);color:var(--term-ink);border-radius:10px;font:14px/1.6 var(--mono);overflow-x:auto}
+.term .bar{display:flex;gap:6px;padding:10px 14px;border-bottom:1px solid #2e2b28}
+.term .bar i{width:10px;height:10px;border-radius:50%;background:#3a3633}
+.term pre{margin:0;padding:14px 16px;white-space:pre}
+.term .dim{color:#8f877f}.term .acc{color:#f07a3c}.term .ok{color:#4cc27d}
+.status{display:flex;flex-direction:column;gap:6px}
+.status .row{display:flex;gap:14px;align-items:center;flex-wrap:wrap}
+.status .lbl{font:500 .78rem var(--mono);color:var(--muted);min-width:7.5em}
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:18px;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
+.panel header{grid-column:1/-1;display:flex;justify-content:space-between;align-items:baseline;flex-wrap:wrap;gap:8px}
+.panel header b{font-family:var(--display);font-size:1.1rem}
+.panel header span{font:.78rem var(--mono);color:var(--muted)}
+.tile{border:1px solid var(--line);border-radius:8px;padding:12px 14px;display:flex;flex-direction:column;gap:4px;min-width:0}
+.tile .t{display:flex;justify-content:space-between;font:500 .78rem var(--mono);color:var(--muted)}
+.tile .v{font:600 1.3rem var(--mono);font-variant-numeric:tabular-nums}
+.tile svg{width:100%;height:52px;display:block}
+.tile.soon{opacity:.72}
+.badge{font:600 .68rem var(--mono);color:var(--accent);border:1px solid var(--accent);border-radius:4px;padding:0 5px}
+.cap{font-size:.86rem;color:var(--muted)}
+.grid3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}
+.feat{border-top:2px solid var(--accent);padding-top:12px;display:flex;flex-direction:column;gap:6px;min-width:0}
+.feat p{font-size:.95rem;color:var(--muted)}
+.tbl{overflow-x:auto;border:1px solid var(--line);border-radius:10px;background:var(--surface)}
+table{border-collapse:collapse;width:100%;font-size:.93rem}
+th,td{text-align:left;padding:10px 14px;border-bottom:1px solid var(--line);vertical-align:top}
+th{font:600 .76rem var(--mono);letter-spacing:.06em;color:var(--muted);text-transform:uppercase;background:var(--bg)}
+tr:last-child td{border-bottom:0}
+td:first-child{white-space:nowrap}
+.note{border-left:3px solid var(--accent);background:var(--accent-soft);padding:12px 16px;border-radius:0 8px 8px 0;display:flex;flex-direction:column;gap:6px}
+.note b{font-family:var(--display)}
+ol.steps{margin:0;padding:0;list-style:none;display:flex;flex-direction:column;gap:14px;counter-reset:s}
+ol.steps>li{counter-increment:s;display:grid;grid-template-columns:2.2em minmax(0,1fr);gap:10px}
+ol.steps>li::before{content:counter(s);font:600 .9rem var(--mono);color:#fff;background:var(--accent);width:1.9em;height:1.9em;border-radius:50%;display:grid;place-items:center}
+.flow{display:flex;flex-wrap:wrap;gap:8px;align-items:center;font:.85rem var(--mono)}
+.flow span{border:1px solid var(--line);background:var(--surface);border-radius:6px;padding:5px 10px}
+.flow em{font-style:normal;color:var(--accent)}
+.roadmap{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}
+.stage{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:16px;display:flex;flex-direction:column;gap:8px;min-width:0}
+.stage.now{border-color:var(--accent);box-shadow:0 0 0 1px var(--accent) inset}
+.stage .s{display:flex;justify-content:space-between;align-items:center;font:600 .78rem var(--mono);color:var(--muted)}
+.stage ul{margin:0;padding-left:1.1em;font-size:.92rem;display:flex;flex-direction:column;gap:3px}
+.log{display:flex;flex-direction:column;gap:10px;margin:0;padding:0;list-style:none}
+.log li{display:grid;grid-template-columns:5.6em minmax(0,1fr);gap:12px;font-size:.94rem}
+.log li b{font:600 .85rem var(--mono);color:var(--accent)}
+footer{font-size:.84rem;color:var(--muted);border-top:1px solid var(--line);padding-top:18px}
+@media (max-width:680px){.grid3,.roadmap{grid-template-columns:minmax(0,1fr)}.panel{grid-template-columns:minmax(0,1fr)}}
+</style>
+</head>
+<body>
+
+<div class="wrap">
+
+<header class="hero">
+  <div class="eyebrow">Neo.Atelier · Claude Code 모드</div>
+  <h1>comfy-monitor</h1>
+  <p class="lead">ComfyUI 창을 띄우지 않고 돌릴 때, Claude Code 안에서 큐·VRAM·RAM·GPU 사용량을 상태줄과 그래프 패널로 보여 주는 모드(플러그인)입니다.</p>
+  <div class="meta">
+    <span class="chip on">v0.3.0</span>
+    <span class="chip">테스트 12개 통과</span>
+    <span class="chip">plugin validate 통과</span>
+    <span class="chip">1단계(MVP) 완료</span>
+    <span class="chip">2026-10-12</span>
+  </div>
+</header>
+
+<section>
+  <h2><span class="k">WHY</span>왜 만들었나요</h2>
+  <p>Claude Code가 ComfyUI를 헤드리스로 실행해 영상을 만들게 하면, 지금 GPU가 얼마나 바쁜지, 큐에 작업이 몇 개 남았는지 볼 화면이 없습니다. 조사해 보니 ComfyUI 창 안에서 보는 도구(Crystools, Elegant Resource Monitor)는 있지만, Claude Code 안에서 ComfyUI 사용량을 그래프로 보여 주는 플러그인은 없었습니다. 그래서 직접 만들었습니다.</p>
+  <div class="note"><b>정리하면</b><p>ComfyUI 창을 띄워 두고 작업할 때는 Crystools로 충분하고, 창 없이(헤드리스로) 돌릴 때 이 모드가 필요합니다.</p></div>
+</section>
+
+<section>
+  <h2><span class="k">SCREEN</span>화면</h2>
+  <div class="status">
+    <div class="row"><span class="lbl">상태줄 · 실행 중</span></div>
+    <div class="term"><pre><span class="acc">Comfy</span> <span class="ok">●</span> 실행 1 · 대기 2 · VRAM 9.4/16G · GPU 87%</pre></div>
+    <div class="row"><span class="lbl">상태줄 · 꺼짐</span></div>
+    <div class="term"><pre><span class="acc">Comfy</span> <span class="dim">○ 꺼짐</span></pre></div>
+  </div>
+
+  <div class="panel" aria-label="패널 화면 예시">
+    <header><b>ComfyUI 패널</b><span>/comfy-monitor · 최근 10분 · 2초 간격</span></header>
+    <div class="tile"><div class="t"><span>GPU</span><span>72°C · 248W</span></div><div class="v">87%</div>
+      <svg viewBox="0 0 300 52" preserveAspectRatio="none" aria-hidden="true"><polyline fill="none" stroke="var(--accent)" stroke-width="2" points="0,46 25,44 50,40 75,20 100,12 125,10 150,14 175,8 200,9 225,11 250,7 275,8 300,7"/><circle cx="300" cy="7" r="3" fill="var(--accent)"/></svg></div>
+    <div class="tile"><div class="t"><span>VRAM</span><span>RTX 5080</span></div><div class="v">9.4 / 16 GB</div>
+      <svg viewBox="0 0 300 52" preserveAspectRatio="none" aria-hidden="true"><polyline fill="none" stroke="var(--accent)" stroke-width="2" points="0,40 30,40 60,39 90,28 120,24 150,22 180,22 210,23 240,22 270,21 300,21"/><circle cx="300" cy="21" r="3" fill="var(--accent)"/></svg></div>
+    <div class="tile"><div class="t"><span>RAM</span><span>시스템</span></div><div class="v">38 / 96 GB</div>
+      <svg viewBox="0 0 300 52" preserveAspectRatio="none" aria-hidden="true"><polyline fill="none" stroke="var(--muted)" stroke-width="2" points="0,34 50,34 100,33 150,32 200,32 250,32 300,32"/><circle cx="300" cy="32" r="3" fill="var(--muted)"/></svg></div>
+    <div class="tile"><div class="t"><span>큐</span><span>실행 / 대기</span></div><div class="v">1 / 2</div>
+      <svg viewBox="0 0 300 52" preserveAspectRatio="none" aria-hidden="true"><polyline fill="none" stroke="var(--accent)" stroke-width="2" points="0,48 60,48 60,30 120,30 120,22 180,22 180,30 240,30 240,30 300,30"/></svg></div>
+    <div class="tile soon"><div class="t"><span>현재 작업</span><span class="badge">2단계</span></div><div class="cap">프롬프트 ID, 진행 노드, 단계 n/m 진행 막대</div></div>
+    <div class="tile soon"><div class="t"><span>최근 작업</span><span class="badge">2단계</span></div><div class="cap">최근 5개 소요 시간과 성공·실패</div></div>
+  </div>
+  <p class="cap">예시 화면입니다. 숫자는 설명을 위한 값이에요. 데스크톱 앱과 VS Code에서는 SVG 선그래프로, 터미널에서는 스파크라인(▁▂▃▅▇)으로 그립니다.</p>
+</section>
+
+<section>
+  <h2><span class="k">FEATURES</span>기능</h2>
+  <div class="grid3">
+    <div class="feat"><h3>상태줄 한 줄 요약</h3><p>실행·대기 수, VRAM, GPU 사용률을 늘 보이게 띄웁니다. ComfyUI가 응답하지 않으면 "꺼짐"으로 바뀝니다.</p></div>
+    <div class="feat"><h3>10분 그래프 패널</h3><p>GPU·VRAM·RAM·큐를 최근 10분(샘플 300개) 그래프로 보여 줍니다.</p></div>
+    <div class="feat"><h3>안전한 종료</h3><p><code>stop</code>은 Claude가 띄운 ComfyUI만 끄고, 남은 작업이 있으면 먼저 물어봅니다.</p></div>
+  </div>
+</section>
+
+<section>
+  <h2><span class="k">INSTALL</span>설치</h2>
+  <div class="note"><b>명령을 입력하는 곳이 두 군데입니다</b><p><code>claude plugin …</code> 명령은 PowerShell에, <code>/reload-plugins</code>와 <code>/comfy-monitor …</code> 같은 슬래시 명령은 Claude Code 입력창에 입력합니다.</p></div>
+  <h3>상시 설치 (권장)</h3>
+  <ol class="steps">
+    <li><div>플러그인 폴더를 확인합니다. 숨김 폴더 <code>.claude-plugin</code>까지 함께 있어야 합니다.
+      <div class="term" style="margin-top:8px"><pre>claude plugin validate &lt;플러그인 폴더&gt;</pre></div></div></li>
+    <li><div>폴더를 로컬 마켓플레이스로 등록하고 설치합니다.
+      <div class="term" style="margin-top:8px"><pre>claude plugin marketplace add &lt;플러그인 폴더&gt;
+claude plugin install comfy-monitor@hg-local --scope user
+claude plugin list</pre></div></div></li>
+    <li><div><code>plugin list</code>에 <b>enabled</b>로 보이면 설치가 끝난 것입니다. 이미 열린 Claude Code에서는 <code>/reload-plugins</code>를 실행합니다. 설치 중 "userConfig 옵션 5개가 설정되지 않았다"는 안내가 나오는 건 정상이에요. 기본값을 씁니다.</div></li>
+  </ol>
+  <h3>설치 없이 한 번만 테스트</h3>
+  <div class="term"><pre>claude --plugin-dir &lt;플러그인 폴더&gt;</pre></div>
+  <h3>다른 PC로 옮길 때</h3>
+  <p>폴더 전체를 복사한 뒤 위 순서대로 설치합니다. <code>comfyBin</code> 기본값은 만든 PC 기준 경로이므로, 받는 PC에서는 자기 comfy-cli 경로로 바꿔 주세요. 이 값은 <code>/comfy-monitor stop</code>에만 쓰입니다.</p>
+</section>
+
+<section>
+  <h2><span class="k">USAGE</span>명령어</h2>
+  <div class="tbl"><table>
+    <thead><tr><th>명령</th><th>동작</th></tr></thead>
+    <tbody>
+      <tr><td><code>/comfy-monitor</code></td><td>그래프 패널을 엽니다. 모니터가 꺼져 있었으면 다시 켭니다.</td></tr>
+      <tr><td><code>/comfy-monitor on</code></td><td>모니터를 켜고 패널을 엽니다.</td></tr>
+      <tr><td><code>/comfy-monitor off</code></td><td>모니터만 끕니다. 조회를 멈추고 상태줄을 지웁니다.</td></tr>
+      <tr><td><code>/comfy-monitor stop</code></td><td>ComfyUI 자체를 종료합니다(<code>comfy stop</code>). 남은 작업이 있으면 먼저 묻습니다.</td></tr>
+      <tr><td><code>/comfy-monitor stop now</code></td><td>남은 작업이 있어도 바로 종료합니다.</td></tr>
+      <tr><td><code>/reload-plugins</code></td><td>모드 파일을 고친 뒤 재시작 없이 다시 불러옵니다.</td></tr>
+    </tbody>
+  </table></div>
+  <div class="note"><b>off와 stop은 다릅니다</b><p><code>off</code>는 모니터만 끄고 ComfyUI는 계속 돕니다. <code>stop</code>은 ComfyUI를 끄므로 진행 중인 생성도 멈춥니다. <code>stop</code>은 Claude(comfy-cli)가 백그라운드로 띄운 ComfyUI만 끄고, ComfyUI Desktop 앱은 끄지 않습니다. ComfyUI를 켜는 명령은 모드에 없으니 Claude에게 "ComfyUI 켜 줘"라고 하거나 <code>comfy launch --background</code>를 실행합니다.</p></div>
+</section>
+
+<section>
+  <h2><span class="k">CONFIG</span>설정</h2>
+  <p>Claude Code <code>/config</code> 또는 설정 파일의 <code>pluginConfigs.comfy-monitor</code>에서 바꿉니다.</p>
+  <div class="tbl"><table>
+    <thead><tr><th>키</th><th>기본값</th><th>의미</th></tr></thead>
+    <tbody>
+      <tr><td><code>comfyUrl</code></td><td class="mono">http://127.0.0.1:8188</td><td>조회할 ComfyUI 서버 주소</td></tr>
+      <tr><td><code>intervalSeconds</code></td><td class="mono">2</td><td>조회 주기(초)</td></tr>
+      <tr><td><code>useNvidiaSmi</code></td><td class="mono">true</td><td>GPU 사용률·온도·전력을 nvidia-smi로 읽기</td></tr>
+      <tr><td><code>autoStart</code></td><td class="mono">true</td><td>끄면 세션 시작 때 조회하지 않고 <code>on</code>을 기다림</td></tr>
+      <tr><td><code>comfyBin</code></td><td class="mono">&lt;comfy-cli 경로&gt;</td><td><code>stop</code>이 실행할 comfy-cli</td></tr>
+    </tbody>
+  </table></div>
+</section>
+
+<section>
+  <h2><span class="k">HOW</span>동작 방식</h2>
+  <div class="flow"><span>세션 시작</span><em>→</em><span>2초 타이머</span><em>→</em><span>/system_stats · /queue · nvidia-smi</span><em>→</em><span>링버퍼 300개(10분)</span><em>→</em><span>상태줄 · 패널</span></div>
+  <div class="tbl"><table>
+    <thead><tr><th>항목</th><th>읽는 곳</th></tr></thead>
+    <tbody>
+      <tr><td>VRAM, RAM, 버전</td><td><code>GET /system_stats</code></td></tr>
+      <tr><td>실행·대기 수</td><td><code>GET /queue</code></td></tr>
+      <tr><td>GPU 사용률·온도·전력</td><td><code>nvidia-smi --query-gpu=utilization.gpu,temperature.gpu,power.draw</code></td></tr>
+      <tr><td>최근 작업 시간 (2단계)</td><td><code>GET /history?max_items=5</code></td></tr>
+      <tr><td>단계 진행률 (2단계)</td><td>웹소켓 <code>/ws</code>의 progress, executing</td></tr>
+    </tbody>
+  </table></div>
+  <p>연속 3번 응답이 없으면 ComfyUI를 "꺼짐"으로 표시하고, 그 뒤로는 10초마다 확인합니다. ComfyUI가 꺼져 있어도 <code>/comfy-monitor on</code>은 정상으로 실행됩니다. <code>/system_stats</code>에는 GPU 사용률이 없어서 nvidia-smi를 함께 씁니다.</p>
+</section>
+
+<section>
+  <h2><span class="k">ROADMAP</span>단계별 계획</h2>
+  <div class="roadmap">
+    <div class="stage now"><div class="s"><span>1단계 · MVP</span><span class="badge">완료</span></div>
+      <ul><li>system_stats·queue·nvidia-smi 조회</li><li>상태줄, 패널 그래프</li><li>꺼짐 처리, 테스트</li><li>on/off/stop 명령</li></ul></div>
+    <div class="stage"><div class="s"><span>2단계</span><span>다음</span></div>
+      <ul><li>/history 최근 작업 목록</li><li>웹소켓 보조 스크립트로 단계 진행률</li><li>완료·실패 알림</li></ul></div>
+    <div class="stage"><div class="s"><span>3단계</span><span>이후</span></div>
+      <ul><li>VRAM 95% 10초 지속 경고</li><li>일시정지 버튼</li><li>세션 간 기록 저장</li><li>GitHub 마켓플레이스 배포</li></ul></div>
+  </div>
+  <p class="cap">1단계 완료 기준: 이미지 하나를 생성할 때 큐가 1→0으로 바뀌고 VRAM 그래프가 움직이는지 확인합니다.</p>
+</section>
+
+<section>
+  <h2><span class="k">FIX</span>문제 해결</h2>
+  <div class="tbl"><table>
+    <thead><tr><th>증상</th><th>확인할 것</th></tr></thead>
+    <tbody>
+      <tr><td>/comfy-monitor가 없다고 나옴</td><td>PowerShell에서 <code>claude plugin list</code>로 enabled 확인 후 Claude Code에서 <code>/reload-plugins</code></td></tr>
+      <tr><td>상태줄이 계속 "꺼짐"</td><td>ComfyUI 실행 여부와 <code>comfyUrl</code> 포트. Desktop 앱은 포트가 다를 수 있습니다.</td></tr>
+      <tr><td>GPU 값이 안 나옴</td><td>PowerShell에서 <code>nvidia-smi</code>가 실행되는지, <code>useNvidiaSmi</code>가 켜져 있는지</td></tr>
+      <tr><td>"comfy-cli를 실행하지 못했습니다"</td><td><code>comfyBin</code> 경로</td></tr>
+      <tr><td>"띄운 ComfyUI가 없습니다"</td><td>Desktop 앱으로 실행한 경우입니다. 앱에서 직접 종료합니다.</td></tr>
+      <tr><td>plugin install이 권한에 막힘</td><td>Claude가 대신 실행하면 막힐 수 있습니다. PowerShell에서 직접 실행합니다.</td></tr>
+    </tbody>
+  </table></div>
+</section>
+
+<section>
+  <h2><span class="k">NOTES</span>만들면서 배운 것</h2>
+  <ul class="log">
+    <li><b>검증</b><span><code>$</code>를 받는 도우미 함수는 파일 최상위 <code>function</code> 선언이어야 validate를 통과합니다.</span></li>
+    <li><b>터미널</b><span>터미널 화면에도 SVG 키가 보이지만 아무것도 그리지 않아서, 화면 종류로 나눠 스파크라인을 씁니다.</span></li>
+    <li><b>타이머</b><span>모듈을 다시 불러오면 진행 중이던 조회가 거부되므로, 타이머 콜백의 Promise는 꼭 catch로 막습니다.</span></li>
+    <li><b>웹소켓</b><span>모드 안에서는 웹소켓을 쓸 수 없어 1단계는 2초 조회로 하고, 실시간 진행률은 2단계 보조 스크립트로 풉니다.</span></li>
+  </ul>
+  <h3 style="margin-top:8px">진행 기록</h3>
+  <ul class="log">
+    <li><b>v0.1.0</b><span>1단계 코드 작성. validate, 타입 검사, 테스트 9개 통과.</span></li>
+    <li><b>v0.2.0</b><span><code>on</code>/<code>off</code> 명령과 <code>autoStart</code> 설정 추가. 테스트 11개 통과.</span></li>
+    <li><b>v0.3.0</b><span><code>stop</code> 추가. comfy-cli가 띄운 서버만 끄고 Desktop 앱은 건드리지 않습니다. 테스트 12개 통과.</span></li>
+  </ul>
+</section>
+
+<footer>Neo.Atelier · comfy-monitor 정리 문서 · 2026-10-12 기록 기준. 필요 조건: Claude Code, ComfyUI(기본 127.0.0.1:8188), NVIDIA GPU 정보는 nvidia-smi.</footer>
+</div>
+</body>
+</html>
