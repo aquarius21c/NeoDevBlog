@@ -88,16 +88,10 @@ const sections = [
         {about[lang].map((para) => <p set:html={bold(para)} />)}
         <figure class="reel">
           <div class="reel-frame">
-            <iframe
-              src={`https://player.vimeo.com/video/${reel.vimeoId}?dnt=1&title=0&byline=0&portrait=0`}
-              title={reel.title}
-              loading="lazy"
-              allow="autoplay; fullscreen; picture-in-picture"
-              allowfullscreen
-            ></iframe>
+            <video controls playsinline preload="metadata" poster={url(reel.poster)} src={url(reel.video)} title={reel.title}></video>
           </div>
           <figcaption>
-            <a href={`https://vimeo.com/${reel.vimeoId}`} rel="noopener" target="_blank">{reel.title} <span aria-hidden="true">↗</span></a>
+            <a href={url(reel.video)} rel="noopener" target="_blank">{reel.title} <span aria-hidden="true">↗</span></a>
             <span>{reel.caption[lang]}</span>
           </figcaption>
         </figure>

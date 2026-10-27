@@ -22,7 +22,7 @@ export function switchUrl(pathname: string, to: Lang) {
 
 export const ui = {
   ko: {
-    siteDescription: 'Houdini FX 아티스트 전현기의 1인 AI 스튜디오, Neo Atelier의 작업 기록',
+    siteDescription: 'Houdini FX TD 전현기의 AI 스튜디오, Neo Atelier의 작업 기록',
     nav: { home: '홈', archive: '전체 글', tags: '태그' },
     homeSections: '홈 섹션',
     contacts: '연락처',
@@ -38,7 +38,7 @@ export const ui = {
     langLabel: '언어 선택',
   },
   en: {
-    siteDescription: 'Work log of Neo Atelier, the one-person AI studio of Houdini FX artist Hyungi Jeon',
+    siteDescription: 'Work log of Neo Atelier, the AI studio of Houdini FX TD Hyungi Jeon',
     nav: { home: 'Home', archive: 'Writing', tags: 'Tags' },
     homeSections: 'Home sections',
     contacts: 'Contact',

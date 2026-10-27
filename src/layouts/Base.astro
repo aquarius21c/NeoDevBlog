@@ -41,6 +41,14 @@ const langLinks = [
     <meta property="og:title" content={pageTitle} />
     <meta property="og:description" content={description} />
     <meta property="og:type" content="website" />
+    <meta property="og:site_name" content={siteTitle} />
+    <meta property="og:url" content={new URL(path, Astro.site).href} />
+    <meta property="og:image" content={new URL(url('og-image.png'), Astro.site).href} />
+    <meta property="og:image:width" content="547" />
+    <meta property="og:image:height" content="313" />
+    <meta property="og:locale" content={lang === 'ko' ? 'ko_KR' : 'en_US'} />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:image" content={new URL(url('og-image.png'), Astro.site).href} />
     <link rel="icon" href={url('favicon.svg')} type="image/svg+xml" />
     <link rel="alternate" hreflang={other} href={langLinks.find((l) => l.lang === other)!.href} />
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css" />

@@ -12,8 +12,8 @@ export const profile = {
   nameKo: '전현기',
   role: 'Houdini FX TD & AI Contents PD',
   tagline: {
-    ko: '영화 VFX에서 쌓은 FX 경험과 AI 에이전트로, 혼자서도 스튜디오처럼 작업합니다.',
-    en: 'Film VFX experience and AI agents, so one person can work like a studio.',
+    ko: '헐리우드 VFX에서 10년 동안 쌓은 FX 경험과, 최신 AI 기술로 효율적인 방식으로 작업합니다.',
+    en: 'Ten years of FX experience from Hollywood VFX, combined with the latest AI tools for an efficient way of working.',
   } as Text,
 };
 
@@ -35,9 +35,10 @@ export const contacts = {
   linkedin: 'https://www.linkedin.com/in/hyungijeon/',
 };
 
-// 소개 섹션에 넣는 FX 릴 (Vimeo 공개 영상)
+// 소개 섹션에 넣는 FX 릴 (public/videos/ 안의 영상 파일)
 export const reel = {
-  vimeoId: '878370325',
+  video: 'videos/hyungi-jeon-fx-reel.mp4',
+  poster: 'videos/hyungi-jeon-fx-reel-poster.jpg',
   title: 'Hyungi Jeon FX Reel',
   caption: {
     ko: '영화 VFX 작업 데모릴',
