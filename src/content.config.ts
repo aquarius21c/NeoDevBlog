@@ -18,4 +18,14 @@ const posts = defineCollection({
   }),
 });
 
-export const collections = { posts };
+// 영문판 글은 posts-en/ 폴더에 한국어 글과 같은 파일 이름으로 둡니다.
+// 날짜, 태그, 영상, 초안 여부는 한국어 글의 값을 그대로 씁니다.
+const postsEn = defineCollection({
+  loader: glob({ base: './posts-en', pattern: ['**/*.md', '!**/_*/**', '!**/_*.md'] }),
+  schema: z.object({
+    title: z.string(),
+    description: z.string().optional(),
+  }),
+});
+
+export const collections = { posts, postsEn };

@@ -1,0 +1,23 @@
+---
+import Base from '../layouts/Base.astro';
+import PostList from './PostList.astro';
+import { getPosts } from '../utils';
+import { ui, type Lang } from '../i18n';
+
+interface Props {
+  lang: Lang;
+}
+
+const { lang } = Astro.props;
+const t = ui[lang];
+const posts = await getPosts(lang);
+---
+
+<Base title={t.archiveTitle} lang={lang}>
+  <section class="hero">
+    <p class="eyebrow">WRITING</p>
+    <h1>{t.archiveTitle}</h1>
+    <p class="muted">{t.archiveLead}</p>
+  </section>
+  <PostList posts={posts} lang={lang} />
+</Base>

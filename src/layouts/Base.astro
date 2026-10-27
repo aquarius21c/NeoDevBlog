@@ -1,27 +1,38 @@
 ---
 import '../styles/global.css';
 import { url } from '../utils';
+import { localeUrl, switchUrl, ui, type Lang } from '../i18n';
 
 interface Props {
   title?: string;
   description?: string;
   /** 홈 화면처럼 상단 헤더 없이 페이지가 직접 레이아웃을 그릴 때 true */
   bare?: boolean;
+  lang?: Lang;
+  /** KOR / ENG 버튼이 갈 다른 언어 주소. 비우면 같은 페이지의 다른 언어판(없으면 그 언어 홈)으로 갑니다. */
+  altUrl?: string;
 }
 
 const siteTitle = 'Neo Atelier';
-const { title, description = 'Houdini FX 아티스트 HG의 1인 AI 스튜디오, Neo Atelier의 작업 기록', bare = false } = Astro.props;
+const { title, lang = 'ko', bare = false, altUrl } = Astro.props;
+const t = ui[lang];
+const description = Astro.props.description ?? t.siteDescription;
 const pageTitle = title ? `${title} | ${siteTitle}` : siteTitle;
 const path = Astro.url.pathname;
 const nav = [
-  { href: url(''), label: '홈' },
-  { href: url('archive/'), label: '전체 글' },
-  { href: url('tags/'), label: '태그' },
+  { href: localeUrl(lang), label: t.nav.home },
+  { href: localeUrl(lang, 'archive/'), label: t.nav.archive },
+  ...(lang === 'ko' ? [{ href: url('tags/'), label: t.nav.tags }] : []),
+];
+const other: Lang = lang === 'ko' ? 'en' : 'ko';
+const langLinks = [
+  { lang: 'ko' as Lang, label: 'KOR', href: lang === 'ko' ? path : (altUrl ?? switchUrl(path, 'ko')) },
+  { lang: 'en' as Lang, label: 'ENG', href: lang === 'en' ? path : (altUrl ?? switchUrl(path, 'en')) },
 ];
 ---
 
 <!doctype html>
-<html lang="ko">
+<html lang={lang}>
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -30,10 +41,27 @@ const nav = [
     <meta property="og:title" content={pageTitle} />
     <meta property="og:description" content={description} />
     <meta property="og:type" content="website" />
+    <meta property="og:site_name" content={siteTitle} />
+    <meta property="og:url" content={new URL(path, Astro.site).href} />
+    <meta property="og:image" content={new URL(url('og-image.png'), Astro.site).href} />
+    <meta property="og:image:width" content="547" />
+    <meta property="og:image:height" content="313" />
+    <meta property="og:locale" content={lang === 'ko' ? 'ko_KR' : 'en_US'} />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:image" content={new URL(url('og-image.png'), Astro.site).href} />
     <link rel="icon" href={url('favicon.svg')} type="image/svg+xml" />
+    <link rel="alternate" hreflang={other} href={langLinks.find((l) => l.lang === other)!.href} />
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css" />
   </head>
   <body class:list={{ bare }}>
+    <nav class:list={['lang-switch', { floating: bare }]} aria-label={t.langLabel}>
+      {langLinks.map((l, i) => (
+        <Fragment>
+          {i > 0 && <span aria-hidden="true">/</span>}
+          <a href={l.href} hreflang={l.lang} aria-current={l.lang === lang ? 'true' : undefined}>{l.label}</a>
+        </Fragment>
+      ))}
+    </nav>
     {
       bare ? (
         <slot />
@@ -41,10 +69,10 @@ const nav = [
         <Fragment>
           <header class="site-header">
             <div class="wrap header-inner">
-              <a class="logo" href={url('')}><span class="logo-mark">▲</span> {siteTitle}</a>
+              <a class="logo" href={localeUrl(lang)}><span class="logo-mark">▲</span> {siteTitle}</a>
               <nav>
                 {nav.map((item) => (
-                  <a href={item.href} aria-current={path === item.href || (item.href !== url('') && path.startsWith(item.href)) ? 'page' : undefined}>
+                  <a href={item.href} aria-current={path === item.href || (item.href !== localeUrl(lang) && path.startsWith(item.href)) ? 'page' : undefined}>
                     {item.label}
                   </a>
                 ))}
@@ -55,7 +83,7 @@ const nav = [
             <slot />
           </main>
           <footer class="site-footer wrap">
-            <p>© {new Date().getFullYear()} HG · Neo Atelier</p>
+            <p>© {new Date().getFullYear()} Hyungi Jeon · Neo Atelier</p>
           </footer>
         </Fragment>
       )

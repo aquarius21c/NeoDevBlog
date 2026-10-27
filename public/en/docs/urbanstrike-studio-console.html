@@ -1,0 +1,262 @@
+<!doctype html><html lang="en"><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>UrbanStrike Studio Console</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+KR:wght@400;500;700&family=IBM+Plex+Mono:wght@400;500&family=Gothic+A1:wght@800;900&display=swap">
+<style>
+/* Layout: 상단 상태 띠(단계·게이트·스프린트) + 탭 7개. 사격장 표지판처럼 굵은 표제, 나머지는 조용한 작업 화면. */
+:root{
+  --bg:#eef0ec; --panel:#fbfbf8; --sunk:#e3e6e0; --fg:#1b201d; --muted:#5b6560; --line:#cdd3cc;
+  --accent:#c2541b; --accent-ink:#ffffff; --steel:#2f4a5a;
+  --ok:#2f7a4c; --warn:#9a6a00; --bad:#b0281f; --idle:#69737a; --info:#2f5f8a;
+  --ok-bg:#dcefe2; --warn-bg:#f6ebcd; --bad-bg:#f7dcd9; --idle-bg:#e5e8ea; --info-bg:#dce8f3;
+  --sans:"IBM Plex Sans KR","Apple SD Gothic Neo","Malgun Gothic",system-ui,sans-serif;
+  --display:"Gothic A1","IBM Plex Sans KR","Malgun Gothic",sans-serif;
+  --mono:"IBM Plex Mono",ui-monospace,Consolas,monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#121614; --panel:#1a1f1c; --sunk:#232925; --fg:#e4e8e5; --muted:#98a39d; --line:#303833;
+  --accent:#e8834a; --accent-ink:#1a1f1c; --steel:#8fb3c7;
+  --ok:#6fc591; --warn:#e2b54b; --bad:#f08a80; --idle:#9ba6ad; --info:#86b6e0;
+  --ok-bg:#1c3426; --warn-bg:#382d12; --bad-bg:#3c1d1a; --idle-bg:#252b2f; --info-bg:#1b2c3c; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#121614; --panel:#1a1f1c; --sunk:#232925; --fg:#e4e8e5; --muted:#98a39d; --line:#303833;
+  --accent:#e8834a; --accent-ink:#1a1f1c; --steel:#8fb3c7;
+  --ok:#6fc591; --warn:#e2b54b; --bad:#f08a80; --idle:#9ba6ad; --info:#86b6e0;
+  --ok-bg:#1c3426; --warn-bg:#382d12; --bad-bg:#3c1d1a; --idle-bg:#252b2f; --info-bg:#1b2c3c; color-scheme:dark}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+body{background:var(--bg);color:var(--fg);font-family:var(--sans);font-size:14.5px;line-height:1.55}
+.wrap{max-width:1120px;margin:0 auto;padding-block:24px 56px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));display:flex;flex-direction:column;gap:20px}
+header{display:flex;flex-direction:column;gap:6px}
+.eyebrow{font-family:var(--mono);font-size:.72rem;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
+h1{font-family:var(--display);font-weight:900;font-size:clamp(1.7rem,4vw,2.4rem);line-height:1.1;margin:0;letter-spacing:-.01em;text-wrap:balance}
+h1 span{color:var(--accent)}
+h2{font-size:1.05rem;margin:0;text-wrap:balance}
+h3{font-size:.95rem;margin:0}
+p{margin:0}
+.muted{color:var(--muted)}
+.mono{font-family:var(--mono);font-variant-numeric:tabular-nums}
+.statusbar{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:1px;background:var(--line);border:1px solid var(--line);border-radius:6px;overflow:hidden}
+.statusbar>div{background:var(--panel);padding:10px 14px;display:flex;flex-direction:column;gap:2px;min-width:0}
+.statusbar b{font-family:var(--mono);font-size:1.05rem;font-weight:500}
+.statusbar small{color:var(--muted);font-size:.75rem}
+.alert{display:flex;gap:10px;align-items:flex-start;background:var(--bad-bg);color:var(--fg);border-radius:6px;padding:10px 14px;border-left:4px solid var(--bad)}
+.alert b{color:var(--bad)}
+nav{display:flex;gap:4px;flex-wrap:wrap;border-bottom:1px solid var(--line)}
+nav button{font:inherit;font-weight:500;background:none;border:0;border-bottom:3px solid transparent;color:var(--muted);padding:8px 12px;cursor:pointer;margin-bottom:-1px}
+nav button[aria-selected="true"]{color:var(--fg);border-bottom-color:var(--accent)}
+nav button:focus-visible,.chipbtn:focus-visible,a:focus-visible{outline:2px solid var(--info);outline-offset:2px}
+section.view{display:flex;flex-direction:column;gap:16px}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:6px;padding:16px}
+.grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:16px}
+.pill{display:inline-block;font-size:.72rem;font-weight:500;padding:1px 8px;border-radius:999px;white-space:nowrap}
+.s-done,.s-pass,.s-fixed,.s-closed{background:var(--ok-bg);color:var(--ok)}
+.s-review{background:var(--info-bg);color:var(--info)}
+.s-doing{background:var(--warn-bg);color:var(--warn)}
+.s-fail,.s-open{background:var(--bad-bg);color:var(--bad)}
+.s-todo,.s-wait,.s-hold{background:var(--idle-bg);color:var(--idle)}
+/* stage track */
+.track{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:6px}
+.stg{border:1px solid var(--line);border-radius:6px;padding:10px;background:var(--panel);display:flex;flex-direction:column;gap:4px;min-width:0;cursor:pointer;text-align:left;font:inherit;color:inherit}
+.stg .c{font-family:var(--mono);font-size:.75rem;color:var(--muted)}
+.stg .n{font-weight:700;font-size:.88rem;word-break:keep-all}
+.stg .g{font-family:var(--mono);font-size:.72rem;color:var(--muted)}
+.stg.past{background:var(--sunk)}
+.stg.now{border-color:var(--accent);box-shadow:inset 0 0 0 1px var(--accent)}
+.stg.now .c{color:var(--accent)}
+.stg[aria-pressed="true"]{outline:2px solid var(--steel)}
+@media (max-width:760px){.track{grid-template-columns:repeat(4,minmax(0,1fr))}}
+@media (max-width:420px){.track{grid-template-columns:repeat(2,minmax(0,1fr))}}
+/* tests */
+.steps{display:flex;flex-direction:column}
+.step{display:grid;grid-template-columns:44px 1fr auto;gap:4px 12px;align-items:start;padding:10px 0;border-bottom:1px solid var(--line)}
+.step:last-child{border-bottom:0}
+.step .num{font-family:var(--display);font-weight:900;font-size:1.4rem;line-height:1;color:var(--muted);text-align:right}
+.step.pass .num{color:var(--ok)} .step.fail .num{color:var(--bad)} .step.hold .num{opacity:.5} .step.doing .num{color:var(--warn)}
+.step .body{min-width:0;display:flex;flex-direction:column;gap:2px}
+.step .who{font-size:.78rem;color:var(--muted)}
+.meter{display:flex;height:10px;border-radius:5px;overflow:hidden;background:var(--sunk)}
+.meter i{display:block;height:100%}
+/* board */
+.filters{display:flex;gap:6px;flex-wrap:wrap;align-items:center}
+.chipbtn{font:inherit;font-size:.8rem;border:1px solid var(--line);background:var(--panel);color:var(--fg);border-radius:999px;padding:2px 10px;cursor:pointer}
+.chipbtn[aria-pressed="true"]{background:var(--steel);border-color:var(--steel);color:var(--bg)}
+.kanban{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}
+@media (max-width:860px){.kanban{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media (max-width:480px){.kanban{grid-template-columns:1fr}}
+.col{background:var(--sunk);border-radius:6px;padding:10px;display:flex;flex-direction:column;gap:8px;min-width:0}
+.col h3{display:flex;justify-content:space-between;font-size:.85rem}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:5px;padding:8px 10px;display:flex;flex-direction:column;gap:3px}
+.card .top{display:flex;justify-content:space-between;gap:6px;font-family:var(--mono);font-size:.75rem;color:var(--muted)}
+.card .t{font-size:.86rem;word-break:keep-all;overflow-wrap:anywhere}
+.empty{font-size:.8rem;color:var(--muted);padding:4px 2px}
+/* team */
+.team{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:10px}
+.lead{background:var(--panel);border:1px solid var(--line);border-radius:6px;padding:12px;display:flex;flex-direction:column;gap:6px}
+.lead .hd{display:flex;align-items:baseline;gap:8px;flex-wrap:wrap}
+.lead .code{font-family:var(--display);font-weight:900;font-size:1.15rem;color:var(--steel)}
+.lead ul{margin:0;padding-left:1.1em;font-size:.84rem}
+.lead .meta{font-size:.76rem;color:var(--muted)}
+.dots{display:flex;gap:3px}
+.dots i{width:14px;height:6px;border-radius:2px;background:var(--sunk)}
+.dots i.on{background:var(--accent)}
+table{border-collapse:collapse;width:100%;font-size:.86rem}
+th,td{text-align:left;padding:7px 8px;border-bottom:1px solid var(--line);vertical-align:top}
+th{font-size:.76rem;color:var(--muted);font-weight:500}
+.tbl{overflow-x:auto}
+ul.plain{margin:0;padding-left:1.1em;display:flex;flex-direction:column;gap:4px}
+.skill{display:flex;gap:10px;padding:8px 0;border-bottom:1px solid var(--line);align-items:flex-start}
+.skill:last-child{border-bottom:0}
+.skill code{font-family:var(--mono);font-size:.85rem;font-weight:500;white-space:nowrap}
+.skill div{min-width:0}
+.links{display:flex;flex-direction:column;gap:6px}
+.links a{color:var(--info);text-decoration:none}
+.links a:hover{text-decoration:underline}
+footer{font-size:.78rem;color:var(--muted)}
+@media (prefers-reduced-motion:no-preference){.card,.stg{transition:border-color .15s}}
+</style>
+
+<div class="wrap">
+<nav style="position:fixed;top:14px;right:16px;z-index:9999;font:600 12px/1 system-ui,sans-serif;letter-spacing:.08em;background:rgba(20,22,25,.85);border:1px solid rgba(255,255,255,.18);border-radius:999px;padding:7px 12px;backdrop-filter:blur(6px)"><a href="/NeoDevBlog/docs/urbanstrike-studio-console.html" lang="ko" style="color:#cfd3d8;text-decoration:none">KOR</a><span style="color:#666;margin:0 6px">/</span><span style="color:#f26b1d" aria-current="page">ENG</span></nav>
+  <header>
+    <span class="eyebrow" id="snap"></span>
+    <h1>UrbanStrike <span>Studio Console</span></h1>
+    <p class="muted">The web version of the game production harness. Run by CEO HG with 14 agent leads, 7 stages and 6 gates.</p>
+  </header>
+
+  <div class="statusbar" id="statusbar"></div>
+  <div class="alert" id="alert"></div>
+
+  <nav role="tablist" id="tabs"></nav>
+
+  <section class="view" id="v-overview"></section>
+  <section class="view" id="v-tests" hidden></section>
+  <section class="view" id="v-board" hidden></section>
+  <section class="view" id="v-team" hidden></section>
+  <section class="view" id="v-rules" hidden></section>
+  <section class="view" id="v-skills" hidden></section>
+  <section class="view" id="v-log" hidden></section>
+
+  <footer id="foot"></footer>
+</div>
+
+<script>
+const D = {"snap": "2026-10-27 04:40 UTC (13:40 KST) · v004", "stage": "S1", "gate": "G1", "sprint": {"id": 1, "start": "2026-10-26", "end": "2026-11-09"}, "stages": [{"code": "S0", "name": "Concept", "en": "Concept", "gate": "G0", "gname": "Greenlight", "outs": ["One-line pitch + concept one-pager", "References and mood board", "Scope, schedule, budget (time/tokens)", "Risk list"], "crit": "HG agrees to the pitch, target and scope. There is a list of what we won't make."}, {"code": "S1", "name": "Pre-production", "en": "Pre-production", "gate": "G1", "gname": "Vertical slice", "outs": ["GDD v1, technical design (TDD), style guide", "Asset pipeline validation (Blender·Houdini→UE)", "Prototype → 90-second vertical slice"], "crit": "One area is playable at final quality. Performance target met. Every pipeline passes with one asset each."}, {"code": "S2", "name": "Production", "en": "Production", "gate": "G2", "gname": "Alpha (feature complete)", "outs": ["All features implemented (placeholder assets allowed)", "Blockout of every level area", "50%+ of the asset list final"], "crit": "100% of the feature list works. Playable start to finish. 0 A-class bugs."}, {"code": "S3", "name": "Content complete", "en": "Content complete", "gate": "G3", "gname": "Beta", "outs": ["All assets, sound and animation final", "HUD, menus and settings complete", "Trailer shot list"], "crit": "0 placeholder assets. Feature freeze. Known bug list with a fix plan."}, {"code": "S4", "name": "Polish & QA", "en": "Polish & QA", "gate": "G4", "gname": "RC / Gold", "outs": ["Package build (Win64 Shipping)", "Performance and stability pass", "Trailer, screenshots, store copy"], "crit": "0 A/B-class bugs. Install, run and quit pass on a clean PC. 30 minutes without a crash."}, {"code": "S5", "name": "Launch", "en": "Launch", "gate": "G5", "gname": "Launch approval", "outs": ["Store/portfolio page goes public", "Build upload", "Trailer release, announcement"], "crit": "HG personally approves the publish button. Rollback build confirmed in storage."}, {"code": "S6", "name": "Live ops & maintenance", "en": "Live ops", "gate": "P#", "gname": "Patch gate", "outs": ["Collecting and sorting feedback and crashes", "Hotfixes / regular patches", "Engine update review, archive"], "crit": "Every patch has a change list, regression tests and HG approval. Source and builds archived at end of life."}], "agents": [{"code": "PD", "name": "Executive Producer (PD)", "en": "Executive Producer", "model": "opus", "stages": [0, 1, 2, 3, 4, 5, 6], "duties": ["Turns the CEO's vision into a production plan, plans scope and sprints", "Writes and assigns tickets, decides what runs in parallel", "Chairs gate meetings, manages risk and schedule", "Reports results and requests decisions from the CEO"], "inp": "CEO instructions, Studio/state.yaml, handoffs from each lead", "out": "Sprint plans, gate reports, decision cards", "tools": "Agent/Task tools, Studio board, Obsidian", "review": "Convenes every gate. Final approval by the CEO"}, {"code": "GD", "name": "Game Design Lead", "en": "Game Design", "model": "sonnet", "stages": [0, 1, 2, 3, 6], "duties": ["Writes the concept doc and GDD", "Designs the core loop (shooting, cover, engagement)", "Weapon and enemy number tables, balance", "Feeds playtest feedback into the spec"], "inp": "HG's direction, references (The Division, COD)", "out": "GDD.md, number CSVs (DataTable), feature spec tickets", "tools": "Obsidian, UE DataTable (Python import), xlsx", "review": "G0 pitch, G2 feature-complete call"}, {"code": "LD", "name": "Level Design Lead", "en": "Level Design", "model": "sonnet", "stages": [1, 2, 3], "duties": ["Blockouts, flow and engagement areas", "Placing cover and sightlines", "Flow for lighting and cinematic shots"], "inp": "GDD, style guide", "out": "L_* blockout maps, encounter tables, top-view images", "tools": "UE Modeling Tools, PCG, UE Python, screenshots", "review": "G1 and G2 level playthroughs"}, {"code": "AD", "name": "Art Director", "en": "Art Direction", "model": "opus", "stages": [0, 1, 2, 3, 4], "duties": ["Visual target and mood board", "Style guide (texel density, color, material rules)", "Asset list and priorities", "Reviews every art deliverable"], "inp": "Concept, references", "out": "Style guide, asset list, review comments, key art", "tools": "ComfyUI (concept images), Krita, Fab (HG's Chrome), PIE screenshots", "review": "Art quality call (G1, G3)"}, {"code": "A3", "name": "3D Asset Lead", "en": "3D Art (Env/Prop/Weapon)", "model": "sonnet", "stages": [1, 2, 3, 4], "duties": ["Environment, prop and weapon modeling, UVs, bakes", "Follows Nanite and LOD standards", "Manages the UrbanStrike_Source folder and naming rules"], "inp": "Asset list, style guide", "out": "FBX + textures (ORM), source .blend", "tools": "Blender 5.2 (background Python), Material Maker, Krita", "review": "AD review → TA import check"}, {"code": "TD", "name": "Technical Director", "en": "Tech / Engine", "model": "opus", "stages": [1, 2, 3, 4, 5, 6], "duties": ["UE 5.8 architecture (Blueprints first, C++ standards when needed)", "Implements gameplay systems", "Performance budgets (frame, memory), profiling", "Tools/Python generation scripts, local git", "Root-cause analysis of crashes and memory bugs (owner of the crash response rules)"], "inp": "Feature specs, TDD", "out": "BPs and scripts, TDD.md, performance reports", "tools": "UE Python remote execution, Tools/Python, Unreal Insights, git (local)", "review": "Tech review (every code and BP change)"}, {"code": "TA", "name": "TA & FX Lead", "en": "Tech Art / VFX", "model": "sonnet", "stages": [1, 2, 3, 4], "duties": ["Niagara muzzle flash, impacts, dust and debris", "Materials and decals, shader cost control", "Houdini 19.5 FX → flipbooks, VAT, VDB", "PCG debris placement, asset import checks"], "inp": "Art list, FX references", "out": "NS_*, M_*/MI_*, flipbooks/VAT, HDA (.hda) sources", "tools": "fxhoudini MCP, hython, UE Python, Niagara", "review": "FX performance and quality call"}, {"code": "AN", "name": "Animation Lead", "en": "Animation", "model": "sonnet", "stages": [1, 2, 3, 4], "duties": ["Retargeting (IK Retargeter), montages", "Reload, aim and cover animations", "Motion Matching (GASP) setup"], "inp": "Character and weapon rigs, GDD move list", "out": "AM_*, ABP changes, source .blend", "tools": "Blender, Control Rig, Cascadeur free, Mixamo", "review": "AD and TD review"}, {"code": "SD", "name": "Sound Lead", "en": "Audio", "model": "sonnet", "stages": [1, 2, 3, 4, 6], "duties": ["Creating and editing gun, impact and ambient sounds", "MetaSounds, attenuation and reverb", "Final mix for video"], "inp": "SFX list, video cuts", "out": "WAV 48k/24bit, MS_*, ATT_*, mix stems", "tools": "Audacity, Freesound CC0, Sonniss, MetaSounds, ffmpeg", "review": "Listening review + loudness measurement"}, {"code": "UI", "name": "UI/UX Lead", "en": "UI / UX", "model": "sonnet", "stages": [1, 2, 3, 4], "duties": ["HUD (crosshair, ammo, hit direction)", "Menus, settings, pause", "Key mapping, accessibility options"], "inp": "GDD, style guide", "out": "Figma mockups, WBP_* widgets", "tools": "Figma MCP, UMG, Krita", "review": "AD and GD review"}, {"code": "QA", "name": "QA Lead", "en": "Quality Assurance", "model": "sonnet", "stages": [2, 3, 4, 5, 6], "duties": ["Test plans, automated smoke tests", "Asset validation (naming, missing references, texture size)", "Filing and grading bugs (A/B/C), regression tests", "Comparing performance captures", "Collecting and classifying crash logs, adding repro tests to the regression list"], "inp": "Builds, ticket done criteria", "out": "Test reports, BUG-*.md, gate checklists", "tools": "UE Automation and Map Check, PIE screenshots, stat commands", "review": "A QA report is required at every gate"}, {"code": "BR", "name": "Build & Release Engineer", "en": "Build & Release", "model": "haiku", "stages": [3, 4, 5, 6], "duties": ["BuildCookRun packaging (Win64)", "Version rule 0.x.y, changelog, git tags", "Build archive, rollback storage"], "inp": "G4-approved commit", "out": "Package zip, CHANGELOG.md, tags", "tools": "RunUAT, 7-Zip, git (local), butler (after HG approval)", "review": "Passes a clean install test"}, {"code": "PB", "name": "Publishing & Marketing Lead", "en": "Publishing", "model": "sonnet", "stages": [0, 3, 4, 5, 6], "duties": ["Positioning, release schedule", "Copy for itch.io, ArtStation and YouTube pages", "Trailer editing, screenshots", "Drafts of announcements and community replies"], "inp": "Beta build, shot list", "out": "Trailer mp4 (naming rule), page drafts, announcement drafts", "tools": "MRQ, DaVinci Resolve, ffmpeg", "review": "Every external post is approved by HG"}, {"code": "LO", "name": "Live Ops Lead", "en": "Live Ops", "model": "sonnet", "stages": [5, 6], "duties": ["Collecting and sorting feedback and crash logs", "Hotfix and patch planning", "Reviewing the impact of UE 5.8.x updates", "Managing the asset license register"], "inp": "Release build, comments, Saved/Crashes", "out": "Patch plans, patch notes, license register", "tools": "Obsidian, crash log parser, Studio board", "review": "Proposes patch gates P#"}], "board": [{"id": "T-0001", "title": "Set up the harness skeleton", "owner": "PD", "st": "done", "when": ""}, {"id": "T-0002", "title": "GDD v1 (current combat loop)", "owner": "GD", "st": "done", "when": ""}, {"id": "T-0003", "title": "Smoke test and asset validation scripts", "owner": "QA", "st": "done", "when": ""}, {"id": "T-0004", "title": "Swap in real sounds", "owner": "SD", "st": "review", "when": ""}, {"id": "T-0005", "title": "Hook up reload and aim animations", "owner": "AN", "st": "done", "when": ""}, {"id": "T-0006", "title": "Minimal HUD", "owner": "UI", "st": "done", "when": ""}, {"id": "T-0007", "title": "Validate the Blender → UE pipeline", "owner": "A3", "st": "done", "when": ""}, {"id": "T-0008", "title": "Hook up v2 impact FX + check performance", "owner": "TA", "st": "doing", "when": ""}, {"id": "T-0009", "title": "Debris props + PCG placement", "owner": "TA", "st": "doing", "when": ""}, {"id": "T-0010", "title": "G1 video v001", "owner": "PB", "st": "todo", "when": ""}, {"id": "T-0011", "title": "Fix respawn after death (B-0001)", "owner": "TD", "st": "done", "when": ""}, {"id": "T-0012", "title": "Clean up soldier texture names with the T_ prefix", "owner": "QA", "st": "done", "when": ""}, {"id": "T-0013", "title": "Respawn protection (prevent spawn camping)", "owner": "GD", "st": "done", "when": ""}, {"id": "T-0014", "title": "ADS left-hand IK + aim pitch correction", "owner": "AN", "st": "doing", "when": ""}, {"id": "T-0015", "title": "Sprint 1 integration test", "owner": "QA", "st": "done", "when": ""}, {"id": "T-0016", "title": "Sprint 1 test video", "owner": "PB", "st": "review", "when": ""}, {"id": "T-0017", "title": "Keep HUD HP from going below 0", "owner": "UI", "st": "review", "when": ""}, {"id": "T-0018", "title": "Recoil, camera shake, ADS FOV", "owner": "AN", "st": "doing", "when": "10/28"}, {"id": "T-0019", "title": "Enemy hit FX v2 + body armor sparks", "owner": "TA", "st": "doing", "when": "10/28"}, {"id": "T-0020", "title": "Enemy death ragdoll + anim notifies", "owner": "AN", "st": "review", "when": "10/29"}, {"id": "T-0021", "title": "Muzzle v2 + flash light, falling debris", "owner": "TA", "st": "review", "when": "10/29~30"}, {"id": "T-0022", "title": "Effect Type budgets + performance measurement", "owner": "TA", "st": "doing", "when": "10/30"}, {"id": "T-0023", "title": "Epic Niagara sample pack + GASP 5.7→5.8 conversion", "owner": "PD", "st": "todo", "when": "10/31"}, {"id": "T-0024", "title": "2 reloads, mag drop, sprint, turn in place, low cover", "owner": "AN", "st": "todo", "when": "11/02~05"}, {"id": "T-0025", "title": "Tracers, muzzle smoke, decals v2, dirt v2, indoor dust, NDC", "owner": "TA", "st": "todo", "when": "11/02~05"}, {"id": "T-0026", "title": "L_GunRange FX and animation checks, 120 fps, re-record video", "owner": "QA", "st": "todo", "when": "11/06~08"}, {"id": "T-0027", "title": "'Reloading' debug text above enemy heads", "owner": "QA", "st": "todo", "when": ""}], "tests": [{"n": 0, "name": "Project cleanup", "owner": "Range", "st": "pass", "note": "Commit fa75ef1, 0 startup errors on UE 5.8.3, MapCheck 0/0"}, {"n": 1, "name": "Map, collision, surface materials", "owner": "Range", "st": "pass", "note": "Passed on the 3rd run (Blender fix after HG's approval): all 28 check lines editor = PIE, 0 pass-throughs. Commit ee1cf31"}, {"n": 2, "name": "Player placement, camera", "owner": "Range", "st": "pass", "note": "Passed on the 2nd run (the 1st was a test script bug): 0 cm error, camera matches, 0 enemies. Commit d9439f8"}, {"n": 3, "name": "Weapon firing", "owner": "PD", "st": "pass", "note": "v003 passed after the aim bug fix: 50 hits out of 50, every shot within the crosshair spread angle (1.2°). Commit 4273c0c"}, {"n": 4, "name": "Shooting targets", "owner": "Range", "st": "pass", "note": "v003 passed: hit counts on all 7 targets match exactly. Commit 52c4596"}, {"n": 5, "name": "Recoil, animation", "owner": "PD", "st": "doing", "note": "HG's request: left hand on the grip under the barrel, muzzle facing forward. Measured: muzzle +12°, vertical 1.5×, left hand 8 cm off → being fixed"}, {"n": 6, "name": "Impact FX by surface", "owner": "FX", "st": "wait", "note": "Our own v1 and v2, 5 shots per surface, 0 falling back to defaults"}, {"n": 7, "name": "Muzzle flash, casings, tracers, lighting", "owner": "FX", "st": "wait", "note": "All 4 showing on all 10 shots"}, {"n": 8, "name": "Niagara pack FX", "owner": "FX", "st": "hold", "note": "On hold by HG's decision. Causes of the 3 failures written up, a clean 5.8 copy ready"}, {"n": 9, "name": "Sound", "owner": "PD", "st": "wait", "note": "SFX_RifleShot real recording, nightly 01:00–08:00 KST"}, {"n": 10, "name": "HUD", "owner": "PD", "st": "wait", "note": "Hit markers, 0 debug text (T-0027)"}, {"n": 11, "name": "Integration, 120 fps, video", "owner": "PD", "st": "wait", "note": "RTX 5080 1440p Epic, 120 fps average, nightly 01:00–08:00 KST"}], "bugs": [{"id": "B-0001", "title": "Respawn fails after the player dies", "st": "fixed"}, {"id": "B-0002", "title": "A rifle floats on the left of the PIE screen", "st": "fixed"}, {"id": "B-0003", "title": "Another thread's import re-imports the debris meshes", "st": "closed"}, {"id": "B-0004", "title": "'missing property Systems' error on every impact", "st": "closed"}, {"id": "B-0005", "title": "Every surface at the range uses the default surface material", "st": "open"}], "skills": [{"name": "studio-ceo-report", "desc": "CEO reporting rules: plan, done, delay, stage, test step and retry reports, immediate alerts, delegating in-between work", "on": true}, {"name": "studio-ticket", "desc": "Create tickets from a template, change status, check dependencies", "on": false}, {"name": "handoff", "desc": "Handoff template, names the next owner", "on": false}, {"name": "gate-review", "desc": "Collect the gate checklist → each lead's call → report + HG decision card", "on": false}, {"name": "asset-check", "desc": "Checks UE naming rules, texture size, missing references, LOD and Nanite", "on": false}, {"name": "render-video", "desc": "MRQ render + ffmpeg audio mux, YYMMDD_urbanstrike_… naming", "on": false}, {"name": "build-package", "desc": "RunUAT BuildCookRun, version tag, archive", "on": false}, {"name": "crash-triage", "desc": "Collect crash logs, classify exceptions, memory check commands, write C-#### tickets, crash report to the CEO", "on": true}, {"name": "stage-test", "desc": "Ordered tests by production step (HG, 2026-10-27): split tests by step and asset and run them one at a time in order (map and collision → player and camera → firing → targets → recoil and animation → impact FX → muzzle FX → external pack FX → sound → HUD → integration and performance). Each step has a time limit and pass criteria, only a pass moves on, commit only that asset's files, report each step right away. A video for every attempt: urbanstrike_st##_testname_v###_t##.mp4. Shared module stage_test_lib.py + a 10-second dry run without saving first; reading and measuring run headless on a mirror project, and only saving, PIE and recording use the main editor. Sound, performance, integration video and showcase recordings run only while the PC is free (nightly 01:00–08:00 KST, approved by HG 2026-10-27), with a notice before starting and a result report at the end.", "on": true}, {"name": "game-bug-fix", "desc": "Game test bug-fix loop: reproduce → one cause hypothesis → minimal fix → retest (time-limited) → after 2 identical failures, roll back and report. Retry report before retrying, commit only after qa_smoke passes, record B-#### and add a regression test", "on": true}, {"name": "patch-release", "desc": "Patch notes, regression test list, rollback build check", "on": false}], "decisions": [["10-25", "Don't put it on GitHub; use local git on the D drive only"], ["10-26", "HG = CEO; production is designed and run by 14 agent leads"], ["10-26", "Reporting rules: plan before running, completion after, report delays over 10 minutes, small modules"], ["10-26", "Approved starting sprint 1, target G1 vertical slice"], ["10-26", "FX made in-engine with Niagara, Houdini on hold"], ["10-26", "Only the session holding editor.lock opens and saves in the editor"], ["10-26", "Research references first before new steps and tickets"], ["10-27", "Delegate in-between steps: proceed without asking, then report"], ["10-27", "Approved the whole animation and FX asset plan (T-0018–T-0026)"], ["10-27", "Main map switched to L_GunRange, tests use only the player"], ["10-27", "Report repeated tests before running them again"], ["10-27", "Approved the 12-step ordered tests by production step, pack FX on hold"], ["10-27", "From now on every test is split by production step and run in order"], ["10-27", "A video for every test attempt: urbanstrike_st##_testname_v###_t##"], ["10-27", "Weapon aim bug: fix first, then retest"], ["10-27", "Options put the recommended one first; with no answer in 10 minutes, option 1 is picked automatically"], ["10-27", "Aim retest judged by angle"], ["10-27", "Keep the gun recoil, fix the left hand and muzzle direction"], ["10-27", "Speed-ups: shared test module, dry runs, splitting editor use, fewer notifications"]], "commits": [["52c4596", "Step 4 targets passed"], ["4273c0c", "Aim fix: fire along the camera crosshair"], ["557d0b3", "Step 3 weapon firing v001 passed, recording helper"], ["d9439f8", "Step 2 player placement and camera passed"], ["ee1cf31", "Step 1 passed: 4 collision boxes on the steel plate stand, floor tile collision"], ["fd30a73", "Startup error check tool (headless)"], ["fa75ef1", "Range: enemy sublevel off by default, start at firing position, target BP, surface materials"], ["799e8d2", "Close-up preview of Niagara samples (no migration)"], ["e81f784", "T-0022 Effect Type budgets for 17 systems, qa_smoke passed"], ["a65c75b", "T-0022 references, T-0027 debug text script"], ["34e14b2", "Target test prep"], ["ef3ef12", "PIE test time limit and safe shutdown"], ["f539974", "qa_smoke L_GunRange passed"], ["e44e79e", "Main map switched to L_GunRange"], ["d564734", "T-0021 falling debris v2"], ["3cd477e", "T-0021 muzzle light"]], "links": [["Harness design doc (v10)", "urbanstrike-studio-harness.html"]], "rules": {"hg": ["Setting vision and direction, final approval of gates (G0–G5, P#)", "Public posts to stores, social media, YouTube and so on", "Budget: paid purchases and subscriptions, license agreements, account sign-ups and logins (free installs and downloads are up to the leads)", "Clicking Epic Launcher and UAC approvals (only possible at the PC)", "Engine version upgrades, bulk asset deletion", "GitHub uploads (forbidden; HG has to say so personally to change it)"], "reports": [{"k": "Plan report", "when": "Before running", "what": "Before starting a step or module, report the references researched, the goal, the module list, estimated time, needed installs and downloads, and risks, then go ahead. Only gates and CEO decision items wait for approval."}, {"k": "Completion report", "when": "After running", "what": "Where the deliverable is, whether the done criteria passed, measurements and screenshots, remaining issues, next module."}, {"k": "Delay report", "when": "Over 10 minutes", "what": "Right away if a module runs more than 10 minutes over estimate: where it got stuck, what was tried, the next attempt, the new estimate."}, {"k": "Immediate alert", "when": "Right away when done or when approval or an answer is needed", "what": "When work is done, a CEO approval is needed midway, or a CEO answer is needed, show it to the CEO immediately without waiting: approvals and questions as choice cards, and things the CEO must do with the command or link to run. Don't hold it until the next regular report. While waiting for an answer, keep going on work that can be rolled back, using the recommended option."}, {"k": "Fewer notifications", "when": "Always", "what": "Notify only for step passes and failures, when an HG decision or answer is needed, and completions. Retries and in-between progress go to the checklist, the web console and Studio/log, and retry reports are one line. Choice cards are also posted in the project chat to start the 10-minute clock (2026-10-27)."}, {"k": "10-minute auto pick", "when": "When posting options", "what": "Put the most recommended approach as option 1. If HG doesn't answer within 10 minutes, go ahead with option 1 and report it as an 'auto pick'. Exceptions (these wait): paid purchases, sign-ups and logins, UAC, irreversible deletion, gate approvals, public releases (HG, 2026-10-27)."}, {"k": "Retry report", "when": "Right away when redoing the same test or step", "what": "When the same test or step is run again or retried, report to the CEO immediately before running it: which attempt it is, why it's rerunning (previous result and cause of failure), what changed this time, and when it will finish. After 2 identical failures, stop under the crash-triage rules (HG, 2026-10-27)."}, {"k": "Stage report", "when": "At every important stage", "what": "Entering and leaving a stage (S0–S6), gate reports, and sprint starts and retros must be reported to the CEO before moving on."}, {"k": "Test step report", "when": "Right after each test step by production step", "what": "Which step, target asset, result against the pass criteria, commit hash, next step"}], "debug": [{"k": "Stop", "v": "If the same crash or error happens twice, don't just retry. Stop the current module and release the lock (editor.lock)."}, {"k": "Collect", "v": "Gather Saved/Crashes/<id>/ (CrashContext.runtime-xml, UEMinidump.dmp), Saved/Logs/*.log, the command line that was run, and the last good commit."}, {"k": "Classify", "v": "Sort by exception type: EXCEPTION_ACCESS_VIOLATION (near 0x0 means null; a stray address means use-after-free or overwrite), Assertion/check·ensure, Out of memory, GPU (D3D device removed, TDR), headless-only (-nullrhi, Niagara and material compiles without rendering)."}, {"k": "Check memory", "v": "Record the memory trend over repeated runs: stat memory, memreport -full, -llm. If suspicious, reproduce with -stompmalloc (detects use-after-free), -d3ddebug, -onethread."}, {"k": "Minimal repro", "v": "Split the module further and bisect to narrow down the node, asset or script line causing it. Confirmed once it reproduces 3 times under the same conditions."}, {"k": "Record", "v": "Studio/bugs/crash/C-####.md: symptom, count, log paths, top 5 lines of the call stack, hypothesis, what was tried, workaround, risk, plan for the real fix."}, {"k": "Separate workaround from real fix", "v": "Mark workarounds (for example, running in the editor GUI instead of headless, or turning a feature off) as workaround, and open a separate ticket for the real fix."}, {"k": "Report", "v": "Crash report to the CEO on the 2nd crash (cause hypothesis, next attempt, new estimate). If 3 different attempts fail, escalate to the TD + CEO decision (cut scope or use another approach)."}, {"k": "Regression test", "v": "Add each fixed crash to qa_integration.py as a repro test and check every time that it doesn't come back."}]}};
+const $ = s => document.querySelector(s);
+const esc = s => String(s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const ST = {done:'Done',review:'Review',doing:'In progress',todo:'To do',pass:'Pass',fail:'Fail',wait:'Waiting',hold:'On hold',fixed:'Fixed',closed:'Closed',open:'Open'};
+const pill = s => `<span class="pill s-${s}">${ST[s]||s}</span>`;
+const OWN = {PD:'Producer',GD:'Game design',LD:'Level design',AD:'Art director',A3:'3D assets',TD:'Technical director',TA:'TA & FX',AN:'Animation',SD:'Sound',UI:'UI/UX',QA:'QA',BR:'Build & release',PB:'Publishing',LO:'Live ops'};
+
+$('#snap').textContent = `Snapshot · ${D.snap}`;
+const cnt = st => D.board.filter(b=>b.st===st).length;
+const tPass = D.tests.filter(t=>t.st==='pass').length;
+$('#statusbar').innerHTML = [
+  ['Current stage', `${D.stage} Pre-production`, 'Late'],
+  ['Next gate', `${D.gate}`, 'Vertical slice'],
+  ['Sprint', `#${D.sprint.id}`, `${D.sprint.start.slice(5)} ~ ${D.sprint.end.slice(5)}`],
+  ['Tickets', `${cnt('done')} / ${D.board.length}`, `done · ${cnt('doing')} in progress · ${cnt('review')} in review`],
+  ['Tests by step', `${tPass} / ${D.tests.length}`, 'steps passed'],
+  ['Open bugs', `${D.bugs.filter(b=>b.st==='open').length}`, 'B-#### numbering'],
+].map(([k,v,s])=>`<div><small>${k}</small><b>${esc(v)}</b><small>${esc(s)}</small></div>`).join('');
+
+const blocked = D.tests.find(t=>t.st==='fail');
+$('#alert').innerHTML = blocked ? `<div><b>HG decision needed</b> · Test step ${blocked.n} ${esc(blocked.name)}: ${esc(blocked.note)}</div>` : '';
+if(!blocked) $('#alert').hidden = true;
+
+/* tabs */
+const TABS = [['overview','Overview'],['tests','Tests by step'],['board','Sprint board'],['team','14 leads'],['rules','Rules'],['skills','Skills'],['log','Decisions & commits']];
+$('#tabs').innerHTML = TABS.map(([id,l])=>`<button role="tab" id="t-${id}" aria-controls="v-${id}" data-id="${id}">${l}</button>`).join('');
+function show(id){
+  if(!TABS.some(t=>t[0]===id)) id='overview';
+  TABS.forEach(([t])=>{ $('#v-'+t).hidden = t!==id; $('#t-'+t).setAttribute('aria-selected', t===id); });
+}
+$('#tabs').addEventListener('click', e=>{ const b=e.target.closest('button'); if(!b) return; location.hash=b.dataset.id; });
+addEventListener('hashchange', ()=>show(location.hash.slice(1)));
+
+/* overview */
+const nowIdx = D.stages.findIndex(s=>s.code===D.stage);
+function stageDetail(i){
+  const s=D.stages[i]; const leads=D.agents.filter(a=>a.stages.includes(i)).map(a=>a.code).join(' · ');
+  $('#stgdetail').innerHTML = `<div style="display:flex;gap:8px;align-items:baseline;flex-wrap:wrap"><h3>${s.code} ${esc(s.name)}</h3><span class="pill s-review">${s.gate} ${esc(s.gname)}</span></div>
+  <div class="grid2" style="margin-top:8px"><div><p class="muted" style="font-size:.78rem">Deliverables</p><ul class="plain">${s.outs.map(o=>`<li>${esc(o)}</li>`).join('')}</ul></div>
+  <div style="display:flex;flex-direction:column;gap:8px"><div><p class="muted" style="font-size:.78rem">Gate pass criteria</p><p>${esc(s.crit)}</p></div><div><p class="muted" style="font-size:.78rem">Leads involved</p><p class="mono">${leads}</p></div></div></div>`;
+  document.querySelectorAll('.stg').forEach((b,j)=>b.setAttribute('aria-pressed', j===i));
+}
+const tp = D.tests.map(t=>({pass:'var(--ok)',fail:'var(--bad)',hold:'var(--line)',wait:'var(--sunk)',doing:'var(--warn)'}[t.st]));
+$('#v-overview').innerHTML = `
+  <div class="panel" style="display:flex;flex-direction:column;gap:12px">
+    <h2>Production stages and gates</h2>
+    <div class="track">${D.stages.map((s,i)=>`<button class="stg ${i<nowIdx?'past':''} ${i===nowIdx?'now':''}" data-i="${i}"><span class="c">${s.code}${i===nowIdx?' · now':''}</span><span class="n">${esc(s.name)}</span><span class="g">${s.gate} ${esc(s.gname)}</span></button>`).join('')}</div>
+    <div id="stgdetail"></div>
+  </div>
+  <div class="grid2">
+    <div class="panel" style="display:flex;flex-direction:column;gap:10px">
+      <div style="display:flex;justify-content:space-between;align-items:baseline"><h2>Tests by step</h2><a href="#tests" class="mono" style="color:var(--info);font-size:.8rem">Details</a></div>
+      <div class="meter" role="img" aria-label="${tPass} of 12 steps passed">${D.tests.map((t,i)=>`<i style="width:${100/D.tests.length}%;background:${tp[i]};border-right:1px solid var(--panel)"></i>`).join('')}</div>
+      <ul class="plain">${D.tests.filter(t=>t.st!=='wait').map(t=>`<li>${t.n}. ${esc(t.name)} ${pill(t.st)}</li>`).join('')}<li class="muted">${D.tests.filter(t=>t.st==='wait').length} more steps waiting</li></ul>
+    </div>
+    <div class="panel" style="display:flex;flex-direction:column;gap:10px">
+      <div style="display:flex;justify-content:space-between;align-items:baseline"><h2>In progress this week</h2><a href="#board" class="mono" style="color:var(--info);font-size:.8rem">Board</a></div>
+      <ul class="plain">${D.board.filter(b=>b.st==='doing'||b.st==='review').map(b=>`<li><span class="mono">${b.id}</span> ${esc(b.title)} <span class="muted">${b.owner}</span> ${pill(b.st)}</li>`).join('')}</ul>
+    </div>
+  </div>
+  <div class="panel links"><h2>Related docs</h2>${D.links.map(([t,u])=>`<a href="${u}" target="_blank" rel="noopener">${esc(t)} ↗</a>`).join('')}</div>`;
+document.querySelectorAll('.stg').forEach(b=>b.addEventListener('click',()=>stageDetail(+b.dataset.i)));
+stageDetail(nowIdx);
+
+/* tests */
+$('#v-tests').innerHTML = `<div class="panel" style="display:flex;flex-direction:column;gap:10px">
+  <h2>Ordered tests by production step · L_GunRange · UE 5.8.3</h2>
+  <p class="muted">One asset at a time, in a fixed order. Each step has a time limit and pass criteria, and only a pass moves on. After 2 identical failures, stop and report to HG.</p>
+  <div class="steps">${D.tests.map(t=>`<div class="step ${t.st}"><span class="num">${t.n}</span><div class="body"><h3>${esc(t.name)}</h3><p>${esc(t.note)}</p><span class="who">Owner ${esc(t.owner)}</span></div>${pill(t.st)}</div>`).join('')}</div></div>`;
+
+/* board */
+let ownerF = 'ALL';
+const COLS = [['todo','To do'],['doing','In progress'],['review','Review'],['done','Done']];
+function renderBoard(){
+  const owners = ['ALL',...new Set(D.board.map(b=>b.owner))];
+  const list = D.board.filter(b=>ownerF==='ALL'||b.owner===ownerF);
+  $('#v-board').innerHTML = `<div class="filters"><span class="muted" style="font-size:.8rem">Owner</span>${owners.map(o=>`<button class="chipbtn" aria-pressed="${o===ownerF}" data-o="${o}">${o==='ALL'?'All':o}</button>`).join('')}</div>
+  <div class="kanban">${COLS.map(([s,l])=>{const items=list.filter(b=>b.st===s);return `<div class="col"><h3><span>${l}</span><span class="mono muted">${items.length}</span></h3>${items.map(b=>`<div class="card"><div class="top"><span>${b.id}</span><span>${b.owner}${b.when?' · '+b.when:''}</span></div><div class="t">${esc(b.title)}</div></div>`).join('')||'<div class="empty">None</div>'}</div>`}).join('')}</div>
+  <div class="panel"><h2 style="margin-bottom:8px">Bugs</h2><div class="tbl"><table><thead><tr><th>ID</th><th>Description</th><th>Status</th></tr></thead><tbody>${D.bugs.map(b=>`<tr><td class="mono">${b.id}</td><td>${esc(b.title)}</td><td>${pill(b.st)}</td></tr>`).join('')}</tbody></table></div></div>`;
+  document.querySelectorAll('.chipbtn[data-o]').forEach(b=>b.addEventListener('click',()=>{ownerF=b.dataset.o;renderBoard();}));
+}
+renderBoard();
+
+/* team */
+$('#v-team').innerHTML = `<p class="muted">The 7 bars show which of S0–S6 each lead takes part in.</p><div class="team">${D.agents.map(a=>`<div class="lead"><div class="hd"><span class="code">${a.code}</span><h3>${esc(a.name)}</h3><span class="mono muted" style="font-size:.72rem">${esc(a.en)}</span></div>
+<div class="dots" aria-label="Stages involved">${[0,1,2,3,4,5,6].map(i=>`<i class="${a.stages.includes(i)?'on':''}" title="S${i}"></i>`).join('')}</div>
+<ul>${a.duties.map(d=>`<li>${esc(d)}</li>`).join('')}</ul>
+<p class="meta">Deliverables: ${esc(a.out)}</p><p class="meta">Tools: ${esc(a.tools)}</p><p class="meta">Model ${esc(a.model)} · Review: ${esc(a.review)}</p></div>`).join('')}</div>`;
+
+/* rules */
+$('#v-rules').innerHTML = `<div class="panel" style="border-left:4px solid var(--accent)"><h2 style="margin-bottom:8px">Only the CEO (HG) decides</h2><ul class="plain">${D.rules.hg.map(x=>`<li>${esc(x)}</li>`).join('')}</ul><p class="muted" style="margin-top:8px;font-size:.84rem">Other in-between work (operating launchers and tools, free installs and downloads, settings changes, running scripts, restarting the editor) is done by the leads without asking, and only the results are reported.</p></div>
+<div class="panel"><h2 style="margin-bottom:8px">CEO reporting rules</h2><div class="tbl"><table><thead><tr><th>Report</th><th>When</th><th>Contents</th></tr></thead><tbody>${D.rules.reports.map(r=>`<tr><td style="white-space:nowrap"><b>${esc(r.k)}</b></td><td>${esc(r.when)}</td><td>${esc(r.what)}</td></tr>`).join('')}</tbody></table></div></div>
+<div class="grid2"><div class="panel"><h2 style="margin-bottom:8px">Test and bug rules</h2><ul class="plain">
+<li>Tests run one step and asset at a time in a fixed order. No bundled tests (stage-test)</li>
+<li>Each step has a time limit and pass criteria; only a pass moves on</li>
+<li>On a pass, commit only that step's files to local git, by path</li>
+<li>A video for every attempt: urbanstrike_st##_testname_v###_t##.mp4 (Saved/MovieRenders/StageTest, no overwriting)</li>
+<li>Retry report before running again: which attempt, why, what changed, estimated time</li>
+<li>After 2 identical failures, stop and report to HG (game-bug-fix)</li>
+<li>Shared test module + a 10-second dry run without saving first. Reading and measuring run headless on a mirror project; only saving, PIE and recording use the main editor</li>
+<li>Options put the recommended one first. With no answer in 10 minutes, option 1 is picked automatically and reported (paid, login, UAC, deletion and gates wait)</li>
+<li>Only the session holding editor.lock opens and saves in the editor, and releases it right after</li>
+<li>Sound, performance and recording only while the PC is free (nightly 01:00–08:00 KST, approved by HG at 04:43). Notice before starting, result report at the end</li></ul></div>
+<div class="panel"><h2 style="margin-bottom:8px">Crash response order</h2><ol style="margin:0;padding-left:1.2em;display:flex;flex-direction:column;gap:4px">${D.rules.debug.map(d=>`<li><b>${esc(d.k)}</b> · ${esc(d.v)}</li>`).join('')}</ol></div></div>
+<div class="panel"><h2 style="margin-bottom:8px">Always</h2><ul class="plain"><li>The Unreal project is never put on GitHub. Local git on the D drive only</li><li>Downloads go in the _Downloads folder next to the project</li><li>Performance target: RTX 5080, 1440p Epic, 120 fps</li><li>Research references first before new steps and tickets (Studio/refs)</li><li>Work in modules of 30 minutes or less</li></ul></div>`;
+
+/* skills */
+$('#v-skills').innerHTML = `<div class="panel"><h2 style="margin-bottom:4px">Skills</h2><p class="muted" style="margin-bottom:8px;font-size:.84rem">Installed = saved to HG's account and in use now. Design only = in the harness design but not built yet.</p>
+${D.skills.map(s=>`<div class="skill"><span class="pill ${s.on?'s-done':'s-todo'}">${s.on?'Installed':'Design only'}</span><div><code>${esc(s.name)}</code><p style="font-size:.86rem">${esc(s.desc)}</p></div></div>`).join('')}</div>`;
+
+/* log */
+$('#v-log').innerHTML = `<div class="grid2"><div class="panel"><h2 style="margin-bottom:8px">Decision log</h2><div class="tbl"><table><tbody>${D.decisions.slice().reverse().map(([d,t])=>`<tr><td class="mono" style="white-space:nowrap">${d}</td><td>${esc(t)}</td></tr>`).join('')}</tbody></table></div></div>
+<div class="panel"><h2 style="margin-bottom:8px">Recent commits (local git)</h2><div class="tbl"><table><tbody>${D.commits.map(([h,t])=>`<tr><td class="mono">${h}</td><td>${esc(t)}</td></tr>`).join('')}</tbody></table></div></div></div>`;
+
+$('#foot').textContent = `Data: a snapshot of Studio/state.yaml, Studio/board, Studio/bugs, .claude/agents and git log on HG's PC, read at ${D.snap}. To refresh it, ask the PD for an update.`;
+show(location.hash.slice(1));
+</script>
+
+</body></html>

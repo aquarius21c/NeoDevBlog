@@ -1,0 +1,211 @@
+---
+import { existsSync } from 'node:fs';
+import Base from '../layouts/Base.astro';
+import '../styles/home.css';
+import NodeGraph from './NodeGraph.astro';
+import { formatDate, getPosts, url } from '../utils';
+import { localeUrl, tagLabel, ui, type Lang } from '../i18n';
+import { about, contacts, experience, profile, projects, reel } from '../data/profile';
+
+interface Props {
+  lang: Lang;
+}
+
+const { lang } = Astro.props;
+const t = ui[lang];
+const posts = await getPosts(lang);
+// 영문 글이 있으면 영문 글 주소로, 없으면 한국어 글로 연결합니다.
+const postUrl = (id: string) => (lang === 'en' && posts.find((p) => p.id === id)?.translated ? localeUrl('en', `posts/${id}/`) : url(`posts/${id}/`));
+const bold = (text: string) => text.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
+const isExternal = (link: string) => /^https?:\/\//.test(link);
+// 아직 올라오지 않은 글이나 문서로는 링크를 걸지 않습니다.
+const postIds = new Set(posts.map((p) => p.id));
+const projectUrl = (link: string) =>
+  isExternal(link) ? link : link.startsWith('posts/') ? postUrl(link.slice(6).replace(/\/$/, '')) : lang === 'en' && existsSync(`public/en/${link}`) ? localeUrl('en', link) : url(link);
+const linkReady = (link: string) =>
+  isExternal(link) ||
+  (link.startsWith('posts/') ? postIds.has(link.slice(6).replace(/\/$/, '')) : existsSync(`public/${link}`));
+const icons: Record<string, string> = {
+  video: 'M4 5h11a1 1 0 0 1 1 1v3l4-2.5v11L16 15v3a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1Z',
+  clock: 'M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18Zm0 4v5l3.5 2',
+  team: 'M9 11a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7Zm-6 9c0-3.3 2.7-6 6-6s6 2.7 6 6M16 4.5a3.5 3.5 0 0 1 0 6.5M21 20c0-2.7-1.6-5-4-5.7',
+  stage: 'M3 7h4v10H3zM10 7h4v10h-4zM17 7h4v10h-4z',
+};
+const recent = posts.slice(0, 5);
+const sections = [
+  { id: 'about', label: 'ABOUT' },
+  { id: 'experience', label: 'EXPERIENCE' },
+  { id: 'projects', label: 'PROJECTS' },
+  { id: 'writing', label: 'WRITING' },
+];
+---
+
+<Base bare lang={lang}>
+  <div class="spotlight" aria-hidden="true"></div>
+  <div class="home">
+    <header class="intro">
+      <div>
+        <div class="brand">
+          <span class="brand-bar" aria-hidden="true"></span>
+          <h1><a href={localeUrl(lang)} aria-label={profile.name}>Neo<span class="dot">.</span>Atelier</a></h1>
+          <p class="keywords">{profile.keywords}</p>
+          <NodeGraph class="node-graph" />
+        </div>
+        <p class="person"><span>{profile.nameEn}</span><span lang="ko">{profile.nameKo}</span></p>
+        <p class="role">{profile.role}</p>
+        <p class="tagline">{profile.tagline[lang]}</p>
+        <nav class="section-nav" aria-label={t.homeSections}>
+          <ul>
+            {sections.map((s) => (
+              <li><a href={`#${s.id}`} data-section={s.id}><span class="line"></span>{s.label}</a></li>
+            ))}
+          </ul>
+        </nav>
+      </div>
+      <ul class="contacts" aria-label={t.contacts}>
+        {contacts.email && (
+          <li>
+            <span class="contact-text" aria-label={`${t.email} ${contacts.email}`}>
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 6h18v12H3zM3 7l9 6 9-6" /></svg>
+              <span>{contacts.email}</span>
+            </span>
+          </li>
+        )}
+        {contacts.linkedin && (
+          <li>
+            <a href={contacts.linkedin} rel="noopener" target="_blank" title="LinkedIn" aria-label="LinkedIn">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9h3v11H4zM5.5 4.5a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3ZM10 9h3v1.6c.6-1 1.8-1.8 3.4-1.8 2.6 0 3.6 1.7 3.6 4.4V20h-3v-6.2c0-1.4-.5-2.3-1.8-2.3s-2.2 1-2.2 2.5V20h-3z" /></svg>
+              <span>LinkedIn</span>
+            </a>
+          </li>
+        )}
+      </ul>
+    </header>
+
+    <main class="content">
+      <section id="about" aria-label="About">
+        <h2 class="section-title">About</h2>
+        {about[lang].map((para) => <p set:html={bold(para)} />)}
+        <figure class="reel">
+          <div class="reel-frame">
+            <video controls playsinline preload="metadata" poster={url(reel.poster)} src={url(reel.video)} title={reel.title}></video>
+          </div>
+          <figcaption>
+            <a href={url(reel.video)} rel="noopener" target="_blank">{reel.title} <span aria-hidden="true">↗</span></a>
+            <span>{reel.caption[lang]}</span>
+          </figcaption>
+        </figure>
+      </section>
+
+      <section id="experience" aria-label="Experience">
+        <h2 class="section-title">Experience</h2>
+        <ol class="cards">
+          {experience.map((item) => (
+            <li class="card">
+              <p class="card-meta">{item.period[lang]}</p>
+              <div>
+                <h3>{item.title[lang]}</h3>
+                <p>{item.summary[lang]}</p>
+                <ul class="chips">{item.tags[lang].map((t) => <li>{t}</li>)}</ul>
+              </div>
+            </li>
+          ))}
+        </ol>
+      </section>
+
+      <section id="projects" aria-label="Projects">
+        <h2 class="section-title">Projects</h2>
+        <ul class="cards">
+          {projects.map((p) => (
+            <li class="card">
+              <img src={url(p.image)} alt={p.imageAlt[lang]} width="640" height="360" loading="lazy" />
+              <div>
+                <h3>
+                  {linkReady(p.link) ? (
+                    <a
+                      class="card-link"
+                      href={projectUrl(p.link)}
+                      {...(isExternal(p.link) ? { target: '_blank', rel: 'noopener' } : {})}
+                    >
+                      {p.title[lang]} <span aria-hidden="true">↗</span>
+                    </a>
+                  ) : (
+                    p.title[lang]
+                  )}
+                </h3>
+                <p>{p.summary[lang]}</p>
+                {p.stats.length > 0 && (
+                  <ul class="stats">
+                    {p.stats.map((st) => (
+                      <li>
+                        <svg viewBox="0 0 24 24" aria-hidden="true"><path d={icons[st.icon]} /></svg>
+                        {st.label[lang]}
+                      </li>
+                    ))}
+                  </ul>
+                )}
+                <ul class="chips">{p.tags[lang].map((t) => <li>{t}</li>)}</ul>
+              </div>
+            </li>
+          ))}
+        </ul>
+      </section>
+
+      <section id="writing" aria-label="Writing">
+        <h2 class="section-title">Writing</h2>
+        {recent.length === 0 && <p class="muted">{t.noPosts}</p>}
+        <ul class="cards">
+          {recent.map((post) => (
+            <li class="card">
+              <p class="card-meta"><time datetime={post.data.date.toISOString()}>{formatDate(post.data.date, lang)}</time></p>
+              <div>
+                <h3>
+                  <a class="card-link" href={postUrl(post.id)}>{post.data.title}</a>
+                  {lang === 'en' && !post.translated && <span class="badge">{t.koreanOnly}</span>}
+                  {post.data.draft && <span class="badge">{t.draft}</span>}
+                  {post.data.youtube && <span class="badge video">{t.video}</span>}
+                </h3>
+                {post.data.description && <p>{post.data.description}</p>}
+                {post.data.tags.length > 0 && (
+                  <ul class="chips">{post.data.tags.map((tag) => <li>{lang === 'en' ? <span>#{tagLabel(tag, lang)}</span> : <a href={url(`tags/${tag}/`)}>#{tag}</a>}</li>)}</ul>
+                )}
+              </div>
+            </li>
+          ))}
+        </ul>
+        <p class="more"><a href={localeUrl(lang, 'archive/')}>{t.allPosts} <span aria-hidden="true">→</span></a></p>
+      </section>
+
+      <footer class="home-footer">
+        <p>© {new Date().getFullYear()} Hyungi Jeon · Neo Atelier. {t.footer}</p>
+      </footer>
+    </main>
+  </div>
+
+  <script>
+    // 마우스를 따라다니는 은은한 조명과, 현재 보고 있는 섹션을 왼쪽 메뉴에 표시합니다.
+    const spotlight = document.querySelector<HTMLElement>('.spotlight');
+    if (spotlight && matchMedia('(pointer: fine)').matches && !matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      window.addEventListener('pointermove', (e) => {
+        spotlight.style.setProperty('--x', `${e.clientX}px`);
+        spotlight.style.setProperty('--y', `${e.clientY}px`);
+        spotlight.classList.add('on');
+      });
+    }
+
+    const links = new Map(
+      [...document.querySelectorAll<HTMLAnchorElement>('.section-nav a')].map((a) => [a.dataset.section, a]),
+    );
+    // 화면 위쪽 40% 지점을 지난 마지막 섹션을 현재 섹션으로 봅니다.
+    const sections = [...document.querySelectorAll<HTMLElement>('.content section')];
+    const markCurrent = () => {
+      const atBottom = innerHeight + scrollY >= document.documentElement.scrollHeight - 2;
+      const current = atBottom
+        ? sections[sections.length - 1]
+        : sections.filter((s) => s.getBoundingClientRect().top <= innerHeight * 0.4).pop();
+      links.forEach((a, id) => (id === current?.id ? a.setAttribute('aria-current', 'true') : a.removeAttribute('aria-current')));
+    };
+    addEventListener('scroll', markCurrent, { passive: true });
+    markCurrent();
+  </script>
+</Base>

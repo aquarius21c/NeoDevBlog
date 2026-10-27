@@ -1,0 +1,56 @@
+---
+import { getCollection, render } from 'astro:content';
+import Base from '../../../layouts/Base.astro';
+import { formatDate, getPosts, url, type Post } from '../../../utils';
+import { localeUrl } from '../../../i18n';
+
+// 영문판이 있는 글만 /en/posts/ 아래에 만듭니다. 날짜·태그·영상은 한국어 글에서 가져옵니다.
+export async function getStaticPaths() {
+  const posts = (await getPosts('en')).filter((p) => p.translated);
+  const english = new Map((await getCollection('postsEn')).map((e) => [e.id, e]));
+  return posts.map((post, i) => ({
+    params: { slug: post.id },
+    props: { post, entry: english.get(post.id)!, newer: posts[i - 1], older: posts[i + 1] },
+  }));
+}
+
+interface Props {
+  post: Post;
+  entry: Awaited<ReturnType<typeof getCollection<'postsEn'>>>[number];
+  newer?: Post;
+  older?: Post;
+}
+
+const { post, entry, newer, older } = Astro.props;
+const { Content } = await render(entry);
+---
+
+<Base title={post.data.title} description={post.data.description} lang="en" altUrl={url(`posts/${post.id}/`)}>
+  <article class="post">
+    <header class="post-header">
+      <time datetime={post.data.date.toISOString()}>{formatDate(post.data.date, 'en')}</time>
+      <h1>{post.data.title}</h1>
+      <p class="muted translated-note">Translated from the <a href={url(`posts/${post.id}/`)} hreflang="ko">original Korean post</a>.</p>
+    </header>
+    {
+      post.data.youtube && (
+        <div class="video">
+          <iframe
+            src={`https://www.youtube-nocookie.com/embed/${post.data.youtube}`}
+            title={`${post.data.title} video`}
+            loading="lazy"
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+            allowfullscreen
+          />
+        </div>
+      )
+    }
+    <div class="prose">
+      <Content />
+    </div>
+  </article>
+  <nav class="post-nav">
+    {newer ? <a href={localeUrl('en', `posts/${newer.id}/`)}>← Newer<br /><strong>{newer.data.title}</strong></a> : <span />}
+    {older ? <a class="older" href={localeUrl('en', `posts/${older.id}/`)}>Older →<br /><strong>{older.data.title}</strong></a> : <span />}
+  </nav>
+</Base>

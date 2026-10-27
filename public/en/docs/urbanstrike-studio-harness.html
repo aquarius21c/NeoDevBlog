@@ -1,0 +1,535 @@
+<!doctype html><html lang="en"><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>UrbanStrike Studio Harness</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=IBM+Plex+Sans+KR:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: production board. Stage rail on top (click to highlight that stage's leads), then org, harness, and rollout below */
+:root {
+  --bg: #eceeed; --panel: #f8f9f8; --ink: #1c2327; --muted: #5b666b; --line: #cfd5d4;
+  --accent: #2a5d8f; --accent-soft: #dbe6f0; --gate: #b8720f; --gate-soft: #f4e6cf; --on: #2a5d8f;
+  --f-display: "Barlow Condensed", "IBM Plex Sans KR", sans-serif;
+  --f-body: "IBM Plex Sans KR", "Apple SD Gothic Neo", "Malgun Gothic", sans-serif;
+  --f-mono: "JetBrains Mono", ui-monospace, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --bg: #141a1d; --panel: #1c2428; --ink: #e3e8e8; --muted: #94a1a5; --line: #2f3a3f;
+  --accent: #7fb0dc; --accent-soft: #223546; --gate: #e3a548; --gate-soft: #3a2d18; --on: #7fb0dc; color-scheme: dark; } }
+:root[data-theme="dark"] {
+  --bg: #141a1d; --panel: #1c2428; --ink: #e3e8e8; --muted: #94a1a5; --line: #2f3a3f;
+  --accent: #7fb0dc; --accent-soft: #223546; --gate: #e3a548; --gate-soft: #3a2d18; --on: #7fb0dc; color-scheme: dark; }
+* { box-sizing: border-box; }
+body { background: var(--bg); color: var(--ink); font: 15px/1.65 var(--f-body); }
+.wrap { max-width: 1120px; margin: 0 auto; padding-block: 40px 80px;
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); display: grid; gap: 56px; }
+h1, h2, h3 { text-wrap: balance; margin: 0; }
+h1 { font: 700 clamp(30px, 5vw, 46px)/1.1 var(--f-display); letter-spacing: .01em; }
+h2 { font: 700 26px/1.2 var(--f-display); letter-spacing: .02em; display: flex; gap: 12px; align-items: baseline; }
+h2 .sec { font: 500 13px var(--f-mono); color: var(--accent); }
+h3 { font-size: 16px; font-weight: 700; }
+p { margin: 0; max-width: 68ch; }
+section { display: grid; gap: 18px; min-width: 0; }
+.muted { color: var(--muted); }
+.eyebrow { font: 600 12px var(--f-mono); letter-spacing: .12em; text-transform: uppercase; color: var(--muted); }
+header.top { display: grid; gap: 14px; }
+.lede { font-size: 17px; max-width: 70ch; }
+.meta { display: flex; flex-wrap: wrap; gap: 8px 18px; font: 13px var(--f-mono); color: var(--muted); }
+.summary { display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: 12px; }
+.summary div { background: var(--panel); border: 1px solid var(--line); border-radius: 6px; padding: 14px 16px; }
+.summary b { display: block; font: 700 22px var(--f-display); color: var(--accent); }
+.rail { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(7, minmax(128px, 1fr)); gap: 6px; overflow-x: auto; padding-bottom: 4px; }
+.stage button { width: 100%; text-align: left; cursor: pointer; background: var(--panel); color: var(--ink); border: 1px solid var(--line); border-radius: 6px 6px 0 0; padding: 10px 12px; display: grid; gap: 2px; font: inherit; }
+.stage button:hover { border-color: var(--accent); }
+.stage button[aria-pressed="true"] { background: var(--accent); color: var(--bg); border-color: var(--accent); }
+.stage button[aria-pressed="true"] .sen, .stage button[aria-pressed="true"] .scode { color: var(--bg); }
+.stage button:focus-visible, .agent:focus-visible { outline: 2px solid var(--gate); outline-offset: 2px; }
+.scode { font: 600 13px var(--f-mono); color: var(--accent); }
+.sname { font-weight: 700; }
+.sen { font: 12px var(--f-mono); color: var(--muted); }
+.sgate { background: var(--gate-soft); border: 1px solid var(--line); border-top: 0; border-radius: 0 0 6px 6px; padding: 6px 12px; font-size: 13px; }
+.gcode { font: 600 12px var(--f-mono); color: var(--gate); }
+.hint { font-size: 13px; color: var(--muted); }
+.grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 14px; }
+.agent { background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 16px; display: grid; gap: 10px; align-content: start; transition: opacity .2s; min-width: 0; }
+.agent.dim { opacity: .32; }
+.agent header { display: flex; gap: 12px; align-items: center; }
+.acode { font: 700 20px var(--f-display); width: 44px; height: 44px; display: grid; place-items: center; border-radius: 6px; background: var(--accent-soft); color: var(--accent); flex: none; }
+.aen { font: 12px var(--f-mono); color: var(--muted); }
+.model { color: var(--gate); }
+.dots { display: flex; gap: 4px; }
+.dots i { flex: 1; height: 5px; border-radius: 2px; background: var(--line); }
+.dots i.on { background: var(--on); }
+.duties { margin: 0; padding-left: 18px; font-size: 14px; }
+dl { margin: 0; display: grid; grid-template-columns: 52px 1fr; gap: 4px 10px; font-size: 13px; }
+dt { color: var(--muted); font-weight: 600; }
+dd { margin: 0; min-width: 0; }
+.tbl { overflow-x: auto; border: 1px solid var(--line); border-radius: 8px; background: var(--panel); }
+table { border-collapse: collapse; width: 100%; font-size: 14px; min-width: 640px; }
+th, td { text-align: left; vertical-align: top; padding: 10px 12px; border-bottom: 1px solid var(--line); }
+thead th { font: 600 12px var(--f-mono); letter-spacing: .06em; color: var(--muted); text-transform: uppercase; }
+tr:last-child td, tr:last-child th { border-bottom: 0; }
+td ul { margin: 0; padding-left: 16px; }
+.chip { display: inline-block; font: 600 12px var(--f-mono); padding: 1px 6px; border-radius: 4px; background: var(--accent-soft); color: var(--accent); margin: 1px 0; }
+.chip.hg { background: var(--gate-soft); color: var(--gate); }
+.wfs { display: grid; gap: 8px; }
+.wf { background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 10px 14px; }
+.wf summary { cursor: pointer; font-weight: 700; display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+.wf[open] summary { margin-bottom: 10px; }
+.acode.sm { width: 34px; height: 28px; font-size: 15px; }
+.num { font-family: var(--f-mono); font-variant-numeric: tabular-nums; white-space: nowrap; }
+.leads { min-width: 180px; }
+pre.code { margin: 0; background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 14px 16px; overflow-x: auto; font: 12.5px/1.6 var(--f-mono); }
+code { font-family: var(--f-mono); font-size: .92em; }
+.two { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 14px; }
+.two > * { min-width: 0; }
+.mer { background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 12px; overflow-x: auto; }
+.mer pre { margin: 0; }
+.rules { display: grid; gap: 10px; }
+.rule { display: grid; grid-template-columns: 34px 1fr; gap: 10px; align-items: start; }
+.rule .n { font: 700 18px var(--f-display); color: var(--gate); }
+.callout { border-left: 3px solid var(--gate); background: var(--gate-soft); padding: 12px 16px; border-radius: 0 6px 6px 0; }
+.callout ul { margin: 6px 0 0; padding-left: 18px; }
+ol.road { list-style: none; margin: 0; padding: 0; display: grid; gap: 10px; }
+ol.road li { display: grid; grid-template-columns: 30px 1fr; gap: 10px; background: var(--panel); border: 1px solid var(--line); border-radius: 6px; padding: 10px 14px; }
+@media (prefers-reduced-motion: reduce) { .agent { transition: none; } }
+@media (max-width: 520px) { .wrap { gap: 44px; } dl { grid-template-columns: 48px 1fr; } }
+</style>
+
+<nav style="position:fixed;top:14px;right:16px;z-index:9999;font:600 12px/1 system-ui,sans-serif;letter-spacing:.08em;background:rgba(20,22,25,.85);border:1px solid rgba(255,255,255,.18);border-radius:999px;padding:7px 12px;backdrop-filter:blur(6px)"><a href="/NeoDevBlog/docs/urbanstrike-studio-harness.html" lang="ko" style="color:#cfd3d8;text-decoration:none">KOR</a><span style="color:#666;margin:0 6px">/</span><span style="color:#f26b1d" aria-current="page">ENG</span></nav>
+<div class="wrap">
+<header class="top">
+  <span class="eyebrow">UrbanStrike · Studio Harness · 2026-10-26 · Draft</span>
+  <h1>UrbanStrike Studio Harness</h1>
+  <p class="lede">This is a design for running a game studio with 14 team leads as Claude agents, splitting the work from planning through launch and maintenance into 7 stages separated by gates. As CEO, HG decides only the vision, key gate approvals, and budget and licensing; the agents design and carry out everything else: planning, design, production, QA, launch, and operations. The PD agent is the executive producer (the orchestrator), and the other 13 are discipline leads. The first project is UrbanStrike, which is now late in S1 pre-production, right before the G1 vertical slice.</p>
+  <div class="meta"><span>UE 5.8.3 · Blueprint first</span><span>Blender 5.2 · Houdini 19.5 FX</span><span>Local only (no GitHub)</span><span>Claude Code subagents + skills + hooks</span></div>
+</header>
+
+<section class="summary" aria-label="Summary">
+  <div><b>CEO = HG</b>Vision, gate approvals, budget and licensing, public releases only. Agents design and execute the rest</div>
+  <div><b>14 leads</b>1 PD + 13 discipline leads. Each has one definition file, with owned folders and deliverables</div>
+  <div><b>7 stages · 6 gates</b>Concept → Pre-production → Production → Content complete → QA → Launch → Live ops</div>
+  <div><b>4-step review</b>Self check → cross review → QA verification → PD decision; gates need HG approval</div>
+  <div><b>120fps</b>An 8.33ms-per-frame budget at 1440p Epic on an RTX 5080, measured every sprint from S1</div>
+  <div><b>3 kinds of reports</b>A plan report before work, a done report after, and a delay report when something runs over 10 minutes</div>
+  <div><b>Files are the contract</b>Tickets, handoffs, and gate reports travel as md files in the Studio folder</div>
+</section>
+
+<section id="stages">
+  <h2><span class="sec">01</span>Production stages and gates</h2>
+  <p class="hint">Click a stage to highlight only the leads working in it on the org chart below. Click again to show everyone.</p>
+  <ol class="rail"><li class="stage" data-s="0"><button type="button" id="st0" aria-pressed="false">
+<span class="scode">S0</span><span class="sname">Concept</span><span class="sen">Concept</span></button>
+<div class="sgate"><span class="gcode">G0</span> Greenlight</div></li><li class="stage" data-s="1"><button type="button" id="st1" aria-pressed="false">
+<span class="scode">S1</span><span class="sname">Pre-production</span><span class="sen">Pre-production</span></button>
+<div class="sgate"><span class="gcode">G1</span> Vertical slice</div></li><li class="stage" data-s="2"><button type="button" id="st2" aria-pressed="false">
+<span class="scode">S2</span><span class="sname">Production</span><span class="sen">Production</span></button>
+<div class="sgate"><span class="gcode">G2</span> Alpha (feature complete)</div></li><li class="stage" data-s="3"><button type="button" id="st3" aria-pressed="false">
+<span class="scode">S3</span><span class="sname">Content complete</span><span class="sen">Content complete</span></button>
+<div class="sgate"><span class="gcode">G3</span> Beta</div></li><li class="stage" data-s="4"><button type="button" id="st4" aria-pressed="false">
+<span class="scode">S4</span><span class="sname">Polish & QA</span><span class="sen">Polish & QA</span></button>
+<div class="sgate"><span class="gcode">G4</span> RC / Gold</div></li><li class="stage" data-s="5"><button type="button" id="st5" aria-pressed="false">
+<span class="scode">S5</span><span class="sname">Launch</span><span class="sen">Launch</span></button>
+<div class="sgate"><span class="gcode">G5</span> Launch approval</div></li><li class="stage" data-s="6"><button type="button" id="st6" aria-pressed="false">
+<span class="scode">S6</span><span class="sname">Live ops & maintenance</span><span class="sen">Live ops</span></button>
+<div class="sgate"><span class="gcode">P#</span> Patch gate</div></li></ol>
+  <div class="mer"><pre class="mermaid">flowchart LR
+  S0[S0 Concept] --> G0{G0 Greenlight}
+  G0 --> S1[S1 Pre-production] --> G1{G1 Vertical slice}
+  G1 --> S2[S2 Production] --> G2{G2 Alpha}
+  G2 --> S3[S3 Content complete] --> G3{G3 Beta}
+  G3 --> S4[S4 Polish & QA] --> G4{G4 RC}
+  G4 --> S5[S5 Launch] --> G5{G5 Launch approval}
+  G5 --> S6[S6 Live ops]
+  S6 --> P{P# Patch gate} --> S6
+  G1 -. Fail .-> S1
+  G2 -. Fail .-> S2
+  G4 -. Fail .-> S4</pre></div>
+  <div class="tbl"><table><thead><tr><th>Stage</th><th>Key deliverables</th><th>Gate criteria</th><th>Leads involved</th></tr></thead><tbody><tr><th scope="row"><span class="scode">S0</span> Concept</th><td><ul><li>One-sentence pitch + concept one-pager</li><li>References and mood board</li><li>Scope, schedule, budget (time/tokens)</li><li>Risk list</li></ul></td>
+<td><span class="gcode">G0</span> <b>Greenlight</b><br>HG agrees on the pitch, target, and scope. There is a list of things we won't build.</td>
+<td class="leads"><span class="chip">PD</span> <span class="chip">GD</span> <span class="chip">AD</span> <span class="chip">PB</span></td></tr><tr><th scope="row"><span class="scode">S1</span> Pre-production</th><td><ul><li>GDD v1, technical design (TDD), style guide</li><li>Asset pipeline validation (Blender·Houdini→UE)</li><li>Prototype → 90-second vertical slice</li></ul></td>
+<td><span class="gcode">G1</span> <b>Vertical slice</b><br>One area is playable at final quality. Performance target met. Every pipeline has passed one asset through.</td>
+<td class="leads"><span class="chip">PD</span> <span class="chip">GD</span> <span class="chip">LD</span> <span class="chip">AD</span> <span class="chip">A3</span> <span class="chip">TD</span> <span class="chip">TA</span> <span class="chip">AN</span> <span class="chip">SD</span> <span class="chip">UI</span></td></tr><tr><th scope="row"><span class="scode">S2</span> Production</th><td><ul><li>All features implemented (placeholder assets allowed)</li><li>Blockout of every level area</li><li>50%+ of the asset list final</li></ul></td>
+<td><span class="gcode">G2</span> <b>Alpha (feature complete)</b><br>100% of the feature list works. Playable from start to finish. Zero A-class bugs.</td>
+<td class="leads"><span class="chip">PD</span> <span class="chip">GD</span> <span class="chip">LD</span> <span class="chip">AD</span> <span class="chip">A3</span> <span class="chip">TD</span> <span class="chip">TA</span> <span class="chip">AN</span> <span class="chip">SD</span> <span class="chip">UI</span> <span class="chip">QA</span></td></tr><tr><th scope="row"><span class="scode">S3</span> Content complete</th><td><ul><li>All assets, sound, and animation final</li><li>HUD, menus, and settings complete</li><li>Trailer shot list</li></ul></td>
+<td><span class="gcode">G3</span> <b>Beta</b><br>Zero placeholder assets. Feature freeze. Known bug list with a fix plan.</td>
+<td class="leads"><span class="chip">PD</span> <span class="chip">GD</span> <span class="chip">LD</span> <span class="chip">AD</span> <span class="chip">A3</span> <span class="chip">TD</span> <span class="chip">TA</span> <span class="chip">AN</span> <span class="chip">SD</span> <span class="chip">UI</span> <span class="chip">QA</span> <span class="chip">BR</span> <span class="chip">PB</span></td></tr><tr><th scope="row"><span class="scode">S4</span> Polish & QA</th><td><ul><li>Packaged build (Win64 Shipping)</li><li>Performance and stability pass</li><li>Trailer, screenshots, store copy</li></ul></td>
+<td><span class="gcode">G4</span> <b>RC / Gold</b><br>Zero A/B-class bugs. Install, run, and quit pass on a clean PC. 30 minutes without a crash.</td>
+<td class="leads"><span class="chip">PD</span> <span class="chip">AD</span> <span class="chip">A3</span> <span class="chip">TD</span> <span class="chip">TA</span> <span class="chip">AN</span> <span class="chip">SD</span> <span class="chip">UI</span> <span class="chip">QA</span> <span class="chip">BR</span> <span class="chip">PB</span></td></tr><tr><th scope="row"><span class="scode">S5</span> Launch</th><td><ul><li>Store/portfolio page goes public</li><li>Build upload</li><li>Trailer release, announcement</li></ul></td>
+<td><span class="gcode">G5</span> <b>Launch approval</b><br>HG personally approves the publish button. Rollback build confirmed in storage.</td>
+<td class="leads"><span class="chip">PD</span> <span class="chip">TD</span> <span class="chip">QA</span> <span class="chip">BR</span> <span class="chip">PB</span> <span class="chip">LO</span></td></tr><tr><th scope="row"><span class="scode">S6</span> Live ops & maintenance</th><td><ul><li>Collect and triage feedback and crashes</li><li>Hotfixes / regular patches</li><li>Engine update review, archiving</li></ul></td>
+<td><span class="gcode">P#</span> <b>Patch gate</b><br>Every patch gets a change list, regression tests, and HG approval. Source and builds archived at end of life.</td>
+<td class="leads"><span class="chip">PD</span> <span class="chip">GD</span> <span class="chip">TD</span> <span class="chip">SD</span> <span class="chip">QA</span> <span class="chip">BR</span> <span class="chip">PB</span> <span class="chip">LO</span></td></tr></tbody></table></div>
+</section>
+
+<section id="agents">
+  <h2><span class="sec">02</span>14 lead agents</h2>
+  <p class="hint">The colored bars show which of S0 to S6 each lead is active in. Models are defaults and get adjusted for cost (opus for the high-judgment PD, AD, and TD; haiku for repetitive build work).</p>
+  <div class="grid" id="agentGrid"><article class="agent" data-stages="0,1,2,3,4,5,6">
+<header><span class="acode">PD</span><div><h3>Executive Producer (PD)</h3><p class="aen">Executive Producer · <span class="model">opus</span></p></div></header>
+<div class="dots" aria-label="Active stages"><i class="on" title="S0"></i><i class="on" title="S1"></i><i class="on" title="S2"></i><i class="on" title="S3"></i><i class="on" title="S4"></i><i class="on" title="S5"></i><i class="on" title="S6"></i></div>
+<ul class="duties"><li>Turns the CEO's vision into a production plan; scope and sprint planning</li><li>Writes and assigns tickets, decides what runs in parallel</li><li>Runs gate meetings, manages risk and schedule</li><li>Reports results and decision requests to the CEO</li></ul>
+<dl><dt>Input</dt><dd>CEO direction, Studio/state.yaml, each lead's handoffs</dd><dt>Deliverables</dt><dd>Sprint plans, gate reports, decision cards</dd><dt>Tools</dt><dd>Agent/Task tools, Studio board, Obsidian</dd><dt>Gate</dt><dd>Convenes every gate. Final approval by the CEO</dd></dl>
+</article><article class="agent" data-stages="0,1,2,3,6">
+<header><span class="acode">GD</span><div><h3>Game Design Lead</h3><p class="aen">Game Design · <span class="model">sonnet</span></p></div></header>
+<div class="dots" aria-label="Active stages"><i class="on" title="S0"></i><i class="on" title="S1"></i><i class="on" title="S2"></i><i class="on" title="S3"></i><i class="" title="S4"></i><i class="" title="S5"></i><i class="on" title="S6"></i></div>
+<ul class="duties"><li>Writes the concept doc and GDD</li><li>Designs the core loop (shooting, cover, combat)</li><li>Weapon and enemy stat tables, balance</li><li>Feeds play feedback back into the spec</li></ul>
+<dl><dt>Input</dt><dd>HG's direction, references (The Division, COD)</dd><dt>Deliverables</dt><dd>GDD.md, stat CSVs (DataTable), feature spec tickets</dd><dt>Tools</dt><dd>Obsidian, UE DataTable (Python import), xlsx</dd><dt>Gate</dt><dd>G0 pitch, G2 feature-complete decision</dd></dl>
+</article><article class="agent" data-stages="1,2,3">
+<header><span class="acode">LD</span><div><h3>Level Design Lead</h3><p class="aen">Level Design · <span class="model">sonnet</span></p></div></header>
+<div class="dots" aria-label="Active stages"><i class="" title="S0"></i><i class="on" title="S1"></i><i class="on" title="S2"></i><i class="on" title="S3"></i><i class="" title="S4"></i><i class="" title="S5"></i><i class="" title="S6"></i></div>
+<ul class="duties"><li>Blockout and flow, combat zones</li><li>Cover and sightline placement</li><li>Lighting-driven flow, cinematic shot paths</li></ul>
+<dl><dt>Input</dt><dd>GDD, style guide</dd><dt>Deliverables</dt><dd>L_* blockout maps, encounter tables, top-down images</dd><dt>Tools</dt><dd>UE Modeling Tools, PCG, UE Python, screenshots</dd><dt>Gate</dt><dd>G1/G2 level playthrough</dd></dl>
+</article><article class="agent" data-stages="0,1,2,3,4">
+<header><span class="acode">AD</span><div><h3>Art Director</h3><p class="aen">Art Direction · <span class="model">opus</span></p></div></header>
+<div class="dots" aria-label="Active stages"><i class="on" title="S0"></i><i class="on" title="S1"></i><i class="on" title="S2"></i><i class="on" title="S3"></i><i class="on" title="S4"></i><i class="" title="S5"></i><i class="" title="S6"></i></div>
+<ul class="duties"><li>Visual target and mood board</li><li>Style guide (texel density, color, material rules)</li><li>Asset list and priorities</li><li>Reviews every art deliverable</li></ul>
+<dl><dt>Input</dt><dd>Concept, references</dd><dt>Deliverables</dt><dd>Style guide, asset list, review comments, key art</dd><dt>Tools</dt><dd>ComfyUI (concept images), Krita, Fab (HG's Chrome), PIE screenshots</dd><dt>Gate</dt><dd>Art quality decision (G1, G3)</dd></dl>
+</article><article class="agent" data-stages="1,2,3,4">
+<header><span class="acode">A3</span><div><h3>3D Asset Lead</h3><p class="aen">3D Art (Env/Prop/Weapon) · <span class="model">sonnet</span></p></div></header>
+<div class="dots" aria-label="Active stages"><i class="" title="S0"></i><i class="on" title="S1"></i><i class="on" title="S2"></i><i class="on" title="S3"></i><i class="on" title="S4"></i><i class="" title="S5"></i><i class="" title="S6"></i></div>
+<ul class="duties"><li>Environment, prop, and weapon modeling, UVs, baking</li><li>Follows Nanite and LOD standards</li><li>Manages UrbanStrike_Source folders and naming rules</li></ul>
+<dl><dt>Input</dt><dd>Asset list, style guide</dd><dt>Deliverables</dt><dd>FBX + textures (ORM), source .blend</dd><dt>Tools</dt><dd>Blender 5.2 (background Python), Material Maker, Krita</dd><dt>Gate</dt><dd>AD review → TA import check</dd></dl>
+</article><article class="agent" data-stages="1,2,3,4,5,6">
+<header><span class="acode">TD</span><div><h3>Technical Director</h3><p class="aen">Tech / Engine · <span class="model">opus</span></p></div></header>
+<div class="dots" aria-label="Active stages"><i class="" title="S0"></i><i class="on" title="S1"></i><i class="on" title="S2"></i><i class="on" title="S3"></i><i class="on" title="S4"></i><i class="on" title="S5"></i><i class="on" title="S6"></i></div>
+<ul class="duties"><li>UE 5.8 architecture (BP first, standard C++ when needed)</li><li>Implements gameplay systems</li><li>Performance budget (frame, memory), profiling</li><li>Tools/Python generator scripts, local git</li><li>Root-cause analysis of crash and memory bugs (owner of the crash-handling rules)</li></ul>
+<dl><dt>Input</dt><dd>Feature specs, TDD</dd><dt>Deliverables</dt><dd>BPs and scripts, TDD.md, performance reports</dd><dt>Tools</dt><dd>UE Python remote execution, Tools/Python, Unreal Insights, git (local)</dd><dt>Gate</dt><dd>Technical review (every code and BP change)</dd></dl>
+</article><article class="agent" data-stages="1,2,3,4">
+<header><span class="acode">TA</span><div><h3>TA·FX Lead</h3><p class="aen">Tech Art / VFX · <span class="model">sonnet</span></p></div></header>
+<div class="dots" aria-label="Active stages"><i class="" title="S0"></i><i class="on" title="S1"></i><i class="on" title="S2"></i><i class="on" title="S3"></i><i class="on" title="S4"></i><i class="" title="S5"></i><i class="" title="S6"></i></div>
+<ul class="duties"><li>Niagara muzzle flash, impacts, dust, debris</li><li>Materials and decals, shader cost control</li><li>Houdini 19.5 FX → flipbooks, VAT, VDB</li><li>PCG debris placement, asset import checks</li></ul>
+<dl><dt>Input</dt><dd>Art list, FX references</dd><dt>Deliverables</dt><dd>NS_*, M_*/MI_*, flipbooks/VAT, HDA (.hda) sources</dd><dt>Tools</dt><dd>fxhoudini MCP, hython, UE Python, Niagara</dd><dt>Gate</dt><dd>FX performance and quality decision</dd></dl>
+</article><article class="agent" data-stages="1,2,3,4">
+<header><span class="acode">AN</span><div><h3>Animation Lead</h3><p class="aen">Animation · <span class="model">sonnet</span></p></div></header>
+<div class="dots" aria-label="Active stages"><i class="" title="S0"></i><i class="on" title="S1"></i><i class="on" title="S2"></i><i class="on" title="S3"></i><i class="on" title="S4"></i><i class="" title="S5"></i><i class="" title="S6"></i></div>
+<ul class="duties"><li>Retargeting (IK Retargeter), montages</li><li>Reload, aim, and cover animations</li><li>Motion Matching (GASP) setup</li></ul>
+<dl><dt>Input</dt><dd>Character and weapon rigs, GDD move list</dd><dt>Deliverables</dt><dd>AM_*, ABP edits, source .blend</dd><dt>Tools</dt><dd>Blender, Control Rig, Cascadeur free edition, Mixamo</dd><dt>Gate</dt><dd>AD and TD review</dd></dl>
+</article><article class="agent" data-stages="1,2,3,4,6">
+<header><span class="acode">SD</span><div><h3>Sound Lead</h3><p class="aen">Audio · <span class="model">sonnet</span></p></div></header>
+<div class="dots" aria-label="Active stages"><i class="" title="S0"></i><i class="on" title="S1"></i><i class="on" title="S2"></i><i class="on" title="S3"></i><i class="on" title="S4"></i><i class="" title="S5"></i><i class="on" title="S6"></i></div>
+<ul class="duties"><li>Creates and edits gun, impact, and ambient sounds</li><li>MetaSounds, attenuation and reverb</li><li>Final mix for videos</li></ul>
+<dl><dt>Input</dt><dd>SFX list, video cuts</dd><dt>Deliverables</dt><dd>WAV 48k/24bit, MS_*, ATT_*, mix stems</dd><dt>Tools</dt><dd>Audacity, Freesound CC0, Sonniss, MetaSounds, ffmpeg</dd><dt>Gate</dt><dd>Listening review + loudness measurement</dd></dl>
+</article><article class="agent" data-stages="1,2,3,4">
+<header><span class="acode">UI</span><div><h3>UI/UX Lead</h3><p class="aen">UI / UX · <span class="model">sonnet</span></p></div></header>
+<div class="dots" aria-label="Active stages"><i class="" title="S0"></i><i class="on" title="S1"></i><i class="on" title="S2"></i><i class="on" title="S3"></i><i class="on" title="S4"></i><i class="" title="S5"></i><i class="" title="S6"></i></div>
+<ul class="duties"><li>HUD (crosshair, ammo, hit direction)</li><li>Menus, settings, pause</li><li>Key mapping, accessibility options</li></ul>
+<dl><dt>Input</dt><dd>GDD, style guide</dd><dt>Deliverables</dt><dd>Figma mockups, WBP_* widgets</dd><dt>Tools</dt><dd>Figma MCP, UMG, Krita</dd><dt>Gate</dt><dd>AD and GD review</dd></dl>
+</article><article class="agent" data-stages="2,3,4,5,6">
+<header><span class="acode">QA</span><div><h3>QA Lead</h3><p class="aen">Quality Assurance · <span class="model">sonnet</span></p></div></header>
+<div class="dots" aria-label="Active stages"><i class="" title="S0"></i><i class="" title="S1"></i><i class="on" title="S2"></i><i class="on" title="S3"></i><i class="on" title="S4"></i><i class="on" title="S5"></i><i class="on" title="S6"></i></div>
+<ul class="duties"><li>Test plans, automated smoke tests</li><li>Asset validation (naming, missing references, texture size)</li><li>Bug filing and grading (A/B/C), regression tests</li><li>Performance capture comparison</li><li>Collects and classifies crash logs, adds repro tests to the regression list</li></ul>
+<dl><dt>Input</dt><dd>Builds, ticket acceptance criteria</dd><dt>Deliverables</dt><dd>Test reports, BUG-*.md, gate checklists</dd><dt>Tools</dt><dd>UE Automation and Map Check, PIE screenshots, stat commands</dd><dt>Gate</dt><dd>A QA report is required at every gate</dd></dl>
+</article><article class="agent" data-stages="3,4,5,6">
+<header><span class="acode">BR</span><div><h3>Build & Release Engineer</h3><p class="aen">Build & Release · <span class="model">haiku</span></p></div></header>
+<div class="dots" aria-label="Active stages"><i class="" title="S0"></i><i class="" title="S1"></i><i class="" title="S2"></i><i class="on" title="S3"></i><i class="on" title="S4"></i><i class="on" title="S5"></i><i class="on" title="S6"></i></div>
+<ul class="duties"><li>BuildCookRun packaging (Win64)</li><li>Versioning 0.x.y, changelog, git tags</li><li>Build archive, rollback storage</li></ul>
+<dl><dt>Input</dt><dd>G4-approved commit</dd><dt>Deliverables</dt><dd>Package zip, CHANGELOG.md, tags</dd><dt>Tools</dt><dd>RunUAT, 7-Zip, git (local), butler (after HG approval)</dd><dt>Gate</dt><dd>Passes a clean install test</dd></dl>
+</article><article class="agent" data-stages="0,3,4,5,6">
+<header><span class="acode">PB</span><div><h3>Publishing & Marketing Lead</h3><p class="aen">Publishing · <span class="model">sonnet</span></p></div></header>
+<div class="dots" aria-label="Active stages"><i class="on" title="S0"></i><i class="" title="S1"></i><i class="" title="S2"></i><i class="on" title="S3"></i><i class="on" title="S4"></i><i class="on" title="S5"></i><i class="on" title="S6"></i></div>
+<ul class="duties"><li>Positioning, release schedule</li><li>Copy for itch.io, ArtStation, and YouTube pages</li><li>Trailer editing, screenshots</li><li>Drafts announcements and community replies</li></ul>
+<dl><dt>Input</dt><dd>Beta build, shot list</dd><dt>Deliverables</dt><dd>Trailer mp4 (naming rule), page drafts, announcement drafts</dd><dt>Tools</dt><dd>MRQ, DaVinci Resolve, ffmpeg</dd><dt>Gate</dt><dd>Every public post needs HG approval</dd></dl>
+</article><article class="agent" data-stages="5,6">
+<header><span class="acode">LO</span><div><h3>Live Ops Lead</h3><p class="aen">Live Ops · <span class="model">sonnet</span></p></div></header>
+<div class="dots" aria-label="Active stages"><i class="" title="S0"></i><i class="" title="S1"></i><i class="" title="S2"></i><i class="" title="S3"></i><i class="" title="S4"></i><i class="on" title="S5"></i><i class="on" title="S6"></i></div>
+<ul class="duties"><li>Collects and triages feedback and crash logs</li><li>Hotfix and patch planning</li><li>Reviews the impact of UE 5.8.x updates</li><li>Keeps the asset license register</li></ul>
+<dl><dt>Input</dt><dd>Release build, comments, Saved/Crashes</dd><dt>Deliverables</dt><dd>Patch plans, patch notes, license register</dd><dt>Tools</dt><dd>Obsidian, crash log parser, Studio board</dd><dt>Gate</dt><dd>Proposes patch gates P#</dd></dl>
+</article></div>
+</section>
+
+<section id="workflow">
+  <h2><span class="sec">03</span>Workflow by lead</h2>
+  <p>This is the order each lead actually works in. Every lead researches references before step ① and logs each step to Studio/log. Click a name to expand it.</p>
+  <div class="wfs"><details class='wf'><summary><span class='acode sm'>PD</span> Executive Producer (PD) <span class='aen'>Executive Producer · 6 steps</span></summary><div class='tbl'><table><thead><tr><th>Stage</th><th>What they do</th><th>Tools</th><th>Goal / done when</th></tr></thead><tbody><tr><td><b>① Intake</b></td><td>Turns CEO direction into goal, scope, and deadline; records decisions (decisions.md)</td><td>Project chat, Studio/decisions.md</td><td>One-sentence goal + done condition per instruction</td></tr><tr><td><b>② Plan</b></td><td>Breaks work into tickets and modules (30 min or less), dependencies, owners, order, risk list</td><td>Studio/board, state.yaml, risks.md</td><td>Plan report sent to the CEO</td></tr><tr><td><b>③ Assign</b></td><td>Independent tickets run in parallel (3 to 4 max); editor work takes turns via editor.lock</td><td>Agent tool, Remote Control, editor.lock</td><td>Only one session uses the editor at a time</td></tr><tr><td><b>④ Track</b></td><td>5-minute heartbeat, delay report past 10 minutes, stop after 2 crashes</td><td>state.yaml, Studio/log</td><td>Start and end times on every module</td></tr><tr><td><b>⑤ Review & gate</b></td><td>Collects handoffs, requests cross review and QA, gate-review report</td><td>gate-review skill, Studio/gates</td><td>Gate report + CEO decision card</td></tr><tr><td><b>⑥ Retro</b></td><td>At sprint end, sums up time, tokens, and blockers; adjusts the rules</td><td>Studio/sprints, Obsidian</td><td>3 improvements for the next sprint</td></tr></tbody></table></div></details><details class='wf'><summary><span class='acode sm'>GD</span> Game Design Lead <span class='aen'>Game Design · 6 steps</span></summary><div class='tbl'><table><thead><tr><th>Stage</th><th>What they do</th><th>Tools</th><th>Goal / done when</th></tr></thead><tbody><tr><td><b>① Research</b></td><td>Extracts loops and numbers from reference games (The Division 2, CoD MW) gameplay videos and GDC talks</td><td>YouTube, GDC Vault, Studio/refs</td><td>Summary of 3+ references</td></tr><tr><td><b>② Concept</b></td><td>One-sentence pitch, core loop, list of things we won't build</td><td>Obsidian, Docs/GDD.md</td><td>CEO agreement at G0</td></tr><tr><td><b>③ System design</b></td><td>Rules for weapons, enemies, health, respawn, and cover; state flow</td><td>GDD.md, mermaid diagrams</td><td>Inputs, outputs, and edge cases defined per feature</td></tr><tr><td><b>④ Numbers</b></td><td>Weapon/enemy CSV → UE DataTable, time-to-kill (TTK) math</td><td>xlsx/CSV, dump_gameplay_data.py</td><td>TTK within target range (e.g., 3 to 5 shots per enemy)</td></tr><tr><td><b>⑤ Playtest</b></td><td>Checks for blockers and balance using QA recordings and logs, tunes numbers</td><td>PIE, QA reports</td><td>A reason recorded for every tuning change</td></tr><tr><td><b>⑥ Spec freeze</b></td><td>Feature freeze at G2; changes need CEO approval</td><td>GDD version labels</td><td>Zero unapproved changes after G2</td></tr></tbody></table></div></details><details class='wf'><summary><span class='acode sm'>LD</span> Level Design Lead <span class='aen'>Level Design · 5 steps</span></summary><div class='tbl'><table><thead><tr><th>Stage</th><th>What they do</th><th>Tools</th><th>Goal / done when</th></tr></thead><tbody><tr><td><b>① Research</b></td><td>References for The Division 2's indoor combat spaces, flow, and cover spacing</td><td>Screenshots, Studio/refs</td><td>3 reference top-down views</td></tr><tr><td><b>② Blockout</b></td><td>Gray boxes for flow, combat zones, and cover</td><td>UE Modeling Tools, Python placement</td><td>Playable start to finish</td></tr><tr><td><b>③ Encounters</b></td><td>Enemy spawns, patrols, sightlines; respawn point safety check</td><td>PlayerStart, spawners, sightline trace script</td><td>Zero exposure right after respawn</td></tr><tr><td><b>④ Art pass handoff</b></td><td>Requests blockout-to-asset swaps, PCG debris zones</td><td>PCG, Send2UE assets</td><td>Zero flow or collision regressions after swaps</td></tr><tr><td><b>⑤ Lighting & performance flow</b></td><td>Checks light density and visibility range (culling) with TD and TA</td><td>stat scenerendering, Lumen visualization</td><td>Within the GPU budget per area</td></tr></tbody></table></div></details><details class='wf'><summary><span class='acode sm'>AD</span> Art Director <span class='aen'>Art Direction · 5 steps</span></summary><div class='tbl'><table><thead><tr><th>Stage</th><th>What they do</th><th>Tools</th><th>Goal / done when</th></tr></thead><tbody><tr><td><b>① Visual target</b></td><td>Mood board, color, material, and lighting standards</td><td>ComfyUI (concepts), Krita, PureRef</td><td>5 target images + notes</td></tr><tr><td><b>② Style guide</b></td><td>Texel density (e.g., 512px/m), material rules, color range</td><td>Docs/Art/StyleGuide.md</td><td>Every lead can reference it</td></tr><tr><td><b>③ Asset list</b></td><td>Needed assets, priorities, budgets (triangles, textures)</td><td>Docs/Art/AssetList.csv</td><td>Owner and budget per asset</td></tr><tr><td><b>④ Review</b></td><td>PIE screenshot comparisons, rejection reasons and fix tickets</td><td>PIE captures, comparison sheets</td><td>Reviews within 48 hours</td></tr><tr><td><b>⑤ Final look</b></td><td>Post-processing, LUT, exposure; locks the video look</td><td>Post Process Volume, MRQ</td><td>CEO approval at G3</td></tr></tbody></table></div></details><details class='wf'><summary><span class='acode sm'>A3</span> 3D Asset Lead <span class='aen'>3D Art (Env/Prop/Weapon) · 5 steps</span></summary><div class='tbl'><table><thead><tr><th>Stage</th><th>What they do</th><th>Tools</th><th>Goal / done when</th></tr></thead><tbody><tr><td><b>① Research</b></td><td>Real-world debris and building reference photos, scanned asset comparisons</td><td>Studio/refs, Fab (free)</td><td>5 reference photos</td></tr><tr><td><b>② Modeling</b></td><td>Block → detail, real-world cm units</td><td>Blender 5.2 (batch Python)</td><td>Within the triangle budget</td></tr><tr><td><b>③ UVs & baking</b></td><td>UVs, normal/AO baking, ORM packing</td><td>Blender Bake, Material Maker</td><td>Texel density guide ±20%</td></tr><tr><td><b>④ Export</b></td><td>Send2UE (Export collection) or FBX, UCX collision</td><td>Send2UE 2.4.3, _Export</td><td>Nanite and collision set automatically</td></tr><tr><td><b>⑤ Engine check</b></td><td>Level placement, PIE screenshots, asset_check</td><td>UE, qa_asset_check.py</td><td>Zero naming violations, AD approval</td></tr></tbody></table></div></details><details class='wf'><summary><span class='acode sm'>TD</span> Technical Director <span class='aen'>Tech / Engine · 6 steps</span></summary><div class='tbl'><table><thead><tr><th>Stage</th><th>What they do</th><th>Tools</th><th>Goal / done when</th></tr></thead><tbody><tr><td><b>① Technical design</b></td><td>Feature spec → TDD (class/BP structure, data flow)</td><td>Docs/TDD.md, Epic docs</td><td>Owning BP or script named for every feature</td></tr><tr><td><b>② Build</b></td><td>BP first, reproducible through scripts (Tools/Python)</td><td>UE Python, Blueprint DSL, git (local)</td><td>Zero compile errors, scripts safe to rerun</td></tr><tr><td><b>③ Test</b></td><td>Writes a PIE test script per feature</td><td>test_*_pie.py, qa_integration.py</td><td>At least one test per new feature</td></tr><tr><td><b>④ Performance</b></td><td>Frame budget management, profiling, bottleneck tickets</td><td>Unreal Insights, stat unit/gpu, ProfileGPU</td><td>RTX 5080 1440p 120fps (8.3ms)</td></tr><tr><td><b>⑤ Crash handling</b></td><td>Triage after 2 crashes, separates root cause from workaround</td><td>Saved/Crashes, memreport, -stompmalloc</td><td>C-#### tickets, regression tests</td></tr><tr><td><b>⑥ Build prep</b></td><td>Packaging settings, cleaning up cook warnings</td><td>RunUAT, Project Settings</td><td>Zero cook warnings</td></tr></tbody></table></div></details><details class='wf'><summary><span class='acode sm'>TA</span> TA·FX Lead <span class='aen'>Tech Art / VFX · 5 steps</span></summary><div class='tbl'><table><thead><tr><th>Stage</th><th>What they do</th><th>Tools</th><th>Goal / done when</th></tr></thead><tbody><tr><td><b>① Research</b></td><td>Real impact and dust references, Niagara talks</td><td>YouTube, Epic docs, Studio/refs</td><td>3 reference videos</td></tr><tr><td><b>② Shaders & materials</b></td><td>Master material + MIs, whether to use Substrate</td><td>Material Editor, Shader Complexity view</td><td>Within the instruction budget</td></tr><tr><td><b>③ FX creation</b></td><td>Niagara emitters, flipbook and mesh fragments, per-surface branching</td><td>Niagara, PhysMat, M_FX_*</td><td>All 5 surface types hooked up</td></tr><tr><td><b>④ Pipeline tools</b></td><td>Import checks, PCG placement graphs</td><td>PCG, Python</td><td>Passes automated asset import checks</td></tr><tr><td><b>⑤ FX performance</b></td><td>GPU measured with 20 simultaneous shots, overdraw and particle count limits</td><td>stat gpu, Niagara Debugger, fx.Budget</td><td>FX GPU at 0.5ms or less</td></tr></tbody></table></div></details><details class='wf'><summary><span class='acode sm'>AN</span> Animation Lead <span class='aen'>Animation · 5 steps</span></summary><div class='tbl'><table><thead><tr><th>Stage</th><th>What they do</th><th>Tools</th><th>Goal / done when</th></tr></thead><tbody><tr><td><b>① Research</b></td><td>TPS reload and aim references, Epic layered animation docs</td><td>Studio/refs</td><td>3 references</td></tr><tr><td><b>② Retarget</b></td><td>Matches skeletons with IK Rig and Retargeter</td><td>IK Retargeter</td><td>Zero broken poses</td></tr><tr><td><b>③ Montages & layers</b></td><td>Upper-body slot, layered blend, aim offset</td><td>Anim Blueprint, Montage</td><td>Reloading while walking works</td></tr><tr><td><b>④ Polish</b></td><td>Left-hand IK, recoil and sway, blend times</td><td>Control Rig, Blender</td><td>Hand never slips off while aiming</td></tr><tr><td><b>⑤ Verify</b></td><td>PIE tests and screenshots, animation cost check</td><td>test_tps_*_pie.py, stat anim</td><td>Animation game thread at 1ms or less</td></tr></tbody></table></div></details><details class='wf'><summary><span class='acode sm'>SD</span> Sound Lead <span class='aen'>Audio · 5 steps</span></summary><div class='tbl'><table><thead><tr><th>Stage</th><th>What they do</th><th>Tools</th><th>Goal / done when</th></tr></thead><tbody><tr><td><b>① Research</b></td><td>Real gunshot and indoor reverb references</td><td>Studio/refs, reference videos</td><td>3 references</td></tr><tr><td><b>② Source selection</b></td><td>Picks candidates from Sonniss and Freesound CC0, records licenses</td><td>Sonniss GDC 2026, installs.md</td><td>100% of sources recorded</td></tr><tr><td><b>③ Editing</b></td><td>Trimming, layering, normalizing at 48k/24bit</td><td>Audacity, Reaper (optional)</td><td>Peaks at -1dBFS or lower</td></tr><tr><td><b>④ Engine hookup</b></td><td>MetaSounds, attenuation and reverb, concurrency limits</td><td>MetaSounds, Sound Concurrency</td><td>Zero placeholder sounds</td></tr><tr><td><b>⑤ Mix</b></td><td>Per-category volume, final mix for videos</td><td>Submix, ffmpeg loudnorm</td><td>Videos at -14 LUFS</td></tr></tbody></table></div></details><details class='wf'><summary><span class='acode sm'>UI</span> UI/UX Lead <span class='aen'>UI / UX · 5 steps</span></summary><div class='tbl'><table><thead><tr><th>Stage</th><th>What they do</th><th>Tools</th><th>Goal / done when</th></tr></thead><tbody><tr><td><b>① Research</b></td><td>CoD and Division HUDs, crosshair UX</td><td>Studio/refs</td><td>3 references</td></tr><tr><td><b>② Mockups</b></td><td>HUD and menu layouts, safe areas</td><td>Figma MCP, Krita</td><td>16:9 and 21:9 safe areas checked</td></tr><tr><td><b>③ Build</b></td><td>HUD (Canvas or UMG), menus and settings</td><td>BP_UrbanHUD, UMG</td><td>Info shows up within 1 frame</td></tr><tr><td><b>④ Settings menu</b></td><td>Graphics quality, resolution, sensitivity, key mapping</td><td>Game User Settings, Enhanced Input</td><td>Settings save and restore</td></tr><tr><td><b>⑤ Verify</b></td><td>Screenshots per resolution, UI cost</td><td>stat slate, PIE</td><td>UI at 0.5ms or less</td></tr></tbody></table></div></details><details class='wf'><summary><span class='acode sm'>QA</span> QA Lead <span class='aen'>Quality Assurance · 5 steps</span></summary><div class='tbl'><table><thead><tr><th>Stage</th><th>What they do</th><th>Tools</th><th>Goal / done when</th></tr></thead><tbody><tr><td><b>① Test plan</b></td><td>Ticket acceptance criteria → test items</td><td>Studio/gates, test list</td><td>Tests mapped to every feature</td></tr><tr><td><b>② Automated tests</b></td><td>Smoke, integration, and asset checks run daily</td><td>qa_smoke.py, qa_integration.py, qa_asset_check.py</td><td>Zero regressions against the baseline</td></tr><tr><td><b>③ Performance tests</b></td><td>Frame measurement along a fixed camera path (csv)</td><td>perf_capture.py, csvprofile, startfpschart</td><td>Average and 1% low recorded</td></tr><tr><td><b>④ Bug management</b></td><td>A/B/C grades, repro steps, owner assigned</td><td>Studio/bugs, crashes in bugs/crash</td><td>A-class bugs assigned within 24 hours</td></tr><tr><td><b>⑤ Gate decision</b></td><td>Whether the gate checklist passes</td><td>gate-review</td><td>Zero gates without a QA report</td></tr></tbody></table></div></details><details class='wf'><summary><span class='acode sm'>BR</span> Build & Release Engineer <span class='aen'>Build & Release · 5 steps</span></summary><div class='tbl'><table><thead><tr><th>Stage</th><th>What they do</th><th>Tools</th><th>Goal / done when</th></tr></thead><tbody><tr><td><b>① Build setup</b></td><td>Shipping config, maps to cook, compression</td><td>Project Settings, DefaultGame.ini</td><td>Settings documented</td></tr><tr><td><b>② Packaging</b></td><td>BuildCookRun Win64</td><td>RunUAT</td><td>Build succeeds, warning list</td></tr><tr><td><b>③ Install test</b></td><td>Run, quit, and play 30 minutes from a clean folder</td><td>Package zip, QA</td><td>Zero crashes</td></tr><tr><td><b>④ Versioning & archive</b></td><td>0.x.y, CHANGELOG, git tags, stored in _Builds</td><td>git (local), 7-Zip</td><td>At least one rollback build kept</td></tr><tr><td><b>⑤ Upload prep</b></td><td>itch.io butler setup (upload only after CEO approval)</td><td>butler</td><td>Upload command ready</td></tr></tbody></table></div></details><details class='wf'><summary><span class='acode sm'>PB</span> Publishing & Marketing Lead <span class='aen'>Publishing · 4 steps</span></summary><div class='tbl'><table><thead><tr><th>Stage</th><th>What they do</th><th>Tools</th><th>Goal / done when</th></tr></thead><tbody><tr><td><b>① Positioning</b></td><td>Target (portfolio viewers), key message</td><td>Docs/Marketing</td><td>One-line intro</td></tr><tr><td><b>② Video</b></td><td>Shot list → MRQ render → edit, naming rule</td><td>MRQ, DaVinci Resolve, ffmpeg</td><td>YYMMDD_urbanstrike_&lt;scene&gt;_&lt;res&gt;_v###.mp4</td></tr><tr><td><b>③ Screenshots & pages</b></td><td>Store and portfolio copy, 5 screenshots</td><td>itch.io and ArtStation drafts</td><td>Drafts complete</td></tr><tr><td><b>④ Release</b></td><td>Release schedule, announcement draft → posted after CEO approval</td><td>Draft documents</td><td>Zero posts without CEO approval</td></tr></tbody></table></div></details><details class='wf'><summary><span class='acode sm'>LO</span> Live Ops Lead <span class='aen'>Live Ops · 5 steps</span></summary><div class='tbl'><table><thead><tr><th>Stage</th><th>What they do</th><th>Tools</th><th>Goal / done when</th></tr></thead><tbody><tr><td><b>① Collect</b></td><td>Organizes comments, crash reports, and surveys</td><td>itch comments, Saved/Crashes</td><td>Sorted once a week</td></tr><tr><td><b>② Triage</b></td><td>Splits into bugs, requests, and balance, then prioritizes</td><td>Studio/bugs, board</td><td>A-class bugs are hotfix candidates</td></tr><tr><td><b>③ Patch plan</b></td><td>Hotfix/regular patch scope, regression list</td><td>patch-release skill</td><td>Patch notes draft</td></tr><tr><td><b>④ Engine upkeep</b></td><td>Reviews the impact of UE 5.8.x updates</td><td>Release notes, test branch</td><td>Updates need CEO approval</td></tr><tr><td><b>⑤ Archive</b></td><td>Stores source, builds, and the license register</td><td>_Builds, installs.md</td><td>Restorable at end of life</td></tr></tbody></table></div></details></div>
+</section>
+
+<section id="perf">
+  <h2><span class="sec">04</span>Optimization · 120fps on an RTX 5080</h2>
+  <p>We don't save optimization for the end; we measure every sprint starting in S1. The TD (Technical Director, tech lead) owns it, QA automates the measurements, and TA and A3 handle GPU content cost.</p>
+  <div class="tbl"><table style="min-width:0"><tbody><tr><th scope='row'>Reference hardware</th><td>NVIDIA RTX 5080, Windows 11, DX12/SM6</td></tr><tr><th scope='row'>Resolution & quality</th><td>2560×1440, engine scalability Epic, TSR quality mode, Lumen, VSM, and Nanite on</td></tr><tr><th scope='row'>Target frame rate</th><td>Average 120fps (8.33ms per frame), 1% low at 90fps or higher, zero hitches (frames over 50ms)</td></tr><tr><th scope='row'>Secondary target</th><td>Average 90fps or higher at 4K with TSR 50% (for reference)</td></tr><tr><th scope='row'>Memory</th><td>VRAM at 12GB or less (75% of the 5080's 16GB), system RAM at 12GB or less</td></tr></tbody></table></div>
+  <h3>Frame budget (8.33ms)</h3>
+  <div class="tbl"><table><thead><tr><th>Item</th><th>Budget</th><th>Main drivers</th><th>Owner</th></tr></thead><tbody><tr><td>Game thread</td><td class='num'>6.0ms</td><td>BP Tick, AI (StateTree), animation</td><td><span class=chip>TD</span> <span class=chip>AN</span></td></tr><tr><td>Render thread</td><td class='num'>6.0ms</td><td>Draw calls, visibility, shadow setup</td><td><span class=chip>TD</span> <span class=chip>TA</span></td></tr><tr><td>GPU total</td><td class='num'>8.0ms</td><td>Sum of the items below (0.3ms headroom)</td><td><span class=chip>TD</span></td></tr><tr><td>  Lumen GI & reflections</td><td class='num'>2.5ms</td><td>Lumen quality, reflection method</td><td><span class=chip>TA</span></td></tr><tr><td>  Shadows (VSM)</td><td class='num'>1.2ms</td><td>Number of shadow-casting lights</td><td><span class=chip>TA</span> <span class=chip>LD</span></td></tr><tr><td>  Base pass·Nanite</td><td class='num'>2.0ms</td><td>Triangles, material cost</td><td><span class=chip>A3</span> <span class=chip>TA</span></td></tr><tr><td>  FX & translucency</td><td class='num'>0.5ms</td><td>Particle count, overdraw</td><td><span class=chip>TA</span></td></tr><tr><td>  Post-processing & TSR</td><td class='num'>1.3ms</td><td>TSR, bloom, exposure</td><td><span class=chip>AD</span> <span class=chip>TA</span></td></tr><tr><td>  UI</td><td class='num'>0.5ms</td><td>HUD drawing</td><td><span class=chip>UI</span></td></tr></tbody></table></div>
+  <h3>Optimization by stage</h3>
+  <div class="tbl"><table><thead><tr><th>Stage</th><th>To do</th><th>Gate criteria</th></tr></thead><tbody><tr><td><b>S1 Pre-production</b></td><td>Lock the budget table, fix the performance test map and camera path, measure the baseline</td><td>G1: average 120fps on the test path</td></tr><tr><td><b>S2 Production</b></td><td>perf_capture runs automatically every sprint; a performance ticket when over budget</td><td>Regressions over 5% get fixed within that sprint</td></tr><tr><td><b>S3 Content complete</b></td><td>Per-asset budget checks (triangles, textures, materials), GPU measured per area</td><td>G3: every area within budget</td></tr><tr><td><b>S4 Polish & QA</b></td><td>Optimization pass: fix the top 5 bottlenecks, shader precompilation (PSO), remove hitches</td><td>G4: target met in the packaged build</td></tr><tr><td><b>S6 Live ops</b></td><td>Performance regression test on every patch</td><td>Within 5% before and after each patch</td></tr></tbody></table></div>
+  <h3>Measure → fix loop</h3>
+  <div class="rules"><div class='rule'><span class='n'>1</span><p><b>Measure.</b> A fixed 60-second path, stat unit and stat gpu, saved to CSV with csvprofile <span class='muted'>(perf_capture.py, -csvprofile)</span></p></div><div class='rule'><span class='n'>2</span><p><b>Find the bottleneck.</b> Start with whichever of Game/Render/GPU is longest <span class='muted'>(stat unit, Unreal Insights traces)</span></p></div><div class='rule'><span class='n'>3</span><p><b>Dig in.</b> ProfileGPU and stat gpu for the GPU, Insights timing for the CPU <span class='muted'>(ProfileGPU, Insights, NVIDIA Nsight (optional))</span></p></div><div class='rule'><span class='n'>4</span><p><b>Fix.</b> Fix only the single biggest item, then measure again <span class='muted'>(a ticket for the owning lead)</span></p></div><div class='rule'><span class='n'>5</span><p><b>Record.</b> Log the before/after numbers in Studio/perf/YYMMDD.md <span class='muted'>(Studio/perf)</span></p></div></div>
+  <p class="muted">Tools: stat unit / stat gpu / stat scenerendering / stat rhi · Unreal Insights · ProfileGPU · csvprofile · startfpschart · memreport -full · r.ScreenPercentage · sg.* scalability · Lumen and Nanite visualization views · NVIDIA FrameView (optional)</p>
+</section>
+
+<section id="raci">
+  <h2><span class="sec">05</span>Ownership by deliverable (RACI)</h2>
+  <p>R is the lead who makes it, A is the approver, C is a lead who gives input. No one approves their own work.</p>
+  <div class="tbl"><table><thead><tr><th>Deliverables</th><th>R Responsible</th><th>A Approves</th><th>C Consulted</th></tr></thead><tbody><tr><td>Concept one-pager</td><td><span class='chip'>GD</span></td><td><span class='chip hg'>HG</span></td><td>PD AD PB</td></tr><tr><td>GDD and stat tables</td><td><span class='chip'>GD</span></td><td><span class='chip '>PD</span></td><td>LD TD</td></tr><tr><td>Level blockout</td><td><span class='chip'>LD</span></td><td><span class='chip '>GD</span></td><td>AD TD</td></tr><tr><td>Style guide and asset list</td><td><span class='chip'>AD</span></td><td><span class='chip '>PD</span></td><td>A3 TA</td></tr><tr><td>3D assets</td><td><span class='chip'>A3</span></td><td><span class='chip '>AD</span></td><td>TA</td></tr><tr><td>Gameplay BPs and systems</td><td><span class='chip'>TD</span></td><td><span class='chip '>PD</span></td><td>GD QA</td></tr><tr><td>FX and materials</td><td><span class='chip'>TA</span></td><td><span class='chip '>AD</span></td><td>TD</td></tr><tr><td>Animation</td><td><span class='chip'>AN</span></td><td><span class='chip '>AD</span></td><td>TD</td></tr><tr><td>Sound and mix</td><td><span class='chip'>SD</span></td><td><span class='chip '>PD</span></td><td>PB</td></tr><tr><td>HUD and menus</td><td><span class='chip'>UI</span></td><td><span class='chip '>GD</span></td><td>AD</td></tr><tr><td>Test reports and bug grades</td><td><span class='chip'>QA</span></td><td><span class='chip '>PD</span></td><td>All leads</td></tr><tr><td>Packaged builds and versions</td><td><span class='chip'>BR</span></td><td><span class='chip '>TD</span></td><td>QA</td></tr><tr><td>Trailer and store page</td><td><span class='chip'>PB</span></td><td><span class='chip hg'>HG</span></td><td>AD SD</td></tr><tr><td>Patches and maintenance</td><td><span class='chip'>LO</span></td><td><span class='chip hg'>HG</span></td><td>TD QA BR</td></tr></tbody></table></div>
+</section>
+
+<section id="harness">
+  <h2><span class="sec">06</span>Harness structure</h2>
+  <p>When Claude Code runs in the project folder, it calls the leads in <code>.claude/agents</code> as subagents. Leads never talk to each other directly; they exchange only files (tickets, handoffs, gate reports) in the <code>Studio</code> folder. That way the state survives even if a session drops, and HG can check it anytime through the Obsidian copy.</p>
+  <pre class="code">UrbanStrike\          ← Unreal project (local git, no GitHub)
+├─ .claude\
+│  ├─ agents\        pd.md · gd-lead.md · ld-lead.md · ad-lead.md · a3-lead.md
+│  │                 td-lead.md · ta-fx-lead.md · anim-lead.md · sound-lead.md
+│  │                 ui-lead.md · qa-lead.md · build-release.md · publishing.md · liveops.md
+│  ├─ skills\        studio-ticket · handoff · gate-review · asset-check
+│  │                 render-video · build-package · patch-release
+│  └─ settings.json  hooks and permissions (blocks git push, etc.)
+├─ Studio\                                ← harness state (every agent reads and writes)
+│  ├─ state.yaml     current stage, sprint, gate status
+│  ├─ board\         T-0001_sd_real-gunshots.md …
+│  ├─ handoffs\      T-0001.handoff.md …
+│  ├─ gates\         G1_vertical_slice.md …
+│  ├─ bugs\          BUG-0001.md …
+│  ├─ decisions.md   decision log (ADR)
+│  └─ risks.md
+├─ Docs\  Tools\Python\  Content\_Demo\   ← unchanged
+UrbanStrike_Source\    ← DCC sources (.blend, .hip, .hda, WAV)
+_Builds\               ← packaged build archive
+Obsidian 70_게임개발\UrbanStrike 스튜디오\ ← copies of plans and gate reports (for HG to read)</pre>
+  <div class="mer"><pre class="mermaid">sequenceDiagram
+  participant HG as HG (CEO)
+  participant PD as PD Producer
+  participant L as Lead agents
+  participant QA as QA Lead
+  HG->>PD: Goals and direction (project chat)
+  PD->>PD: Read state.yaml, write sprint tickets
+  par Independent tickets in parallel
+    PD->>L: TA ticket
+  and
+    PD->>L: SD ticket
+  end
+  L->>L: Work → self check against done criteria
+  L-->>PD: handoff.md
+  PD->>L: Cross review request (AD, TD)
+  PD->>QA: Verification request
+  QA-->>PD: Test report, bug grades
+  PD->>HG: Gate report + decision card
+  HG-->>PD: Approve / rework</pre></div>
+  <div class="two">
+    <div class="tbl"><table style="min-width:0"><thead><tr><th>Hooks</th><th>What they do</th></tr></thead><tbody><tr><td><code>SessionStart</code></td><td>Injects the state.yaml summary, open tickets, and this week's gates into the session.</td></tr><tr><td><code>PreToolUse · Bash</code></td><td>Blocks git push, git remote add, and bulk deletes in the Content folder.</td></tr><tr><td><code>PostToolUse · Write/Edit</code></td><td>On changes under Content or Source paths, runs asset-check (naming, size) and adds a line to the ticket log.</td></tr><tr><td><code>SubagentStop</code></td><td>Blocks ending if the assigned ticket has no handoff file, and asks for one.</td></tr><tr><td><code>PostToolUse · Bash (running UE)</code></td><td>If UnrealEditor exits abnormally, bumps the crash counter; on the second identical command, blocks the rerun and asks for crash-triage.</td></tr><tr><td><code>PD heartbeat (every 5 minutes)</code></td><td>Checks the start time of in-progress modules and sends the CEO a delay report when one runs 10+ minutes over.</td></tr><tr><td><code>Stop</code></td><td>Updates ticket status in state.yaml and sends a notification if anything needs HG's approval.</td></tr></tbody></table></div>
+    <div class="tbl"><table style="min-width:0"><thead><tr><th>Skills</th><th>What they do</th></tr></thead><tbody><tr><td><code>studio-ticket</code></td><td>Creates ticket templates, changes status, checks dependencies</td></tr><tr><td><code>handoff</code></td><td>Handoff template, assigns the next owner</td></tr><tr><td><code>gate-review</code></td><td>Collects gate checklists → per-lead decisions → report + HG decision card</td></tr><tr><td><code>asset-check</code></td><td>Checks UE naming rules, texture size, missing references, LOD and Nanite</td></tr><tr><td><code>render-video</code></td><td>MRQ render + ffmpeg audio mux, YYMMDD_urbanstrike_… naming</td></tr><tr><td><code>build-package</code></td><td>RunUAT BuildCookRun, version tags, archive</td></tr><tr><td><code>crash-triage</code></td><td>Collects crash logs, classifies exceptions, memory check commands, writes C-#### tickets, crash report to the CEO</td></tr><tr><td><code>stage-test</code></td><td>Stage-by-stage tests (2026-10-27 HG): split tests by production stage and asset, one at a time in order (map & collision → hero & camera → firing → targets → recoil & animation → impact FX → muzzle FX → external pack FX → sound → HUD → integration & performance). Each stage has a time limit and pass criteria; pass before moving on, commit only that asset's files, report right after each stage. A video for every attempt: urbanstrike_st##_testname_v###_t##.mp4. Shared module stage_test_lib.py + a 10-second dry run without saving first; reads and measurements run headless on a mirror project, and only saving, PIE, and recording use the main editor. Sound, performance, integration videos, and showcase recordings run only while the PC is free (nightly 01:00 to 08:00 KST, approved by HG 2026-10-27), with a notice before starting and a results report after.</td></tr><tr><td><code>game-bug-fix</code></td><td>Game test bug-fix loop: reproduce → one cause hypothesis → minimal fix → retest (time-limited) → after 2 identical failures, revert and report. Report the repeat before retrying, commit only after qa_smoke passes, log B-#### and add a regression test</td></tr><tr><td><code>patch-release</code></td><td>Patch notes, regression test list, rollback build check</td></tr></tbody></table></div>
+  </div>
+  <h3>Tool connections</h3>
+  <div class="tbl"><table><thead><tr><th>Tools</th><th>How it connects</th><th>Used by</th></tr></thead><tbody><tr><td><b>Unreal Engine 5.8.3</b></td><td>UE Python remote execution + existing Tools/Python generator scripts, RunUAT, Automation</td><td><span class=chip>TD</span> <span class=chip>TA</span> <span class=chip>LD</span> <span class=chip>QA</span> <span class=chip>BR</span></td></tr><tr><td><b>Houdini 19.5 FX</b></td><td>fxhoudini MCP (while Houdini is running), hython batch</td><td><span class=chip>TA</span></td></tr><tr><td><b>Blender 5.2</b></td><td>blender --background --python batch, FBX export</td><td><span class=chip>A3</span> <span class=chip>AN</span></td></tr><tr><td><b>ComfyUI</b></td><td>Concept images and mood boards (reuses the harness in the local work folder)</td><td><span class=chip>AD</span> <span class=chip>PB</span></td></tr><tr><td><b>Obsidian</b></td><td>Copies of plans and gate reports, MOC links</td><td><span class=chip>PD</span> <span class=chip>GD</span> <span class=chip>LO</span></td></tr><tr><td><b>Figma MCP</b></td><td>HUD and menu mockups</td><td><span class=chip>UI</span></td></tr><tr><td><b>ffmpeg / Resolve</b></td><td>Video editing and audio mix</td><td><span class=chip>SD</span> <span class=chip>PB</span></td></tr><tr><td><b>Claude app project</b></td><td>Reports to HG, decision cards, separate threads per task</td><td><span class=chip>PD</span></td></tr></tbody></table></div>
+</section>
+
+<section id="contracts">
+  <h2><span class="sec">07</span>Ticket and handoff format</h2>
+  <div class="two">
+    <div style="display:grid;gap:8px"><h3>Ticket · Studio/board/T-0004.md</h3><pre class="code">---
+id: T-0004
+title: Impact dust FX (Houdini flipbook)
+owner: TA            # responsible lead (R)
+reviewers: [AD, TD]  # cross review
+stage: S1
+sprint: 1
+status: todo         # todo → doing → review → qa → done
+depends_on: [T-0001]
+---
+## Goal
+Dust puffs + fine fragments on concrete impacts. Division-level density.
+## Input
+UrbanStrike_Source/40_FX/ref, existing NS_Impact_Concrete
+## Done when
+- [ ] 8×8 flipbook at 2048px, applied to NS_Impact_Dust
+- [ ] GPU 0.5ms or less with 20 simultaneous shots (stat gpu)
+- [ ] 3 PIE screenshots attached in Studio/handoffs/</pre></div>
+    <div style="display:grid;gap:8px"><h3>Handoff · Studio/handoffs/T-0004.handoff.md</h3><pre class="code"># T-0004 handoff — TA → AD, TD, QA
+- Output: /Game/_Demo/FX/NS_Impact_Dust, T_Dust_Flip_8x8
+- Source: UrbanStrike_Source/40_FX/dust_impact_v003.hip
+- How to check: L_UnfinishedBuilding PIE, shoot pillar B2
+- Done criteria: 3/3 passed (measured 0.38ms)
+- Open issues: flipbook loop visibly breaks at low angles → proposing T-0011
+- Next owners: AD (quality), QA (performance regression)</pre></div>
+  </div>
+  <h3>Example agent definition · .claude/agents/ta-fx-lead.md</h3>
+  <pre class="code">---
+name: ta-fx-lead
+description: UrbanStrike TA·FX lead. Handles Niagara, materials, decals, Houdini 19.5 FX (flipbook, VAT, VDB), and PCG debris tickets. Use when the ticket owner is TA.
+tools: Read, Write, Edit, Bash, Glob, Grep, mcp__fxhoudini__*
+model: sonnet
+---
+You are the TA·FX lead of the UrbanStrike studio.
+- Start: read Studio/state.yaml and your assigned ticket. Do no work outside the ticket.
+- Rules: the pipeline doc's folder and naming rules; Houdini 19.5 file-based output (no Houdini Engine).
+- Leave UE work as scripts in Tools/Python and run them remotely.
+- Finish: check the done criteria yourself and write Studio/handoffs/&lt;ticket&gt;.handoff.md.
+- Never: git push, public posts, editing files owned by other leads, approving your own work.</pre>
+</section>
+
+<section id="gates">
+  <h2><span class="sec">08</span>Review and gate rules</h2>
+  <div class="rules">
+    <div class="rule"><span class="n">1</span><p><b>Self check.</b> The owning lead checks the ticket's done criteria one by one and leaves measurements and screenshots in the handoff.</p></div>
+    <div class="rule"><span class="n">2</span><p><b>Cross review.</b> The ticket's reviewers (e.g., AD and TD for FX) look at quality and tech separately. A rejection leaves a reason and a fix ticket.</p></div>
+    <div class="rule"><span class="n">3</span><p><b>QA verification.</b> QA runs smoke tests, asset validation, and performance comparisons, and grades bugs A (blocking), B (noticeable), or C (minor).</p></div>
+    <div class="rule"><span class="n">4</span><p><b>PD decision and HG approval.</b> The PD closes tickets within a sprint. For stage gates, the PD builds a report with gate-review, and HG approves or picks rework on a decision card.</p></div>
+    <div class="rule"><span class="n">5</span><p><b>Stage-by-stage tests (2026-10-27 HG).</b> Tests are split by production stage and asset and run one at a time in a fixed order: map & collision → hero & camera → firing → targets → recoil & animation → impact FX → muzzle FX → external pack FX → sound → HUD → integration & performance. Each stage gets a time limit and pass criteria up front, and must pass before the next one starts. On a pass, only that asset's files are committed and reported right away. Every attempt leaves a video, saved as project_stage_testname_version_attempt (e.g., urbanstrike_st03_weaponfire_v001_t02.mp4). Several assets are never bundled into one test. The order starts only after HG approves it. Sound, performance, integration videos, and showcase recordings run only while the PC is free (nightly 01:00 to 08:00 KST, approved by HG 2026-10-27), with a notice before starting and a results report after.</p></div>
+  </div>
+  <div class="callout"><b>Only the CEO (HG) decides</b> (agents prepare and recommend, then stop)<ul><li>Vision and direction, final approval of gates (G0 to G5, P#)</li><li>Public posts to stores, social media, YouTube, and so on</li><li>Budget: paid purchases and subscriptions, license agreements, account sign-ups and logins (free installs and downloads are up to the leads)</li><li>Epic Launcher and UAC approval clicks (only possible at the PC)</li><li>Engine version upgrades, bulk asset deletion</li><li>GitHub uploads (a no-go rule; HG has to say so personally to change it)</li></ul></div>
+</section>
+
+<section id="reports">
+  <h2><span class="sec">09</span>CEO reporting rules and work modules</h2>
+  <p>We report to the CEO at every important step before moving on. The PD sends reports in the project chat, and the same content is kept in Studio/log and Obsidian.</p>
+  <div class="tbl"><table><thead><tr><th>Report</th><th>When</th><th>Content</th></tr></thead><tbody><tr><td><b>Plan report</b></td><td><span class='chip hg'>Before work</span></td><td>Before starting a stage or module: researched references, goal, module list, estimated time, needed installs and downloads, and risks, then proceed right away. Only gates and CEO decision items wait for approval.</td></tr><tr><td><b>Done report</b></td><td><span class='chip hg'>After work</span></td><td>Where the output is, whether done criteria passed, measurements and screenshots, open issues, next module.</td></tr><tr><td><b>Delay report</b></td><td><span class='chip hg'>Over 10 minutes</span></td><td>As soon as a module runs 10+ minutes over its estimate: where it got stuck, what was tried, what's next, the new estimate.</td></tr><tr><td><b>Immediate notice</b></td><td><span class='chip hg'>Right away when done or when approval or an answer is needed</span></td><td>When work finishes, or needs CEO approval midway, or needs a CEO answer, show it to the CEO immediately instead of waiting: approvals and questions as choice cards, and things the CEO must do with the command or link to run. Never hold it for the next regular report. While waiting for an answer, keep going on reversible work using the recommended option.</td></tr><tr><td><b>Fewer notifications</b></td><td><span class='chip hg'>Always</span></td><td>Notify only for stage pass/fail, when HG's decision or answer is needed, and on completion. Retries and in-between progress go to the checklist, web console, and Studio/log; repeat reports are one line. Choice cards are also posted in the project chat to start the 10-minute clock (2026-10-27).</td></tr><tr><td><b>10-minute auto pick</b></td><td><span class='chip hg'>When posting options</span></td><td>Put the most recommended option first. If HG doesn't answer in 10 minutes, proceed with option 1 automatically and report it as an &#x27;auto pick&#x27;. Exceptions (wait): paid purchases, sign-ups and logins, UAC, irreversible deletes, gate approvals, public releases (2026-10-27 HG).</td></tr><tr><td><b>Repeat report</b></td><td><span class='chip hg'>Right away when rerunning a test or stage</span></td><td>When a test or stage has to be rerun or retried, report to the CEO immediately before running it: which attempt this is, why it's being rerun (previous result, cause of failure), what changed this time, and when it will finish. After 2 identical failures, stop under the crash-triage rules (2026-10-27 HG).</td></tr><tr><td><b>Stage report</b></td><td><span class='chip hg'>At every important step</span></td><td>Entering or leaving a stage (S0 to S6), gate reports, and sprint kickoffs and retros are always reported to the CEO before moving on.</td></tr></tbody></table></div>
+  <div class="two">
+    <div style="display:grid;gap:8px"><h3>Work modules</h3><ul class="duties"><li>Before starting a new stage or ticket, research references first: find official docs, talks and tutorial videos, similar game examples, and reference assets, summarize them in Studio/refs/&lt;ticket&gt;.md, and attach the summary to the plan report</li><li>1 module = the smallest task one lead finishes in one go (target 30 minutes or less, 1 deliverable)</li><li>Tickets are split into several modules: T-0004-M01, M02 … each with start/end times and done criteria</li><li>One page per module in Studio/log/YYMMDD_&lt;ticket&gt;-M##.md (what was done, result, time taken)</li><li>The next module starts only after the current one finishes. A failed module is reverted and redone as a new module with its cause</li></ul></div>
+    <div style="display:grid;gap:8px"><h3>Installs and downloads are up to the leads</h3><ul class="duties"><li>Delegated in-between work (2026-10-26 HG): intermediate steps needed during work (operating launchers and tools, installs, downloads, settings, running scripts, restarting the editor, and so on) are handled by the lead without asking the CEO, reporting only the result. The exceptions are things that truly need HG's hand: gate approvals, paid purchases, account sign-ups and logins, license agreements, UAC</li><li>The owning lead installs and downloads free programs, plugins, and free assets on their own</li><li>Downloads are saved to _Downloads; the lead also handles unzipping</li><li>Every install is logged in the Studio/installs.md register: name, version, source, license, purpose</li><li>Install items are listed ahead of time in the plan report, and their results in the done report</li><li>Paid purchases, account sign-ups and logins, and license agreements are CEO decisions. UAC and Epic Launcher clicks are only possible at the PC, so give notice in advance</li></ul></div>
+  </div>
+  <h3>Report examples</h3>
+  <pre class="code">[Plan] T-0004 Impact dust FX · TA
+Modules: M01 Houdini scene setup (20 min) → M02 Pyro sim (30 min) → M03 Flipbook render (20 min) → M04 Apply in UE (20 min)
+Installs: none · Risk: sim may run long → retry at lower resolution
+Proceeding now.
+
+[Delay] T-0004-M02 · estimated 30 min → 42 min elapsed
+Cause: cache is slow at voxel 0.02 · Next: re-sim at 0.04 · New estimate 15 min
+
+[Done] T-0004 · 4/4 modules passed · GPU 0.38ms · 3 screenshots
+Result: /Game/_Demo/FX/NS_Impact_Dust · Next: AD review</pre>
+</section>
+
+<section id="debug">
+  <h2><span class="sec">10</span>Debugging and crash handling</h2>
+  <p>When a crash repeats, narrow down the cause before running it again. The TD (Technical Director, tech lead) owns this, and QA (Quality Assurance) handles log collection and regression tests.</p>
+  <div class="rules"><div class='rule'><span class='n'>1</span><p><b>Stop.</b> If the same crash or error happens twice, don't retry as is. Stop the current module and release the lock (editor.lock).</p></div><div class='rule'><span class='n'>2</span><p><b>Collect.</b> Gather Saved/Crashes/&lt;id&gt;/ (CrashContext.runtime-xml, UEMinidump.dmp), Saved/Logs/*.log, the command line used, and the last good commit.</p></div><div class='rule'><span class='n'>3</span><p><b>Classify.</b> Split by exception type: EXCEPTION_ACCESS_VIOLATION (near 0x0 means null; a random address means use-after-free or overwrite), Assertion/check and ensure, Out of memory, GPU (D3D device removed, TDR), headless-only (-nullrhi, Niagara and material compiles without rendering).</p></div><div class='rule'><span class='n'>4</span><p><b>Check memory.</b> Record the memory trend across repeated runs: stat memory, memreport -full, -llm. If suspicious, reproduce with -stompmalloc (detects use-after-free), -d3ddebug, -onethread.</p></div><div class='rule'><span class='n'>5</span><p><b>Minimal repro.</b> Split the module further and binary-search down to the offending node, asset, or script line. Confirmed once it reproduces 3 times under the same conditions.</p></div><div class='rule'><span class='n'>6</span><p><b>Record.</b> Studio/bugs/crash/C-####.md: symptom, count, log paths, top 5 call stack lines, hypothesis, attempts, workaround, risk, root-fix plan.</p></div><div class='rule'><span class='n'>7</span><p><b>Separate workaround from root fix.</b> A workaround (e.g., running in the editor GUI instead of headless, turning a feature off) is marked as a workaround, and a separate root-fix ticket is opened.</p></div><div class='rule'><span class='n'>8</span><p><b>Report.</b> On the second crash, send the CEO a crash report (cause hypothesis, next attempt, new estimate). If 3 different attempts fail, escalate to the TD + CEO decision (cut scope or switch approach).</p></div><div class='rule'><span class='n'>9</span><p><b>Regression test.</b> Every fixed crash is added to qa_integration.py as a repro test, so each run checks that it doesn't come back.</p></div></div>
+  <div class="callout"><b>Case</b><ul><li>2026-10-26: FX v2 Niagara headless crash 7 times → fixed with a workaround (commit 7eece96). The same run was repeated until it reached 7 crashes; under these rules it should have stopped at the second and started by classifying the logs.</li><li>Obsidian: Game dev - UrbanStrike FX v2 Niagara headless crash debugging</li></ul></div>
+  <h3>Crash ticket · Studio/bugs/crash/C-0001.md</h3>
+  <pre class="code">---
+id: C-0001
+title: Crash while running FX v2 Niagara headless
+owner: TD            # owns the root cause
+reported_by: TA
+count: 7
+type: EXCEPTION_ACCESS_VIOLATION   # assert / OOM / GPU / headless-only
+status: workaround   # open → investigating → workaround → fixed
+---
+## Symptom
+Exits while running UnrealEditor-Cmd -run=pythonscript fx2_*.py
+## Logs
+Saved/Crashes/&lt;id&gt;/, Saved/Logs/UrbanStrike.log
+## Top 5 call stack lines
+...
+## Hypotheses / attempts
+1. ... → failed
+## Workaround
+... (commit 7eece96)
+## Risk
+The GUI editor becomes mandatory → no unattended runs
+## Root-fix plan
+...
+## Regression test
+Add test_fx2_headless to Tools/Python/qa_integration.py</pre>
+</section>
+
+<section id="apply">
+  <h2><span class="sec">11</span>Applying it to UrbanStrike</h2>
+  <p><b>We're now late in S1.</b> The TPS over-the-shoulder camera, combat against Quantum soldier enemies, hit feedback, crouch and cover, and an L_UnfinishedBuilding showcase video are done. The remaining gaps are real sound, Houdini FX, reload animation, the HUD, and a packaged build.</p>
+  <p><b>Default release format:</b> Portfolio demo v0.1, a free Win64 build on itch.io and a 90-second trailer (YouTube, ArtStation). To go a different way, we change it when re-confirming G0.</p>
+  <p><b>G1 vertical slice criteria:</b> 90 seconds of play on one floor of L_UnfinishedBuilding, zero placeholder sounds, average 120fps at 1440p on an RTX 5080, final impact FX and debris, video v001.</p>
+  <h3>Sprint 1 (2 weeks) tickets</h3>
+  <div class="tbl"><table><thead><tr><th>Lead</th><th>Task</th><th>Deliverables</th></tr></thead><tbody><tr><td><span class='chip'>PD</span></td><td>Create the Studio folder and board, record S1 state</td><td><code>Studio/state.yaml, 12 tickets</code></td></tr><tr><td><span class='chip'>GD</span></td><td>Write up the current combat loop as GDD v1 (TPS, cover, enemy combat)</td><td><code>GDD.md, weapon and enemy stat CSVs</code></td></tr><tr><td><span class='chip'>SD</span></td><td>Replace with real gunshots, impacts, and ambience (priority 1)</td><td><code>8 SFX WAVs + MetaSounds</code></td></tr><tr><td><span class='chip'>TA</span></td><td>2 Houdini dust and debris FX → flipbooks/VAT (priority 2)</td><td><code>NS_Impact_Dust, NS_Debris</code></td></tr><tr><td><span class='chip'>TA</span></td><td>Debris HDA + PCG placement (priority 3)</td><td><code>1 HDA, PCG graph</code></td></tr><tr><td><span class='chip'>AN</span></td><td>Hook up reload and aim animations</td><td><code>AM_Rifle_Reload, ABP blend</code></td></tr><tr><td><span class='chip'>UI</span></td><td>Minimal HUD (crosshair, ammo, hit direction)</td><td><code>WBP_HUD</code></td></tr><tr><td><span class='chip'>QA</span></td><td>Smoke test + asset validation scripts</td><td><code>Tools/Python/qa_smoke.py, report</code></td></tr><tr><td><span class='chip'>PB</span></td><td>Cut G1 video v001</td><td><code>261109_urbanstrike_vslice_1080p_v001.mp4</code></td></tr></tbody></table></div>
+</section>
+
+<section id="roadmap">
+  <h2><span class="sec">12</span>Harness build order</h2>
+  <ol class="road"><li><span class='scode'>A</span><div><b>Skeleton</b> <span class='muted'>0.5 day</span><br>Studio folder, state.yaml, 14 agent definition files</div></li><li><span class='scode'>B</span><div><b>Skills</b> <span class='muted'>1 day</span><br>ticket, handoff, gate-review, asset-check first; the rest before S3</div></li><li><span class='scode'>C</span><div><b>Hooks</b> <span class='muted'>0.5 day</span><br>Block push, enforce handoffs, run asset-check automatically</div></li><li><span class='scode'>D</span><div><b>Verify tool connections</b> <span class='muted'>0.5 day</span><br>Run UE remote execution, fxhoudini, and the Blender CLI once each</div></li><li><span class='scode'>E</span><div><b>Run sprint 1</b> <span class='muted'>2 weeks</span><br>Take on the G1 vertical slice with the 9 tickets below</div></li><li><span class='scode'>F</span><div><b>Retro & tuning</b> <span class='muted'>0.5 day</span><br>Tune agent prompts, gate criteria, and token usage</div></li></ol>
+  <p class="muted">Cost control: leads are called only when there's a ticket, with up to 3 to 4 in parallel. Work that runs many leads at once, like a gate review, runs as a workflow only when HG asks for it.</p>
+</section>
+</div>
+
+<script>
+(function () {
+  var btns = document.querySelectorAll('.stage button');
+  var cards = document.querySelectorAll('.agent');
+  var cur = -1;
+  function apply(s) {
+    cur = s;
+    btns.forEach(function (b, i) { b.setAttribute('aria-pressed', i === s ? 'true' : 'false'); });
+    cards.forEach(function (c) {
+      var st = c.dataset.stages.split(',').map(Number);
+      c.classList.toggle('dim', s >= 0 && st.indexOf(s) < 0);
+    });
+  }
+  btns.forEach(function (b, i) { b.addEventListener('click', function () { apply(cur === i ? -1 : i); }); });
+})();
+</script>
+
+<!--claude-mermaid-runtime-begin:3477-->
+<style>.mermaid-diagram{margin-block:4px}.mermaid-diagram svg{display:block;margin:0 auto;max-width:100%;height:auto}</style>
+<script src="../../docs/vendor/mermaid-11.4.1.min.js"></script>
+<script>(function(){
+var CFG={"palettes":{"light":{"surface":"#f4efe4","text":"#42392e","line":"#8a7f6d","border":"#7a6c52","bg":"#fffdf8"},"dark":{"surface":"#262b34","text":"#f2f3f5","line":"#a8adb8","border":"#9aa4b8","bg":"#1f232b"}}};
+if(typeof mermaid==='undefined')return;
+var pres=Array.prototype.slice.call(document.querySelectorAll('pre.mermaid')).filter(function(p){if(p.hasAttribute('data-claude-mermaid-claimed'))return false;p.setAttribute('data-claude-mermaid-claimed','1');return true;});
+if(!pres.length)return;
+var mq=window.matchMedia?window.matchMedia('(prefers-color-scheme: dark)'):null;
+var root=document.documentElement;
+var items=pres.map(function(pre){
+var mount=document.createElement('div');mount.className='mermaid-diagram';
+return {pre:pre,mount:mount,src:pre.textContent||''};
+});
+var seq=0;
+var renderGen=0;
+var lastKey='';
+function pageBg(fallback){
+var els=[document.body,document.documentElement];
+for(var i=0;i<els.length;i++){
+var c=els[i]&&getComputedStyle(els[i]).backgroundColor;
+if(c&&c!=='transparent'&&c!=='rgba(0, 0, 0, 0)')return c;
+}
+return fallback;
+}
+function render(){
+var theme=root.getAttribute('data-theme');
+var dark=theme==='dark'||(!!(mq&&mq.matches)&&theme!=='light');
+var pal=dark?CFG.palettes.dark:CFG.palettes.light;
+var bg=pageBg(pal.bg);
+var key=(dark?'d':'l')+'|'+bg;
+if(key===lastKey)return;
+lastKey=key;
+var gen=++renderGen;
+var font=getComputedStyle(document.body).fontFamily||'sans-serif';
+var nat={useMaxWidth:false};
+mermaid.initialize({
+startOnLoad:false,securityLevel:'strict',theme:'base',
+flowchart:nat,sequence:nat,er:nat,state:nat,class:nat,pie:nat,
+gantt:nat,journey:nat,timeline:nat,gitGraph:nat,mindmap:nat,xyChart:nat,
+quadrantChart:nat,sankey:nat,c4:nat,requirement:nat,block:nat,
+packet:nat,kanban:nat,architecture:nat,radar:nat,
+themeVariables:{background:bg,mainBkg:pal.surface,primaryColor:pal.surface,
+primaryTextColor:pal.text,lineColor:pal.line,primaryBorderColor:pal.border,
+nodeBorder:pal.border,clusterBorder:pal.border,edgeLabelBackground:bg,
+clusterBkg:'rgba(127,127,127,0.07)',titleColor:pal.text,
+darkMode:dark,rowOdd:bg,rowEven:'rgba(127,127,127,0.07)',
+attributeBackgroundColorOdd:bg,attributeBackgroundColorEven:'rgba(127,127,127,0.07)',
+fontSize:'16px',fontFamily:font},
+themeCSS:'.node rect, .node circle, .node polygon, .node path, .cluster rect { stroke-width: 2px; }'
+});
+items.forEach(function(it){
+var id='claude-mermaid-'+seq++;
+mermaid.render(id,it.src).then(function(r){
+if(gen!==renderGen)return;
+var prev=it.pre.previousElementSibling;
+if(prev&&prev.className==='mermaid-diagram'&&prev!==it.mount)return;
+it.mount.innerHTML=r.svg;
+if(!it.mount.parentNode)it.pre.parentNode.insertBefore(it.mount,it.pre);
+it.pre.style.display='none';
+},function(){
+var scratch=document.getElementById(id);
+if(scratch)scratch.parentNode.removeChild(scratch);
+scratch=document.getElementById('d'+id);
+if(scratch)scratch.parentNode.removeChild(scratch);
+if(gen!==renderGen)return;
+if(it.mount.parentNode)it.mount.parentNode.removeChild(it.mount);
+it.pre.style.display='';
+});
+});
+}
+render();
+if(mq&&mq.addEventListener)mq.addEventListener('change',render);
+if(typeof MutationObserver!=='undefined')new MutationObserver(render).observe(root,{attributes:true,attributeFilter:['data-theme']});
+})();</script>
+<!--claude-mermaid-runtime-end-->
+
+</body></html>
