@@ -1,0 +1,261 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>comfy-monitor</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=IBM+Plex+Sans+KR:wght@400;500;700&family=JetBrains+Mono:wght@400;600&display=swap">
+<style>
+/* Layout: one reading column, a terminal-like status strip as hero, mock panel, then reference tables */
+:root{
+  --bg:#f5f3f0; --surface:#ffffff; --ink:#1f1d1b; --muted:#6b645d; --line:#e3ddd6;
+  --accent:#e8692a; --accent-soft:#fbe6da; --term:#1c1b1a; --term-ink:#ece7e1; --ok:#2f9e5b; --off:#9a928a;
+  --display:"Bricolage Grotesque","IBM Plex Sans KR",system-ui,sans-serif;
+  --body:"IBM Plex Sans KR",system-ui,-apple-system,"Malgun Gothic",sans-serif;
+  --mono:"JetBrains Mono",ui-monospace,Consolas,monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#1a1918; --surface:#232120; --ink:#ece7e1; --muted:#a59d95; --line:#38342f;
+  --accent:#f07a3c; --accent-soft:#3a2518; --term:#111010; --term-ink:#ece7e1; --ok:#4cc27d; --off:#8a827a; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#1a1918; --surface:#232120; --ink:#ece7e1; --muted:#a59d95; --line:#38342f;
+  --accent:#f07a3c; --accent-soft:#3a2518; --term:#111010; --term-ink:#ece7e1; --ok:#4cc27d; --off:#8a827a; color-scheme:dark}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font:16px/1.7 var(--body);padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:40px 72px}
+.wrap{max-width:880px;margin:0 auto;display:flex;flex-direction:column;gap:56px}
+h1,h2,h3{font-family:var(--display);line-height:1.2;text-wrap:balance;margin:0}
+h1{font-size:clamp(2.2rem,6vw,3.4rem);letter-spacing:-.02em}
+h2{font-size:1.6rem;display:flex;gap:.6em;align-items:baseline}
+h2 .k{font:600 .78rem var(--mono);color:var(--accent);letter-spacing:.08em}
+h3{font-size:1.08rem}
+p{margin:0;max-width:66ch}
+section{display:flex;flex-direction:column;gap:18px}
+.eyebrow{font:600 .74rem var(--mono);letter-spacing:.14em;text-transform:uppercase;color:var(--accent)}
+.lead{font-size:1.1rem;color:var(--muted)}
+code,.mono{font-family:var(--mono);font-size:.88em}
+p code,td code,li code{background:var(--accent-soft);padding:.05em .35em;border-radius:4px}
+.hero{display:flex;flex-direction:column;gap:18px}
+.meta{display:flex;flex-wrap:wrap;gap:8px}
+.chip{font:500 .8rem var(--mono);border:1px solid var(--line);border-radius:999px;padding:3px 11px;color:var(--muted);background:var(--surface)}
+.chip.on{border-color:var(--accent);color:var(--accent)}
+.term{background:var(--term);color:var(--term-ink);border-radius:10px;font:14px/1.6 var(--mono);overflow-x:auto}
+.term .bar{display:flex;gap:6px;padding:10px 14px;border-bottom:1px solid #2e2b28}
+.term .bar i{width:10px;height:10px;border-radius:50%;background:#3a3633}
+.term pre{margin:0;padding:14px 16px;white-space:pre}
+.term .dim{color:#8f877f}.term .acc{color:#f07a3c}.term .ok{color:#4cc27d}
+.status{display:flex;flex-direction:column;gap:6px}
+.status .row{display:flex;gap:14px;align-items:center;flex-wrap:wrap}
+.status .lbl{font:500 .78rem var(--mono);color:var(--muted);min-width:7.5em}
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:18px;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
+.panel header{grid-column:1/-1;display:flex;justify-content:space-between;align-items:baseline;flex-wrap:wrap;gap:8px}
+.panel header b{font-family:var(--display);font-size:1.1rem}
+.panel header span{font:.78rem var(--mono);color:var(--muted)}
+.tile{border:1px solid var(--line);border-radius:8px;padding:12px 14px;display:flex;flex-direction:column;gap:4px;min-width:0}
+.tile .t{display:flex;justify-content:space-between;font:500 .78rem var(--mono);color:var(--muted)}
+.tile .v{font:600 1.3rem var(--mono);font-variant-numeric:tabular-nums}
+.tile svg{width:100%;height:52px;display:block}
+.tile.soon{opacity:.72}
+.badge{font:600 .68rem var(--mono);color:var(--accent);border:1px solid var(--accent);border-radius:4px;padding:0 5px}
+.cap{font-size:.86rem;color:var(--muted)}
+.grid3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}
+.feat{border-top:2px solid var(--accent);padding-top:12px;display:flex;flex-direction:column;gap:6px;min-width:0}
+.feat p{font-size:.95rem;color:var(--muted)}
+.tbl{overflow-x:auto;border:1px solid var(--line);border-radius:10px;background:var(--surface)}
+table{border-collapse:collapse;width:100%;font-size:.93rem}
+th,td{text-align:left;padding:10px 14px;border-bottom:1px solid var(--line);vertical-align:top}
+th{font:600 .76rem var(--mono);letter-spacing:.06em;color:var(--muted);text-transform:uppercase;background:var(--bg)}
+tr:last-child td{border-bottom:0}
+td:first-child{white-space:nowrap}
+.note{border-left:3px solid var(--accent);background:var(--accent-soft);padding:12px 16px;border-radius:0 8px 8px 0;display:flex;flex-direction:column;gap:6px}
+.note b{font-family:var(--display)}
+ol.steps{margin:0;padding:0;list-style:none;display:flex;flex-direction:column;gap:14px;counter-reset:s}
+ol.steps>li{counter-increment:s;display:grid;grid-template-columns:2.2em minmax(0,1fr);gap:10px}
+ol.steps>li::before{content:counter(s);font:600 .9rem var(--mono);color:#fff;background:var(--accent);width:1.9em;height:1.9em;border-radius:50%;display:grid;place-items:center}
+.flow{display:flex;flex-wrap:wrap;gap:8px;align-items:center;font:.85rem var(--mono)}
+.flow span{border:1px solid var(--line);background:var(--surface);border-radius:6px;padding:5px 10px}
+.flow em{font-style:normal;color:var(--accent)}
+.roadmap{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}
+.stage{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:16px;display:flex;flex-direction:column;gap:8px;min-width:0}
+.stage.now{border-color:var(--accent);box-shadow:0 0 0 1px var(--accent) inset}
+.stage .s{display:flex;justify-content:space-between;align-items:center;font:600 .78rem var(--mono);color:var(--muted)}
+.stage ul{margin:0;padding-left:1.1em;font-size:.92rem;display:flex;flex-direction:column;gap:3px}
+.log{display:flex;flex-direction:column;gap:10px;margin:0;padding:0;list-style:none}
+.log li{display:grid;grid-template-columns:5.6em minmax(0,1fr);gap:12px;font-size:.94rem}
+.log li b{font:600 .85rem var(--mono);color:var(--accent)}
+footer{font-size:.84rem;color:var(--muted);border-top:1px solid var(--line);padding-top:18px}
+@media (max-width:680px){.grid3,.roadmap{grid-template-columns:minmax(0,1fr)}.panel{grid-template-columns:minmax(0,1fr)}}
+</style>
+</head>
+<body>
+
+<div class="wrap">
+<nav style="position:fixed;top:14px;right:16px;z-index:9999;font:600 12px/1 system-ui,sans-serif;letter-spacing:.08em;background:rgba(20,22,25,.85);border:1px solid rgba(255,255,255,.18);border-radius:999px;padding:7px 12px;backdrop-filter:blur(6px)"><a href="/NeoDevBlog/docs/comfy-monitor.html" lang="ko" style="color:#cfd3d8;text-decoration:none">KOR</a><span style="color:#666;margin:0 6px">/</span><span style="color:#f26b1d" aria-current="page">ENG</span></nav>
+
+<header class="hero">
+  <div class="eyebrow">Neo.Atelier · Claude Code mod</div>
+  <h1>comfy-monitor</h1>
+  <p class="lead">A mod (plugin) that shows ComfyUI's queue, VRAM, RAM and GPU usage in a status line and a graph panel inside Claude Code, for when you run ComfyUI without its window.</p>
+  <div class="meta">
+    <span class="chip on">v0.3.0</span>
+    <span class="chip">12 tests passing</span>
+    <span class="chip">plugin validate passing</span>
+    <span class="chip">Stage 1 (MVP) done</span>
+    <span class="chip">2026-10-12</span>
+  </div>
+</header>
+
+<section>
+  <h2><span class="k">WHY</span>Why I made it</h2>
+  <p>When Claude Code runs ComfyUI headless to make videos, there's no screen showing how busy the GPU is or how many jobs are left in the queue. Looking around, there are tools for watching inside the ComfyUI window (Crystools, Elegant Resource Monitor), but no plugin that graphs ComfyUI usage inside Claude Code. So I built one.</p>
+  <div class="note"><b>In short</b><p>If you work with the ComfyUI window open, Crystools is enough. This mod is for when you run it without a window (headless).</p></div>
+</section>
+
+<section>
+  <h2><span class="k">SCREEN</span>Screens</h2>
+  <div class="status">
+    <div class="row"><span class="lbl">Status line · running</span></div>
+    <div class="term"><pre><span class="acc">Comfy</span> <span class="ok">●</span> running 1 · queued 2 · VRAM 9.4/16G · GPU 87%</pre></div>
+    <div class="row"><span class="lbl">Status line · off</span></div>
+    <div class="term"><pre><span class="acc">Comfy</span> <span class="dim">○ off</span></pre></div>
+  </div>
+
+  <div class="panel" aria-label="Example of the panel">
+    <header><b>ComfyUI panel</b><span>/comfy-monitor · last 10 min · every 2 s</span></header>
+    <div class="tile"><div class="t"><span>GPU</span><span>72°C · 248W</span></div><div class="v">87%</div>
+      <svg viewBox="0 0 300 52" preserveAspectRatio="none" aria-hidden="true"><polyline fill="none" stroke="var(--accent)" stroke-width="2" points="0,46 25,44 50,40 75,20 100,12 125,10 150,14 175,8 200,9 225,11 250,7 275,8 300,7"/><circle cx="300" cy="7" r="3" fill="var(--accent)"/></svg></div>
+    <div class="tile"><div class="t"><span>VRAM</span><span>RTX 5080</span></div><div class="v">9.4 / 16 GB</div>
+      <svg viewBox="0 0 300 52" preserveAspectRatio="none" aria-hidden="true"><polyline fill="none" stroke="var(--accent)" stroke-width="2" points="0,40 30,40 60,39 90,28 120,24 150,22 180,22 210,23 240,22 270,21 300,21"/><circle cx="300" cy="21" r="3" fill="var(--accent)"/></svg></div>
+    <div class="tile"><div class="t"><span>RAM</span><span>System</span></div><div class="v">38 / 96 GB</div>
+      <svg viewBox="0 0 300 52" preserveAspectRatio="none" aria-hidden="true"><polyline fill="none" stroke="var(--muted)" stroke-width="2" points="0,34 50,34 100,33 150,32 200,32 250,32 300,32"/><circle cx="300" cy="32" r="3" fill="var(--muted)"/></svg></div>
+    <div class="tile"><div class="t"><span>Queue</span><span>Running / queued</span></div><div class="v">1 / 2</div>
+      <svg viewBox="0 0 300 52" preserveAspectRatio="none" aria-hidden="true"><polyline fill="none" stroke="var(--accent)" stroke-width="2" points="0,48 60,48 60,30 120,30 120,22 180,22 180,30 240,30 240,30 300,30"/></svg></div>
+    <div class="tile soon"><div class="t"><span>Current job</span><span class="badge">Stage 2</span></div><div class="cap">Prompt ID, running node, step n/m progress bar</div></div>
+    <div class="tile soon"><div class="t"><span>Recent jobs</span><span class="badge">Stage 2</span></div><div class="cap">Duration and success or failure of the last 5</div></div>
+  </div>
+  <p class="cap">This is an example screen. The numbers are for illustration. In the desktop app and VS Code it draws SVG line graphs, and in the terminal it draws sparklines (▁▂▃▅▇).</p>
+</section>
+
+<section>
+  <h2><span class="k">FEATURES</span>Features</h2>
+  <div class="grid3">
+    <div class="feat"><h3>One-line status summary</h3><p>Keeps running and queued counts, VRAM and GPU usage always visible. If ComfyUI stops responding, it switches to "off."</p></div>
+    <div class="feat"><h3>10-minute graph panel</h3><p>Shows GPU, VRAM, RAM and queue as graphs of the last 10 minutes (300 samples).</p></div>
+    <div class="feat"><h3>Safe shutdown</h3><p><code>stop</code> only shuts down the ComfyUI that Claude started, and asks first if jobs are still left.</p></div>
+  </div>
+</section>
+
+<section>
+  <h2><span class="k">INSTALL</span>Install</h2>
+  <div class="note"><b>Commands go in two places</b><p>Type <code>claude plugin …</code> commands in PowerShell, and slash commands like <code>/reload-plugins</code> and <code>/comfy-monitor …</code> in the Claude Code prompt.</p></div>
+  <h3>Permanent install (recommended)</h3>
+  <ol class="steps">
+    <li><div>Check the plugin folder. The hidden <code>.claude-plugin</code> folder must be there too.
+      <div class="term" style="margin-top:8px"><pre>claude plugin validate &lt;plugin folder&gt;</pre></div></div></li>
+    <li><div>Register the folder as a local marketplace and install.
+      <div class="term" style="margin-top:8px"><pre>claude plugin marketplace add &lt;plugin folder&gt;
+claude plugin install comfy-monitor@hg-local --scope user
+claude plugin list</pre></div></div></li>
+    <li><div>If it shows as <b>enabled</b> in <code>plugin list</code>, the install is done. In a Claude Code session that's already open, run <code>/reload-plugins</code>. A notice during install saying "5 userConfig options are not set" is normal. The defaults are used.</div></li>
+  </ol>
+  <h3>Test once without installing</h3>
+  <div class="term"><pre>claude --plugin-dir &lt;plugin folder&gt;</pre></div>
+  <h3>Moving to another PC</h3>
+  <p>Copy the whole folder and install in the order above. The default for <code>comfyBin</code> is a path on the PC it was made on, so change it to your own comfy-cli path on the new PC. This value is only used by <code>/comfy-monitor stop</code>.</p>
+</section>
+
+<section>
+  <h2><span class="k">USAGE</span>Commands</h2>
+  <div class="tbl"><table>
+    <thead><tr><th>Command</th><th>What it does</th></tr></thead>
+    <tbody>
+      <tr><td><code>/comfy-monitor</code></td><td>Opens the graph panel. Turns the monitor back on if it was off.</td></tr>
+      <tr><td><code>/comfy-monitor on</code></td><td>Turns the monitor on and opens the panel.</td></tr>
+      <tr><td><code>/comfy-monitor off</code></td><td>Turns only the monitor off. Stops polling and clears the status line.</td></tr>
+      <tr><td><code>/comfy-monitor stop</code></td><td>Shuts down ComfyUI itself (<code>comfy stop</code>). Asks first if jobs are left.</td></tr>
+      <tr><td><code>/comfy-monitor stop now</code></td><td>Shuts down right away even if jobs are left.</td></tr>
+      <tr><td><code>/reload-plugins</code></td><td>Reloads the mod files after editing them, without restarting.</td></tr>
+    </tbody>
+  </table></div>
+  <div class="note"><b>off and stop are different</b><p><code>off</code> only turns off the monitor, and ComfyUI keeps running. <code>stop</code> shuts down ComfyUI, so any generation in progress stops too. <code>stop</code> only shuts down a ComfyUI that Claude (comfy-cli) started in the background, not the ComfyUI Desktop app. The mod has no command to start ComfyUI, so ask Claude to "start ComfyUI" or run <code>comfy launch --background</code>.</p></div>
+</section>
+
+<section>
+  <h2><span class="k">CONFIG</span>Settings</h2>
+  <p>Change these in Claude Code's <code>/config</code> or under <code>pluginConfigs.comfy-monitor</code> in the settings file.</p>
+  <div class="tbl"><table>
+    <thead><tr><th>Key</th><th>Default</th><th>Meaning</th></tr></thead>
+    <tbody>
+      <tr><td><code>comfyUrl</code></td><td class="mono">http://127.0.0.1:8188</td><td>Address of the ComfyUI server to poll</td></tr>
+      <tr><td><code>intervalSeconds</code></td><td class="mono">2</td><td>Polling interval (seconds)</td></tr>
+      <tr><td><code>useNvidiaSmi</code></td><td class="mono">true</td><td>Read GPU usage, temperature and power with nvidia-smi</td></tr>
+      <tr><td><code>autoStart</code></td><td class="mono">true</td><td>When off, doesn't poll at session start and waits for <code>on</code></td></tr>
+      <tr><td><code>comfyBin</code></td><td class="mono">&lt;comfy-cli path&gt;</td><td>The comfy-cli that <code>stop</code> runs</td></tr>
+    </tbody>
+  </table></div>
+</section>
+
+<section>
+  <h2><span class="k">HOW</span>How it works</h2>
+  <div class="flow"><span>Session start</span><em>→</em><span>2 s timer</span><em>→</em><span>/system_stats · /queue · nvidia-smi</span><em>→</em><span>Ring buffer of 300 (10 min)</span><em>→</em><span>Status line · panel</span></div>
+  <div class="tbl"><table>
+    <thead><tr><th>Item</th><th>Where it's read from</th></tr></thead>
+    <tbody>
+      <tr><td>VRAM, RAM, version</td><td><code>GET /system_stats</code></td></tr>
+      <tr><td>Running and queued counts</td><td><code>GET /queue</code></td></tr>
+      <tr><td>GPU usage, temperature, power</td><td><code>nvidia-smi --query-gpu=utilization.gpu,temperature.gpu,power.draw</code></td></tr>
+      <tr><td>Recent job times (Stage 2)</td><td><code>GET /history?max_items=5</code></td></tr>
+      <tr><td>Step progress (Stage 2)</td><td>progress and executing on the <code>/ws</code> websocket</td></tr>
+    </tbody>
+  </table></div>
+  <p>After 3 missed responses in a row, ComfyUI is shown as "off," and from then on it checks every 10 seconds. <code>/comfy-monitor on</code> works fine even when ComfyUI is off. <code>/system_stats</code> doesn't include GPU usage, so nvidia-smi is used alongside it.</p>
+</section>
+
+<section>
+  <h2><span class="k">ROADMAP</span>Plan by stage</h2>
+  <div class="roadmap">
+    <div class="stage now"><div class="s"><span>Stage 1 · MVP</span><span class="badge">Done</span></div>
+      <ul><li>Polling system_stats, queue and nvidia-smi</li><li>Status line, panel graphs</li><li>Handling "off," tests</li><li>on/off/stop commands</li></ul></div>
+    <div class="stage"><div class="s"><span>Stage 2</span><span>Next</span></div>
+      <ul><li>Recent jobs list from /history</li><li>Step progress via a websocket helper script</li><li>Done and failed notifications</li></ul></div>
+    <div class="stage"><div class="s"><span>Stage 3</span><span>Later</span></div>
+      <ul><li>Warning when VRAM stays at 95% for 10 s</li><li>Pause button</li><li>Saving history across sessions</li><li>Publishing to the GitHub marketplace</li></ul></div>
+  </div>
+  <p class="cap">Stage 1 is done when generating one image turns the queue from 1 to 0 and the VRAM graph moves.</p>
+</section>
+
+<section>
+  <h2><span class="k">FIX</span>Troubleshooting</h2>
+  <div class="tbl"><table>
+    <thead><tr><th>Symptom</th><th>What to check</th></tr></thead>
+    <tbody>
+      <tr><td>It says /comfy-monitor doesn't exist</td><td>In PowerShell, check it's enabled with <code>claude plugin list</code>, then run <code>/reload-plugins</code> in Claude Code</td></tr>
+      <tr><td>The status line stays "off"</td><td>Whether ComfyUI is running, and the port in <code>comfyUrl</code>. The Desktop app may use a different port.</td></tr>
+      <tr><td>No GPU values</td><td>Whether <code>nvidia-smi</code> runs in PowerShell, and whether <code>useNvidiaSmi</code> is on</td></tr>
+      <tr><td>"Couldn't run comfy-cli"</td><td>The <code>comfyBin</code> path</td></tr>
+      <tr><td>"No ComfyUI was started"</td><td>This happens when it was started from the Desktop app. Close it from the app.</td></tr>
+      <tr><td>plugin install is blocked by permissions</td><td>It can be blocked when Claude runs it for you. Run it yourself in PowerShell.</td></tr>
+    </tbody>
+  </table></div>
+</section>
+
+<section>
+  <h2><span class="k">NOTES</span>What I learned building it</h2>
+  <ul class="log">
+    <li><b>Validation</b><span>Helper functions that take <code>$</code> must be top-level <code>function</code> declarations in the file to pass validate.</span></li>
+    <li><b>Terminal</b><span>The terminal view also receives the SVG key but draws nothing, so it switches to sparklines depending on the type of screen.</span></li>
+    <li><b>Timer</b><span>Reloading the module rejects any poll in progress, so the Promise in the timer callback must always be caught.</span></li>
+    <li><b>Websocket</b><span>Websockets can't be used inside a mod, so Stage 1 polls every 2 seconds, and real-time progress comes in Stage 2 through a helper script.</span></li>
+  </ul>
+  <h3 style="margin-top:8px">Change log</h3>
+  <ul class="log">
+    <li><b>v0.1.0</b><span>Stage 1 code written. validate, type check and 9 tests passing.</span></li>
+    <li><b>v0.2.0</b><span>Added the <code>on</code>/<code>off</code> commands and the <code>autoStart</code> setting. 11 tests passing.</span></li>
+    <li><b>v0.3.0</b><span>Added <code>stop</code>. Shuts down only a server comfy-cli started and leaves the Desktop app alone. 12 tests passing.</span></li>
+  </ul>
+</section>
+
+<footer>Neo.Atelier · comfy-monitor notes · as recorded on 2026-10-12. Requirements: Claude Code, ComfyUI (default 127.0.0.1:8188), nvidia-smi for NVIDIA GPU info.</footer>
+</div>
+</body>
+</html>

@@ -1,31 +1,36 @@
 ---
 import { formatDate, url, type Post } from '../utils';
+import { localeUrl, tagLabel, ui, type Lang } from '../i18n';
 
 interface Props {
   posts: Post[];
+  lang?: Lang;
 }
 
-const { posts } = Astro.props;
+const { posts, lang = 'ko' } = Astro.props;
+const t = ui[lang];
+const href = (post: Post) => (lang === 'en' && post.translated ? localeUrl('en', `posts/${post.id}/`) : url(`posts/${post.id}/`));
 ---
 
-{posts.length === 0 && <p class="muted">아직 글이 없습니다.</p>}
+{posts.length === 0 && <p class="muted">{t.noPosts}</p>}
 <ul class="post-list">
   {
     posts.map((post) => (
       <li>
-        <a class="post-card" href={url(`posts/${post.id}/`)}>
-          <time datetime={post.data.date.toISOString()}>{formatDate(post.data.date)}</time>
+        <a class="post-card" href={href(post)}>
+          <time datetime={post.data.date.toISOString()}>{formatDate(post.data.date, lang)}</time>
           <h2>
             {post.data.title}
-            {post.data.draft && <span class="badge">초안</span>}
-            {post.data.youtube && <span class="badge video">영상</span>}
+            {lang === 'en' && !post.translated && <span class="badge">{t.koreanOnly}</span>}
+            {post.data.draft && <span class="badge">{t.draft}</span>}
+            {post.data.youtube && <span class="badge video">{t.video}</span>}
           </h2>
           {post.data.description && <p>{post.data.description}</p>}
         </a>
         {post.data.tags.length > 0 && (
           <div class="tags">
             {post.data.tags.map((tag) => (
-              <a class="tag" href={url(`tags/${tag}/`)}>#{tag}</a>
+              lang === 'en' ? <span class="tag">#{tagLabel(tag, lang)}</span> : <a class="tag" href={url(`tags/${tag}/`)}>#{tag}</a>
             ))}
           </div>
         )}

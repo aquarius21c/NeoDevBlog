@@ -24,6 +24,7 @@ body.bare { line-height: 1.7; }
 .intro > div { position: relative; }
 .brand { position: relative; max-width: 28rem; }
 .node-graph { position: absolute; top: -44px; right: 0; width: clamp(100px, 28%, 136px); color: var(--accent); opacity: 0.85; pointer-events: none; }
+@media (max-width: 1023px) { .node-graph { top: 14px; } }
 .brand-bar { display: block; width: 32px; height: 3px; margin-bottom: 16px; background: var(--accent); }
 .intro h1 { margin: 0; font-size: clamp(2.4rem, 6vw, 3.2rem); font-weight: 800; line-height: 1.1; letter-spacing: -0.02em; }
 .intro h1 a { color: var(--text); }

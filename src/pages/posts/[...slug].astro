@@ -1,7 +1,9 @@
 ---
+import { existsSync } from 'node:fs';
 import { render } from 'astro:content';
 import Base from '../../layouts/Base.astro';
 import { formatDate, getPosts, url, type Post } from '../../utils';
+import { localeUrl } from '../../i18n';
 
 export async function getStaticPaths() {
   const posts = await getPosts();
@@ -19,9 +21,10 @@ interface Props {
 
 const { post, newer, older } = Astro.props;
 const { Content } = await render(post);
+const hasEnglish = existsSync(`posts-en/${post.id}.md`);
 ---
 
-<Base title={post.data.title} description={post.data.description}>
+<Base title={post.data.title} description={post.data.description} altUrl={hasEnglish ? localeUrl('en', `posts/${post.id}/`) : undefined}>
   <article class="post">
     <header class="post-header">
       <time datetime={post.data.date.toISOString()}>{formatDate(post.data.date)}</time>

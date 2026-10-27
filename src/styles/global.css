@@ -87,3 +87,10 @@ time { color: var(--muted); font-family: var(--mono); font-size: 0.85rem; }
 .post-nav .older { text-align: right; }
 
 .site-footer { border-top: 1px solid var(--border); padding-top: 20px; padding-bottom: 32px; color: var(--muted); font-size: 0.85rem; }
+
+.lang-switch { position: absolute; top: 18px; right: max(16px, env(safe-area-inset-right, 0px)); z-index: 20; display: flex; gap: 6px; align-items: center; font-size: 0.75rem; font-weight: 700; letter-spacing: 0.1em; color: var(--muted); }
+.lang-switch.floating { position: fixed; top: 20px; right: max(20px, env(safe-area-inset-right, 0px)); padding: 6px 12px; border: 1px solid var(--border); border-radius: 99px; background: rgba(20, 22, 25, 0.85); backdrop-filter: blur(8px); }
+.lang-switch a { color: var(--muted); }
+.lang-switch a:hover { color: var(--text); text-decoration: none; }
+.lang-switch a[aria-current] { color: var(--accent); }
+.site-header .header-inner { padding-right: 88px; }
