@@ -67,8 +67,8 @@ export const experience: { period: Text; title: Text; summary: Text; tags: Recor
       en: 'More than 10 years in film VFX on Korean and Hollywood productions. Mostly water, fire, explosions, smoke and debris, with Houdini as my main tool.',
     },
     tags: {
-      ko: ['Houdini', 'FX', 'Pyro', 'RBD'],
-      en: ['Houdini', 'FX', 'Pyro', 'RBD'],
+      ko: ['Houdini', 'FX', 'Pyro', 'RBD', 'Explosion'],
+      en: ['Houdini', 'FX', 'Pyro', 'RBD', 'Explosion'],
     },
   },
 ];
