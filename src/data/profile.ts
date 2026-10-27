@@ -86,7 +86,7 @@ export const projects = [
     imageAlt: 'comfy-monitor 소개 문서 첫 화면',
     link: 'docs/comfy-monitor.html',
     stats: [
-      { icon: 'stage', label: 'v0.4.1 · 1~3단계 완료' },
+      { icon: 'stage', label: 'v0.4.2 · 1~3단계 완료' },
       { icon: 'clock', label: '10분 그래프 패널' },
     ],
     tags: ['Claude Code', 'ComfyUI', '플러그인'],

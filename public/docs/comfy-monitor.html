@@ -96,7 +96,7 @@ footer{font-size:.84rem;color:var(--muted);border-top:1px solid var(--line);padd
   <h1>comfy-monitor</h1>
   <p class="lead">ComfyUI 창을 띄우지 않고 돌릴 때, Claude Code 안에서 큐·VRAM·RAM·GPU 사용량을 상태줄과 그래프 패널로 보여 주는 모드(플러그인)입니다.</p>
   <div class="meta">
-    <span class="chip on">v0.4.1</span>
+    <span class="chip on">v0.4.2</span>
     <span class="chip">테스트 20개 통과</span>
     <span class="chip">plugin validate 통과</span>
     <span class="chip">1~3단계 완료</span>
@@ -115,7 +115,7 @@ footer{font-size:.84rem;color:var(--muted);border-top:1px solid var(--line);padd
   <h2><span class="k">SCREEN</span>화면</h2>
   <div class="status">
     <div class="row"><span class="lbl">상태줄 · 실행 중</span></div>
-    <div class="term"><pre><span class="acc">Comfy</span> <span class="ok">● ON</span> · 실행 1 · 대기 2 · 단계 5/8 · VRAM 9.4/16G · GPU 87%</pre></div>
+    <div class="term"><pre><span class="acc">Comfy</span> <span class="ok">● ON</span> · Run 1 · Wait 2 · 단계 5/8 · VRAM 9.4/16G · GPU 87%</pre></div>
     <div class="row"><span class="lbl">상태줄 · 꺼짐</span></div>
     <div class="term"><pre><span class="acc">Comfy</span> <span class="dim">○ OFF</span></pre></div>
   </div>
@@ -128,7 +128,7 @@ footer{font-size:.84rem;color:var(--muted);border-top:1px solid var(--line);padd
       <svg viewBox="0 0 300 52" preserveAspectRatio="none" aria-hidden="true"><polyline fill="none" stroke="var(--accent)" stroke-width="2" points="0,40 30,40 60,39 90,28 120,24 150,22 180,22 210,23 240,22 270,21 300,21"/><circle cx="300" cy="21" r="3" fill="var(--accent)"/></svg></div>
     <div class="tile"><div class="t"><span>RAM</span><span>시스템</span></div><div class="v">38 / 96 GB</div>
       <svg viewBox="0 0 300 52" preserveAspectRatio="none" aria-hidden="true"><polyline fill="none" stroke="var(--muted)" stroke-width="2" points="0,34 50,34 100,33 150,32 200,32 250,32 300,32"/><circle cx="300" cy="32" r="3" fill="var(--muted)"/></svg></div>
-    <div class="tile"><div class="t"><span>큐</span><span>실행 / 대기</span></div><div class="v">1 / 2</div>
+    <div class="tile"><div class="t"><span>큐</span><span>Run / Wait</span></div><div class="v">1 / 2</div>
       <svg viewBox="0 0 300 52" preserveAspectRatio="none" aria-hidden="true"><polyline fill="none" stroke="var(--accent)" stroke-width="2" points="0,48 60,48 60,30 120,30 120,22 180,22 180,30 240,30 240,30 300,30"/></svg></div>
     <div class="tile"><div class="t"><span>현재 작업</span><span>단계 5/8</span></div><div class="cap">프롬프트 ID, 진행 노드, 단계 n/m 진행 막대</div></div>
     <div class="tile"><div class="t"><span>최근 작업</span><span>최근 5개</span></div><div class="cap">소요 시간과 성공·실패 (세션을 닫아도 20개까지 기록)</div></div>
@@ -255,10 +255,11 @@ footer{font-size:.84rem;color:var(--muted);border-top:1px solid var(--line);padd
     <li><b>v0.3.0</b><span><code>stop</code> 추가. comfy-cli가 띄운 서버만 끄고 Desktop 앱은 건드리지 않습니다. 테스트 12개 통과.</span></li>
     <li><b>v0.4.0</b><span>2·3단계 구현. 최근 작업, 단계 n/m, 완료·실패 토스트, VRAM 경고, 일시정지 버튼, 세션 간 기록. 테스트 20개 통과.</span></li>
     <li><b>v0.4.1</b><span>상태 표시를 ON/OFF로 바꾸고 README를 한글 본문으로 정리. GitHub 공개(MIT).</span></li>
+    <li><b>v0.4.2</b><span>상태줄·큐 타일·종료 경고의 "실행 · 대기"를 "Run · Wait"로 바꿈. 테스트 20개 통과.</span></li>
   </ul>
 </section>
 
-<footer>Neo.Atelier · comfy-monitor 정리 문서 · 2026-10-27 기록 기준(v0.4.1). 필요 조건: Claude Code, ComfyUI(기본 127.0.0.1:8188), NVIDIA GPU 정보는 nvidia-smi.</footer>
+<footer>Neo.Atelier · comfy-monitor 정리 문서 · 2026-10-27 기록 기준(v0.4.2). 필요 조건: Claude Code, ComfyUI(기본 127.0.0.1:8188), NVIDIA GPU 정보는 nvidia-smi.</footer>
 </div>
 </body>
 </html>
