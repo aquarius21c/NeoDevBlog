@@ -1,16 +1,152 @@
 ---
 import Base from '../layouts/Base.astro';
-import PostList from '../components/PostList.astro';
-import { getPosts } from '../utils';
+import '../styles/home.css';
+import { formatDate, getPosts, url } from '../utils';
+import { contacts, experience, profile, projects } from '../data/profile';
 
 const posts = await getPosts();
+const tagged = new Set(posts.flatMap((p) => p.data.tags));
+const recent = posts.slice(0, 5);
+const sections = [
+  { id: 'about', label: '소개' },
+  { id: 'experience', label: '경력' },
+  { id: 'projects', label: '프로젝트' },
+  { id: 'writing', label: '글' },
+];
 ---
 
-<Base>
-  <section class="hero">
-    <p class="eyebrow">DEV LOG</p>
-    <h1>언리얼 AI로 만드는<br />콜 오브 듀티 스타일 게임</h1>
-    <p class="muted">기획부터 AI 적 구현, 레벨 제작까지 개발 과정을 기록하고 유튜브 영상으로도 정리합니다.</p>
-  </section>
-  <PostList posts={posts} />
+<Base bare>
+  <div class="spotlight" aria-hidden="true"></div>
+  <div class="home">
+    <header class="intro">
+      <div>
+        <h1><a href={url('')}>{profile.name}</a></h1>
+        <p class="role">{profile.role}</p>
+        <p class="tagline">{profile.tagline}</p>
+        <nav class="section-nav" aria-label="홈 섹션">
+          <ul>
+            {sections.map((s) => (
+              <li><a href={`#${s.id}`} data-section={s.id}><span class="line"></span>{s.label}</a></li>
+            ))}
+          </ul>
+        </nav>
+      </div>
+      <ul class="contacts" aria-label="연락처">
+        {contacts.email && <li><a href={`mailto:${contacts.email}`}>이메일</a></li>}
+        {contacts.linkedin && <li><a href={contacts.linkedin} rel="noopener" target="_blank">LinkedIn</a></li>}
+      </ul>
+    </header>
+
+    <main class="content">
+      <section id="about" aria-label="소개">
+        <h2 class="section-title">소개</h2>
+        <p>
+          안녕하세요, <strong>{profile.owner}</strong>입니다. 국내와 할리우드 작품을 포함해 10년 넘게
+          <strong>영화 VFX</strong>에서 폭발, 연기, 파편 같은 FX를 만들어 왔습니다.
+        </p>
+        <p>
+          AI를 공부하면서 역할이 다른 AI 에이전트들에게 일을 나눠 맡기는 <strong>에이전트 하네스</strong>를 배웠고,
+          이 방식으로 혼자서도 스튜디오처럼 일하는 <strong>Neo Atelier</strong>를 시작했습니다. 저는 방향과 결정,
+          품질 판단을 맡고, AI는 그 결정을 빠르게 실행합니다.
+        </p>
+        <p>
+          지금은 이 구조로 언리얼 엔진 슈터 게임 <strong>UrbanStrike</strong>를 만들고 있고, 만드는 과정은 이 블로그와
+          유튜브에 기록하고 있습니다.
+        </p>
+      </section>
+
+      <section id="experience" aria-label="경력">
+        <h2 class="section-title">경력</h2>
+        <ol class="cards">
+          {experience.map((item) => (
+            <li class="card">
+              <p class="card-meta">{item.period}</p>
+              <div>
+                <h3>{item.title}</h3>
+                <p>{item.summary}</p>
+                <ul class="chips">{item.tags.map((t) => <li>{t}</li>)}</ul>
+              </div>
+            </li>
+          ))}
+        </ol>
+      </section>
+
+      <section id="projects" aria-label="프로젝트">
+        <h2 class="section-title">프로젝트</h2>
+        <ul class="cards">
+          {projects.map((p) => (
+            <li class="card">
+              <img src={url(p.image)} alt={p.imageAlt} width="640" height="360" loading="lazy" />
+              <div>
+                <h3>
+                  {tagged.has(p.tag) ? (
+                    <a class="card-link" href={url(`tags/${p.tag}/`)}>{p.title} <span aria-hidden="true">→</span></a>
+                  ) : (
+                    p.title
+                  )}
+                </h3>
+                <p>{p.summary}</p>
+                <ul class="chips">{p.tags.map((t) => <li>{t}</li>)}</ul>
+              </div>
+            </li>
+          ))}
+        </ul>
+      </section>
+
+      <section id="writing" aria-label="글">
+        <h2 class="section-title">글</h2>
+        {recent.length === 0 && <p class="muted">아직 글이 없습니다.</p>}
+        <ul class="cards">
+          {recent.map((post) => (
+            <li class="card">
+              <p class="card-meta"><time datetime={post.data.date.toISOString()}>{formatDate(post.data.date)}</time></p>
+              <div>
+                <h3>
+                  <a class="card-link" href={url(`posts/${post.id}/`)}>{post.data.title}</a>
+                  {post.data.draft && <span class="badge">초안</span>}
+                  {post.data.youtube && <span class="badge video">영상</span>}
+                </h3>
+                {post.data.description && <p>{post.data.description}</p>}
+                {post.data.tags.length > 0 && (
+                  <ul class="chips">{post.data.tags.map((tag) => <li><a href={url(`tags/${tag}/`)}>#{tag}</a></li>)}</ul>
+                )}
+              </div>
+            </li>
+          ))}
+        </ul>
+        <p class="more"><a href={url('archive/')}>전체 글 보기 <span aria-hidden="true">→</span></a></p>
+      </section>
+
+      <footer class="home-footer">
+        <p>© {new Date().getFullYear()} HG · Neo Atelier. Astro로 만들고 GitHub Pages로 배포합니다.</p>
+      </footer>
+    </main>
+  </div>
+
+  <script>
+    // 마우스를 따라다니는 은은한 조명과, 현재 보고 있는 섹션을 왼쪽 메뉴에 표시합니다.
+    const spotlight = document.querySelector<HTMLElement>('.spotlight');
+    if (spotlight && matchMedia('(pointer: fine)').matches && !matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      window.addEventListener('pointermove', (e) => {
+        spotlight.style.setProperty('--x', `${e.clientX}px`);
+        spotlight.style.setProperty('--y', `${e.clientY}px`);
+        spotlight.classList.add('on');
+      });
+    }
+
+    const links = new Map(
+      [...document.querySelectorAll<HTMLAnchorElement>('.section-nav a')].map((a) => [a.dataset.section, a]),
+    );
+    // 화면 위쪽 40% 지점을 지난 마지막 섹션을 현재 섹션으로 봅니다.
+    const sections = [...document.querySelectorAll<HTMLElement>('.content section')];
+    const markCurrent = () => {
+      const atBottom = innerHeight + scrollY >= document.documentElement.scrollHeight - 2;
+      const current = atBottom
+        ? sections[sections.length - 1]
+        : sections.filter((s) => s.getBoundingClientRect().top <= innerHeight * 0.4).pop();
+      links.forEach((a, id) => (id === current?.id ? a.setAttribute('aria-current', 'true') : a.removeAttribute('aria-current')));
+    };
+    addEventListener('scroll', markCurrent, { passive: true });
+    markCurrent();
+  </script>
 </Base>

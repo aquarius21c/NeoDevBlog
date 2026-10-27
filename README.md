@@ -12,7 +12,9 @@
 | `posts/` | 블로그 글 (Markdown). Obsidian 보관함으로 여는 폴더 |
 | `posts/images/` | 글에 넣는 이미지 |
 | `posts/_templates/` | Obsidian 새 글 템플릿 (사이트에는 안 나옴) |
-| `src/pages/` | 글 목록, 글 페이지, 태그, 소개 페이지 |
+| `src/pages/` | 홈, 전체 글, 글 페이지, 태그 페이지 |
+| `src/data/profile.ts` | 홈 화면의 소개 문구, 경력, 프로젝트, 연락처(이메일·링크드인) |
+| `public/projects/` | 홈 화면 프로젝트 썸네일 |
 | `scripts/check-secrets.mjs` | 빌드 전에 API 키나 내 PC 경로가 글에 섞였는지 검사 |
 
 ## Obsidian으로 글 쓰기

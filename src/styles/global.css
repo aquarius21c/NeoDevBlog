@@ -1,9 +1,9 @@
 :root {
-  --bg: #0f1215;
-  --surface: #171b20;
-  --border: #2a3038;
-  --text: #e6e8eb;
-  --muted: #9aa3ad;
+  --bg: #0e1524;
+  --surface: #152034;
+  --border: #25324a;
+  --text: #e3e8ef;
+  --muted: #97a3b6;
   --accent: #e0a43a;
   --accent-soft: rgba(224, 164, 58, 0.12);
   --font: 'Pretendard', 'Apple SD Gothic Neo', 'Malgun Gothic', system-ui, sans-serif;
