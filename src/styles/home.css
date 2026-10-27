@@ -22,30 +22,31 @@ body.bare { line-height: 1.7; }
 }
 
 .intro > div { position: relative; }
-.node-graph { display: block; width: min(220px, 55%); margin: 0 0 8px auto; color: var(--accent); opacity: 0.9; }
-.brand-bar { display: block; width: 36px; height: 4px; margin-bottom: 14px; background: var(--accent); }
+.brand { position: relative; max-width: 28rem; }
+.node-graph { position: absolute; top: -44px; right: 0; width: clamp(100px, 28%, 136px); color: var(--accent); opacity: 0.85; pointer-events: none; }
+.brand-bar { display: block; width: 32px; height: 3px; margin-bottom: 16px; background: var(--accent); }
 .intro h1 { margin: 0; font-size: clamp(2.4rem, 6vw, 3.2rem); font-weight: 800; line-height: 1.1; letter-spacing: -0.02em; }
 .intro h1 a { color: var(--text); }
 .intro h1 .dot { color: var(--accent); }
-.keywords { margin: 10px 0 0; font-size: 0.95rem; font-weight: 600; color: var(--muted); letter-spacing: 0.01em; }
+.keywords { margin: 10px 0 0; font-size: 0.9rem; font-weight: 600; color: var(--muted); letter-spacing: 0.01em; }
 .person {
   display: flex;
   justify-content: space-between;
   align-items: baseline;
   gap: 16px;
   max-width: 26rem;
-  margin: 22px 0 0;
-  padding: 12px 0;
+  margin: 28px 0 0;
+  padding: 10px 0;
   border-top: 1px solid var(--accent);
   border-bottom: 1px solid var(--accent);
   font-weight: 800;
   color: var(--text);
 }
-.person span:first-child { font-size: clamp(1.4rem, 3.4vw, 1.75rem); letter-spacing: 0.01em; }
+.person span:first-child { font-size: clamp(1.25rem, 3vw, 1.5rem); letter-spacing: 0.02em; }
 .person span:last-child { font-size: 1.05rem; }
 .intro h1 a:hover { text-decoration: none; }
-.role { margin: 18px 0 0; font-size: clamp(1.1rem, 2.4vw, 1.25rem); font-weight: 500; color: var(--text); }
-.tagline { margin: 14px 0 0; max-width: 22rem; color: var(--muted); }
+.role { margin: 20px 0 0; font-size: 1.1rem; font-weight: 600; color: var(--text); }
+.tagline { margin: 8px 0 0; max-width: 22rem; color: var(--muted); font-size: 0.95rem; }
 
 .section-nav { display: none; }
 .section-nav ul { list-style: none; margin: 56px 0 0; padding: 0; }
@@ -63,11 +64,11 @@ body.bare { line-height: 1.7; }
 .section-nav a:hover,
 .section-nav a[aria-current] { color: var(--text); text-decoration: none; }
 .section-nav a:hover .line,
-.section-nav a[aria-current] .line { width: 64px; background: var(--text); }
+.section-nav a[aria-current] .line { width: 64px; background: var(--accent); }
 
-.contacts { list-style: none; display: flex; flex-wrap: wrap; gap: 12px 24px; margin: 28px 0 0; padding: 0; }
-.contacts a { display: inline-flex; align-items: center; gap: 8px; color: var(--muted); font-size: 0.9rem; font-weight: 500; }
-.contacts svg { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width: 1.6; stroke-linejoin: round; }
+.contacts { list-style: none; display: flex; flex-wrap: wrap; gap: 12px 22px; margin: 28px 0 0; padding: 0; }
+.contacts a { display: inline-flex; align-items: center; gap: 8px; color: var(--muted); font-size: 0.85rem; font-weight: 500; transition: color 0.2s; }
+.contacts svg { width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-width: 1.6; stroke-linejoin: round; }
 .contacts li:last-child svg { fill: currentColor; stroke: none; }
 .contacts a:hover { color: var(--accent); text-decoration: none; }
 
@@ -94,10 +95,10 @@ body.bare { line-height: 1.7; }
 .card { position: relative; display: grid; gap: 8px; }
 .card h3 { margin: 0; font-size: 1.05rem; line-height: 1.45; color: var(--text); font-weight: 600; }
 .card p { margin: 6px 0 0; color: var(--muted); font-size: 0.95rem; }
-.card-meta { margin: 0 !important; font-family: var(--mono); font-size: 0.78rem !important; letter-spacing: 0.04em; padding-top: 3px; }
-.card-meta time { font-size: inherit; }
-.card img { width: 100%; max-width: 200px; height: auto; aspect-ratio: 16 / 9; object-fit: cover; border-radius: 4px; border: 2px solid var(--border); transition: border-color 0.2s; }
-.card:hover img { border-color: rgba(148, 163, 184, 0.4); }
+.card-meta { margin: 0 !important; font-size: 0.75rem !important; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; padding-top: 4px; }
+.card-meta time { font-size: inherit; font-family: inherit; color: inherit; }
+.card img { width: 100%; max-width: 200px; height: auto; aspect-ratio: 16 / 9; object-fit: cover; border-radius: 4px; border: 2px solid var(--border); filter: grayscale(0.35) brightness(0.85); transition: border-color 0.2s, filter 0.2s; }
+.card:hover img { border-color: rgba(242, 107, 29, 0.45); filter: none; }
 
 /* 카드 전체를 누를 수 있게 제목 링크를 카드 크기로 넓힙니다. */
 .card-link { color: var(--text); }

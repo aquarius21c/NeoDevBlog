@@ -27,10 +27,12 @@ const sections = [
   <div class="home">
     <header class="intro">
       <div>
-        <NodeGraph class="node-graph" />
-        <span class="brand-bar" aria-hidden="true"></span>
-        <h1><a href={url('')} aria-label={profile.name}>Neo<span class="dot">.</span>Atelier</a></h1>
-        <p class="keywords">{profile.keywords}</p>
+        <div class="brand">
+          <span class="brand-bar" aria-hidden="true"></span>
+          <h1><a href={url('')} aria-label={profile.name}>Neo<span class="dot">.</span>Atelier</a></h1>
+          <p class="keywords">{profile.keywords}</p>
+          <NodeGraph class="node-graph" />
+        </div>
         <p class="person"><span>{profile.nameEn}</span><span lang="ko">{profile.nameKo}</span></p>
         <p class="role">{profile.role}</p>
         <p class="tagline">{profile.tagline}</p>
@@ -45,17 +47,17 @@ const sections = [
       <ul class="contacts" aria-label="연락처">
         {contacts.email && (
           <li>
-            <a href={`mailto:${contacts.email}`} title={contacts.email}>
+            <a href={`mailto:${contacts.email}`} title={contacts.email} aria-label={`이메일 ${contacts.email}`}>
               <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 6h18v12H3zM3 7l9 6 9-6" /></svg>
-              {contacts.email}
+              <span>{contacts.email}</span>
             </a>
           </li>
         )}
         {contacts.linkedin && (
           <li>
-            <a href={contacts.linkedin} rel="noopener" target="_blank">
+            <a href={contacts.linkedin} rel="noopener" target="_blank" title="LinkedIn" aria-label="LinkedIn">
               <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9h3v11H4zM5.5 4.5a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3ZM10 9h3v1.6c.6-1 1.8-1.8 3.4-1.8 2.6 0 3.6 1.7 3.6 4.4V20h-3v-6.2c0-1.4-.5-2.3-1.8-2.3s-2.2 1-2.2 2.5V20h-3z" /></svg>
-              LinkedIn
+              <span>LinkedIn</span>
             </a>
           </li>
         )}
