@@ -225,6 +225,6 @@ The AI team leads keep the decisions and progress on a web page. I can see the c
 - Play-testing the range and measuring performance (target: 120 fps on an RTX 5080)
 - Vertical slice approval on November 9
 
-## There's still a lot missing, so I'm still working on it
+## I'll keep updating this together with AI.
 
 UrbanStrike is still being built. In the next post I'll introduce how I run this studio, with **the 14 AI team leads and the production pipeline** in detail. I'll keep recording and posting as it goes. Thank you for reading this long post.
