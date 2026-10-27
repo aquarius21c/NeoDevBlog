@@ -55,20 +55,20 @@ export const experience: { period: Text; title: Text; summary: Text; tags: Recor
       en: 'A new way of working, run by AI agents. I make the calls, and role-based AI agents handle planning, production and testing. I can take on AI video, game cinematics, Houdini FX and more.',
     },
     tags: {
-      ko: ['AI 에이전트', 'Unreal Engine', 'Houdini', '프리랜서'],
-      en: ['AI agents', 'Unreal Engine', 'Houdini', 'Freelance'],
+      ko: ['Houdini', 'AI 에이전트', 'Unreal Engine'],
+      en: ['Houdini', 'AI agents', 'Unreal Engine'],
     },
   },
   {
     period: { ko: '10년 이상', en: '10+ years' },
     title: { ko: 'Houdini FX Artist · 영화 VFX', en: 'Houdini FX Artist · Film VFX' },
     summary: {
-      ko: '국내와 할리우드 작품을 포함해 10년 넘게 영화 VFX를 작업했습니다. 폭발, 연기, 파편 같은 FX를 주로 맡았고, Houdini와 언리얼 엔진을 영상 제작에 써 왔습니다.',
-      en: 'More than 10 years in film VFX on Korean and Hollywood productions. Mostly explosions, smoke and debris, using Houdini and Unreal Engine for film work.',
+      ko: '국내와 할리우드 작품을 포함해 10년 넘게 영화 VFX를 작업했습니다. 물, 불, 폭발, 연기, 파편 같은 FX를 주로 맡았고, Houdini를 메인툴로 영상 제작을 해 왔습니다.',
+      en: 'More than 10 years in film VFX on Korean and Hollywood productions. Mostly water, fire, explosions, smoke and debris, with Houdini as my main tool.',
     },
     tags: {
-      ko: ['Houdini', 'FX', 'Pyro', 'RBD', 'Unreal Engine'],
-      en: ['Houdini', 'FX', 'Pyro', 'RBD', 'Unreal Engine'],
+      ko: ['Houdini', 'FX', 'Pyro', 'RBD'],
+      en: ['Houdini', 'FX', 'Pyro', 'RBD'],
     },
   },
 ];
