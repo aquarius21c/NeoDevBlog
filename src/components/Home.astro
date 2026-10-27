@@ -65,10 +65,10 @@ const sections = [
       <ul class="contacts" aria-label={t.contacts}>
         {contacts.email && (
           <li>
-            <a href={`mailto:${contacts.email}`} title={contacts.email} aria-label={`${t.email} ${contacts.email}`}>
+            <span class="contact-text" aria-label={`${t.email} ${contacts.email}`}>
               <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 6h18v12H3zM3 7l9 6 9-6" /></svg>
               <span>{contacts.email}</span>
-            </a>
+            </span>
           </li>
         )}
         {contacts.linkedin && (

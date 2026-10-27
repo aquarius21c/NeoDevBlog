@@ -68,7 +68,7 @@ body.bare { line-height: 1.7; }
 .section-nav a[aria-current] .line { width: 64px; background: var(--accent); }
 
 .contacts { list-style: none; display: flex; flex-wrap: wrap; gap: 12px 22px; margin: 28px 0 0; padding: 0; }
-.contacts a { display: inline-flex; align-items: center; gap: 8px; color: var(--muted); font-size: 0.85rem; font-weight: 500; transition: color 0.2s; }
+.contacts a, .contact-text { display: inline-flex; align-items: center; gap: 8px; color: var(--muted); font-size: 0.85rem; font-weight: 500; transition: color 0.2s; }
 .contacts svg { width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-width: 1.6; stroke-linejoin: round; }
 .contacts li:last-child svg { fill: currentColor; stroke: none; }
 .contacts a:hover { color: var(--accent); text-decoration: none; }

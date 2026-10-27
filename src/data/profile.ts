@@ -10,7 +10,7 @@ export const profile = {
   keywords: 'Houdini · VFX · AI Automation',
   nameEn: 'HYUNGI JEON',
   nameKo: '전현기',
-  role: 'Founder & Houdini FX Artist',
+  role: 'Houdini FX TD & AI Contents PD',
   tagline: {
     ko: '영화 VFX에서 쌓은 FX 경험과 AI 에이전트로, 혼자서도 스튜디오처럼 작업합니다.',
     en: 'Film VFX experience and AI agents, so one person can work like a studio.',
@@ -20,14 +20,12 @@ export const profile = {
 // 소개 섹션의 문단. **굵게** 표시한 부분은 강조됩니다.
 export const about: Record<Lang, string[]> = {
   ko: [
-    '안녕하세요, **전현기**입니다. 국내와 할리우드 작품을 포함해 10년 넘게 **영화 VFX**에서 폭발, 연기, 파편 같은 FX를 만들어 왔습니다.',
-    'AI를 공부하면서 역할이 다른 AI 에이전트들에게 일을 나눠 맡기는 **에이전트 하네스**를 배웠고, 이 방식으로 혼자서도 스튜디오처럼 일하는 **Neo Atelier**를 시작했습니다. 저는 방향과 결정, 품질 판단을 맡고, AI는 그 결정을 빠르게 실행합니다.',
-    '지금은 이 구조로 언리얼 엔진 슈터 게임 **UrbanStrike**를 만들고 있고, 만드는 과정은 이 블로그와 유튜브에 기록하고 있습니다.',
+    '안녕하세요, **전현기**입니다. 국내와 할리우드 작품을 포함해 15년 넘게 **영화 VFX** 작업으로 물, 불, 폭발, 연기 같은 많은 VFX 장면을 만들어 왔습니다.',
+    '이제는 AI 시대를 준비하고 공부하면서 AI 에이전트들을 이용하여 일을 나눠 맡기는 효율적인 방식으로, 일하는 **Neo Atelier**를 시작했습니다. 저는 방향과 결정, 품질 판단을 맡고, AI는 그 결정을 빠르게 실행합니다.',
   ],
   en: [
-    "Hi, I'm **Hyungi Jeon**. For more than 10 years I've worked in **film VFX**, on Korean and Hollywood productions, building FX such as explosions, smoke and debris.",
-    'While studying AI I learned to use **agent harnesses**, where AI agents with different roles split up the work. I started **Neo Atelier** to work like a studio on my own this way. I set the direction, make the decisions and judge the quality, and the AI carries those decisions out quickly.',
-    "Right now I'm using this setup to build **UrbanStrike**, an Unreal Engine shooter, and I document the process on this blog and on YouTube.",
+    "Hi, I'm **Hyungi Jeon**. For more than 15 years I've worked in **film VFX**, on Korean and Hollywood productions, creating many VFX shots with water, fire, explosions and smoke.",
+    "Now, while preparing for and studying the age of AI, I started **Neo Atelier**, an efficient way of working where AI agents split up the work. I set the direction, make the decisions and judge the quality, and the AI carries those decisions out quickly.",
   ],
 };
 
@@ -40,10 +38,10 @@ export const contacts = {
 // 소개 섹션에 넣는 FX 릴 (Vimeo 공개 영상)
 export const reel = {
   vimeoId: '878370325',
-  title: 'Hyungi Jeon FX Reel 2023',
+  title: 'Hyungi Jeon FX Reel',
   caption: {
-    ko: '영화 VFX에서 작업한 FX를 모은 릴 · 1분 55초',
-    en: 'FX work from film VFX · 1:55',
+    ko: '영화 VFX 작업 데모릴',
+    en: 'Film VFX demo reel',
   } as Text,
 };
 
@@ -52,8 +50,8 @@ export const experience: { period: Text; title: Text; summary: Text; tags: Recor
     period: { ko: '2026 — 현재', en: '2026 — Present' },
     title: { ko: 'Founder · Neo Atelier', en: 'Founder · Neo Atelier' },
     summary: {
-      ko: 'AI 에이전트 하네스로 운영하는 1인 스튜디오를 차렸습니다. 방향과 결정은 제가 하고, 기획·제작·테스트는 역할별 AI 에이전트가 실행합니다. 게임, 시네마틱, Houdini FX 작업을 프리랜서로 진행합니다.',
-      en: 'Founded a one-person studio run on an AI agent harness. I make the calls, and role-based AI agents handle planning, production and testing. I take freelance work in games, cinematics and Houdini FX.',
+      ko: 'AI 에이전트로 운영되는 새로운 작업방식입니다. 방향과 결정은 제가 하고, 기획·제작·테스트는 역할별 AI 에이전트가 실행합니다. AI 영상, 게임 시네마틱, Houdini FX 작업 등을 할 수 있습니다.',
+      en: 'A new way of working, run by AI agents. I make the calls, and role-based AI agents handle planning, production and testing. I can take on AI video, game cinematics, Houdini FX and more.',
     },
     tags: {
       ko: ['AI 에이전트', 'Unreal Engine', 'Houdini', '프리랜서'],
@@ -139,14 +137,14 @@ export const projects: {
   {
     title: { ko: 'comfy-monitor', en: 'comfy-monitor' },
     summary: {
-      ko: 'Claude Code 안에서 ComfyUI의 큐, VRAM, RAM, GPU 사용량을 상태줄과 10분 그래프 패널로 보여 주는 Claude Code 플러그인입니다. ComfyUI를 창 없이(헤드리스로) 돌릴 때 쓰려고 직접 만들었습니다.',
-      en: "A Claude Code plugin that shows ComfyUI's queue, VRAM, RAM and GPU usage in the status line and a 10-minute graph panel. I built it for running ComfyUI headless.",
+      ko: 'Claude Code 안에서 ComfyUI의 큐, VRAM, RAM, GPU 사용량을 상태줄과 10분 그래프 패널로 보여 주고, 작업 진행률과 완료·실패 알림, VRAM 경고까지 주는 Claude Code 플러그인입니다. GitHub에 MIT 라이선스로 공개했습니다. ComfyUI를 창 없이(헤드리스로) 돌릴 때 쓰려고 직접 만들었습니다.',
+      en: "A Claude Code plugin that shows ComfyUI's queue, VRAM, RAM and GPU usage in the status line and a 10-minute graph panel, plus job progress, done/failed alerts and VRAM warnings. It's open source on GitHub under the MIT license. I built it for running ComfyUI headless.",
     },
     image: 'projects/comfy-monitor.jpg',
     imageAlt: { ko: 'comfy-monitor 소개 문서 첫 화면', en: 'First screen of the comfy-monitor doc' },
     link: 'docs/comfy-monitor.html',
     stats: [
-      { icon: 'stage', label: { ko: 'v0.3.0 · 1단계 완료', en: 'v0.3.0 · Stage 1 done' } },
+      { icon: 'stage', label: { ko: 'v0.4.2 · 1~3단계 완료', en: 'v0.4.2 · Stages 1–3 done' } },
       { icon: 'clock', label: { ko: '10분 그래프 패널', en: '10-minute graph panel' } },
     ],
     tags: { ko: ['Claude Code', 'ComfyUI', '플러그인'], en: ['Claude Code', 'ComfyUI', 'Plugin'] },
