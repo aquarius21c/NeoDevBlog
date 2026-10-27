@@ -79,6 +79,16 @@ export const projects = [
     tags: ['HTML', '대시보드'],
   },
   {
+    title: 'comfy-monitor',
+    summary:
+      'ComfyUI의 대기열, VRAM, GPU 사용량을 Claude Code 상태 표시줄과 그래프 패널로 보여주는 Claude Code 플러그인입니다. 영상 생성 작업을 돌리면서 작업 화면을 떠나지 않고 상태를 확인할 수 있습니다.',
+    image: 'projects/comfy-monitor.jpg',
+    imageAlt: 'comfy-monitor 플러그인 소개 이미지',
+    link: 'docs/comfy-monitor.html',
+    stats: [],
+    tags: ['Claude Code', 'ComfyUI', 'Node.js', '플러그인'],
+  },
+  {
     title: 'Neo Atelier 블로그',
     summary:
       '지금 보고 계신 사이트입니다. Obsidian에서 쓴 글을 저장소에 올리면 GitHub Actions가 자동으로 빌드해서 배포합니다.',

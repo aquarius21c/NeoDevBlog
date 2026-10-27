@@ -1,4 +1,5 @@
 ---
+import { existsSync } from 'node:fs';
 import Base from '../layouts/Base.astro';
 import '../styles/home.css';
 import NodeGraph from '../components/NodeGraph.astro';
@@ -7,6 +8,11 @@ import { contacts, experience, profile, projects, reel } from '../data/profile';
 
 const posts = await getPosts();
 const isExternal = (link: string) => /^https?:\/\//.test(link);
+// 아직 올라오지 않은 글이나 문서로는 링크를 걸지 않습니다.
+const postIds = new Set(posts.map((p) => p.id));
+const linkReady = (link: string) =>
+  isExternal(link) ||
+  (link.startsWith('posts/') ? postIds.has(link.slice(6).replace(/\/$/, '')) : existsSync(`public/${link}`));
 const icons: Record<string, string> = {
   video: 'M4 5h11a1 1 0 0 1 1 1v3l4-2.5v11L16 15v3a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1Z',
   clock: 'M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18Zm0 4v5l3.5 2',
@@ -121,13 +127,17 @@ const sections = [
               <img src={url(p.image)} alt={p.imageAlt} width="640" height="360" loading="lazy" />
               <div>
                 <h3>
-                  <a
-                    class="card-link"
-                    href={isExternal(p.link) ? p.link : url(p.link)}
-                    {...(isExternal(p.link) ? { target: '_blank', rel: 'noopener' } : {})}
-                  >
-                    {p.title} <span aria-hidden="true">↗</span>
-                  </a>
+                  {linkReady(p.link) ? (
+                    <a
+                      class="card-link"
+                      href={isExternal(p.link) ? p.link : url(p.link)}
+                      {...(isExternal(p.link) ? { target: '_blank', rel: 'noopener' } : {})}
+                    >
+                      {p.title} <span aria-hidden="true">↗</span>
+                    </a>
+                  ) : (
+                    p.title
+                  )}
                 </h3>
                 <p>{p.summary}</p>
                 {p.stats.length > 0 && (
