@@ -71,6 +71,8 @@ time { color: var(--muted); font-family: var(--mono); font-size: 0.85rem; }
 .prose h3 { margin-top: 1.8em; }
 .prose img { max-width: 100%; height: auto; border-radius: 8px; }
 .prose video { display: block; width: 100%; height: auto; border-radius: 8px; background: #000; }
+.prose .highlight-box { margin: 2em 0; padding: 4px 22px 18px; border: 2px solid var(--accent); border-radius: 12px; background: var(--accent-soft); }
+.prose .highlight-box h2 { margin-top: 0.9em; border-bottom-color: var(--accent); }
 .prose blockquote { margin: 1.5em 0; padding: 4px 18px; border-left: 3px solid var(--accent); background: var(--surface); color: var(--muted); }
 .prose code { font-family: var(--mono); font-size: 0.9em; background: var(--surface); border: 1px solid var(--border); padding: 1px 5px; border-radius: 4px; }
 .prose pre { padding: 16px; border-radius: 8px; overflow-x: auto; border: 1px solid var(--border); font-size: 0.88rem; line-height: 1.6; }
