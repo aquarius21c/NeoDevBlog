@@ -1,0 +1,16 @@
+---
+import Base from '../layouts/Base.astro';
+import PostList from '../components/PostList.astro';
+import { getPosts } from '../utils';
+
+const posts = await getPosts();
+---
+
+<Base>
+  <section class="hero">
+    <p class="eyebrow">DEV LOG</p>
+    <h1>언리얼 AI로 만드는<br />콜 오브 듀티 스타일 게임</h1>
+    <p class="muted">기획부터 AI 적 구현, 레벨 제작까지 개발 과정을 기록하고 유튜브 영상으로도 정리합니다.</p>
+  </section>
+  <PostList posts={posts} />
+</Base>

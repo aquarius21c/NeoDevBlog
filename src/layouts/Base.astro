@@ -1,0 +1,55 @@
+---
+import '../styles/global.css';
+import { url } from '../utils';
+
+interface Props {
+  title?: string;
+  description?: string;
+}
+
+const siteTitle = 'NeoDevBlog';
+const { title, description = '언리얼 엔진 AI로 콜 오브 듀티 스타일 게임을 만드는 개발 기록' } = Astro.props;
+const pageTitle = title ? `${title} | ${siteTitle}` : siteTitle;
+const path = Astro.url.pathname;
+const nav = [
+  { href: url(''), label: '글 목록' },
+  { href: url('tags/'), label: '태그' },
+  { href: url('about/'), label: '소개' },
+];
+---
+
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{pageTitle}</title>
+    <meta name="description" content={description} />
+    <meta property="og:title" content={pageTitle} />
+    <meta property="og:description" content={description} />
+    <meta property="og:type" content="website" />
+    <link rel="icon" href={url('favicon.svg')} type="image/svg+xml" />
+  </head>
+  <body>
+    <header class="site-header">
+      <div class="wrap header-inner">
+        <a class="logo" href={url('')}><span class="logo-mark">▲</span> {siteTitle}</a>
+        <nav>
+          {
+            nav.map((item) => (
+              <a href={item.href} aria-current={path === item.href || (item.href !== url('') && path.startsWith(item.href)) ? 'page' : undefined}>
+                {item.label}
+              </a>
+            ))
+          }
+        </nav>
+      </div>
+    </header>
+    <main class="wrap">
+      <slot />
+    </main>
+    <footer class="site-footer wrap">
+      <p>© {new Date().getFullYear()} HG · 언리얼 AI 개발기</p>
+    </footer>
+  </body>
+</html>

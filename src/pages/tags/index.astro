@@ -1,0 +1,20 @@
+---
+import Base from '../../layouts/Base.astro';
+import { getPosts, getTags, url } from '../../utils';
+
+const tags = getTags(await getPosts());
+---
+
+<Base title="태그">
+  <h1>태그</h1>
+  {tags.length === 0 && <p class="muted">아직 태그가 없습니다.</p>}
+  <div class="tags tag-cloud">
+    {
+      tags.map(([tag, count]) => (
+        <a class="tag" href={url(`tags/${tag}/`)}>
+          #{tag} <span class="count">{count}</span>
+        </a>
+      ))
+    }
+  </div>
+</Base>
