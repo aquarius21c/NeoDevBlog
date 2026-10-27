@@ -81,12 +81,15 @@ export const projects = [
   {
     title: 'comfy-monitor',
     summary:
-      'ComfyUI의 대기열, VRAM, GPU 사용량을 Claude Code 상태 표시줄과 그래프 패널로 보여주는 Claude Code 플러그인입니다. 영상 생성 작업을 돌리면서 작업 화면을 떠나지 않고 상태를 확인할 수 있습니다.',
+      'Claude Code 안에서 ComfyUI의 큐, VRAM, RAM, GPU 사용량을 상태줄과 10분 그래프 패널로 보여 주는 Claude Code 플러그인입니다. ComfyUI를 창 없이(헤드리스로) 돌릴 때 쓰려고 직접 만들었습니다.',
     image: 'projects/comfy-monitor.jpg',
-    imageAlt: 'comfy-monitor 플러그인 소개 이미지',
+    imageAlt: 'comfy-monitor 소개 문서 첫 화면',
     link: 'docs/comfy-monitor.html',
-    stats: [],
-    tags: ['Claude Code', 'ComfyUI', 'Node.js', '플러그인'],
+    stats: [
+      { icon: 'stage', label: 'v0.3.0 · 1단계 완료' },
+      { icon: 'clock', label: '10분 그래프 패널' },
+    ],
+    tags: ['Claude Code', 'ComfyUI', '플러그인'],
   },
   {
     title: 'Neo Atelier 블로그',
