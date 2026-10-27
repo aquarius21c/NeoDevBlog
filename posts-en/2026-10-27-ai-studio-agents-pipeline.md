@@ -35,7 +35,7 @@ From those two sentences, 14 team leads, a seven-stage production process, six g
 
 ### Why I chose this approach
 
-I've done nothing but film VFX for more than 10 years, so I didn't know how a game company runs. Instead, while studying AI I learned about **agent harnesses**, and I was already building and using harnesses for AI tech research and Houdini VFX work. This studio takes the same frame, role-based agents, stage-by-stage approvals and work logs, and fits it to a game company's organization.
+I've done nothing but film VFX for more than 10 years, so I didn't know how a game company runs. Instead, while researching AI I learned about **agent harnesses**, and I was already building and using harnesses for AI tech research and Houdini VFX work. This studio takes the same frame, role-based agents, stage-by-stage approvals and work logs, and fits it to a game company's organization.
 
 Rather than learning an unfamiliar field from scratch before starting, I chose **to let the AI plan the company structure while I hold the decision-making power**. But in practice, making good decisions really did require basic knowledge. So on the next project I plan to also try a simpler engine such as Unity or Godot.
 

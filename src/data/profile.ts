@@ -21,11 +21,11 @@ export const profile = {
 export const about: Record<Lang, string[]> = {
   ko: [
     '안녕하세요, **전현기**입니다. 국내와 할리우드 작품을 포함해 15년 넘게 **영화 VFX** 작업으로 물, 불, 폭발, 연기 같은 많은 VFX 장면을 만들어 왔습니다.',
-    '이제는 AI 시대를 준비하고 공부하면서 AI 에이전트들을 이용하여 일을 나눠 맡기는 효율적인 방식으로, 일하는 **Neo Atelier**를 시작했습니다. 저는 방향과 결정, 품질 판단을 맡고, AI는 그 결정을 빠르게 실행합니다.',
+    '이제는 AI 시대를 준비하고 연구하면서 AI 에이전트들을 이용하여 일을 나눠 맡기는 효율적인 방식으로, 일하는 **Neo Atelier**를 시작했습니다. 저는 방향과 결정, 품질 판단을 맡고, AI는 그 결정을 빠르게 실행합니다.',
   ],
   en: [
     "Hi, I'm **Hyungi Jeon**. For more than 15 years I've worked in **film VFX**, on Korean and Hollywood productions, creating many VFX shots with water, fire, explosions and smoke.",
-    "Now, while preparing for and studying the age of AI, I started **Neo Atelier**, an efficient way of working where AI agents split up the work. I set the direction, make the decisions and judge the quality, and the AI carries those decisions out quickly.",
+    "Now, while preparing for and researching the age of AI, I started **Neo Atelier**, an efficient way of working where AI agents split up the work. I set the direction, make the decisions and judge the quality, and the AI carries those decisions out quickly.",
   ],
 };
 
