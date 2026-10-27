@@ -3,14 +3,14 @@
 export const profile = {
   name: 'Neo Atelier',
   owner: 'HG',
-  role: 'Founder & Houdini FX Artist · Neo Atelier',
+  role: 'Founder & Houdini FX Artist',
   tagline: '영화 VFX에서 쌓은 FX 경험과 AI 에이전트로, 혼자서도 스튜디오처럼 작업합니다.',
 };
 
-// 연락처는 이메일과 링크드인만 둡니다. linkedin이 비어 있으면 화면에 표시하지 않습니다.
+// 연락처는 이메일과 링크드인만 둡니다. 값이 비어 있으면 화면에 표시하지 않습니다.
 export const contacts = {
   email: 'aquarius21c@gmail.com',
-  linkedin: '',
+  linkedin: 'https://www.linkedin.com/in/hyungijeon/',
 };
 
 export const experience = [
@@ -30,15 +30,53 @@ export const experience = [
   },
 ];
 
+// stats의 icon: 'video' | 'clock' | 'team' | 'stage'
+// link: 사이트 안 주소(posts/..., docs/...) 또는 https:// 로 시작하는 바깥 주소
 export const projects = [
   {
-    title: 'UrbanStrike · AI 게임 스튜디오',
+    title: 'UrbanStrike 버티컬 슬라이스',
     summary:
-      'AI 팀장 14명이 기획부터 테스트까지 맡는 게임 스튜디오를 만들고, 언리얼 엔진 5.8로 디비전 스타일 3인칭 슈터 데모를 제작하고 있습니다. 저는 CEO로서 범위, 방향, 승인, 품질 판단을 맡습니다.',
+      '언리얼 엔진 5.8로 만드는 디비전 스타일 3인칭 슈터 데모입니다. 히트스캔 사격, 반동, 총구 화염·예광탄·피격 FX, 적 AI 전투, 실내 맵까지 이틀 동안 만든 과정을 정리했습니다.',
     image: 'projects/urbanstrike.jpg',
     imageAlt: 'UrbanStrike 3인칭 시점으로 미완성 건물 안에서 적과 교전하는 장면',
-    tags: ['Unreal Engine 5.8', 'AI 에이전트', 'Niagara', 'Blender'],
-    // 이 태그가 붙은 글이 있으면 제목이 그 태그 페이지로 연결됩니다.
-    tag: 'UrbanStrike',
+    link: 'posts/2026-10-27-ai-game-studio/',
+    stats: [
+      { icon: 'video', label: '확인 영상 58초' },
+      { icon: 'clock', label: '실제 작업 약 18시간' },
+    ],
+    tags: ['Unreal Engine 5.8', 'Lumen', 'Nanite', 'Niagara'],
+  },
+  {
+    title: 'AI 게임 스튜디오 하네스',
+    summary:
+      '게임 회사의 팀장 14명을 AI 에이전트로 두고, 기획부터 출시와 유지보수까지 7단계를 게이트로 끊어 운영하는 설계입니다. 저는 CEO로서 비전과 게이트 승인만 결정합니다.',
+    image: 'projects/studio-harness.jpg',
+    imageAlt: 'UrbanStrike 스튜디오 하네스 설계 문서 첫 화면',
+    link: 'docs/urbanstrike-studio-harness.html',
+    stats: [
+      { icon: 'team', label: 'AI 팀장 14명' },
+      { icon: 'stage', label: '7단계 · 게이트 6개' },
+    ],
+    tags: ['Claude Code', 'AI 에이전트', '하네스'],
+  },
+  {
+    title: 'UrbanStrike 스튜디오 콘솔',
+    summary:
+      '하네스를 웹으로 옮긴 운영 화면입니다. 현재 단계와 다음 게이트, 스프린트 티켓, 공정별 테스트, 열린 버그를 한 화면에서 확인합니다.',
+    image: 'projects/studio-console.jpg',
+    imageAlt: 'UrbanStrike 스튜디오 콘솔의 단계·게이트 화면',
+    link: 'docs/urbanstrike-studio-console.html',
+    stats: [],
+    tags: ['HTML', '대시보드'],
+  },
+  {
+    title: 'Neo Atelier 블로그',
+    summary:
+      '지금 보고 계신 사이트입니다. Obsidian에서 쓴 글을 저장소에 올리면 GitHub Actions가 자동으로 빌드해서 배포합니다.',
+    image: 'projects/neo-atelier-blog.jpg',
+    imageAlt: 'Neo Atelier 블로그 홈 화면',
+    link: 'https://github.com/aquarius21c/NeoDevBlog',
+    stats: [],
+    tags: ['Astro', 'GitHub Pages', 'Obsidian'],
   },
 ];
