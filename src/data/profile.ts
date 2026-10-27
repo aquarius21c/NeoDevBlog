@@ -81,12 +81,12 @@ export const projects = [
   {
     title: 'comfy-monitor',
     summary:
-      'Claude Code 안에서 ComfyUI의 큐, VRAM, RAM, GPU 사용량을 상태줄과 10분 그래프 패널로 보여 주는 Claude Code 플러그인입니다. ComfyUI를 창 없이(헤드리스로) 돌릴 때 쓰려고 직접 만들었습니다.',
+      'Claude Code 안에서 ComfyUI의 큐, VRAM, RAM, GPU 사용량을 상태줄과 10분 그래프 패널로 보여 주고, 작업 진행률과 완료·실패 알림, VRAM 경고까지 주는 Claude Code 플러그인입니다. GitHub에 MIT 라이선스로 공개했습니다. ComfyUI를 창 없이(헤드리스로) 돌릴 때 쓰려고 직접 만들었습니다.',
     image: 'projects/comfy-monitor.jpg',
     imageAlt: 'comfy-monitor 소개 문서 첫 화면',
     link: 'docs/comfy-monitor.html',
     stats: [
-      { icon: 'stage', label: 'v0.3.0 · 1단계 완료' },
+      { icon: 'stage', label: 'v0.4.1 · 1~3단계 완료' },
       { icon: 'clock', label: '10분 그래프 패널' },
     ],
     tags: ['Claude Code', 'ComfyUI', '플러그인'],
