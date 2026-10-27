@@ -1,0 +1,534 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>UrbanStrike 스튜디오 하네스</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=IBM+Plex+Sans+KR:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: 프로덕션 보드. 상단 단계 레일(클릭하면 그 단계 리드만 강조), 아래로 조직·하네스·적용 순서 */
+:root {
+  --bg: #eceeed; --panel: #f8f9f8; --ink: #1c2327; --muted: #5b666b; --line: #cfd5d4;
+  --accent: #2a5d8f; --accent-soft: #dbe6f0; --gate: #b8720f; --gate-soft: #f4e6cf; --on: #2a5d8f;
+  --f-display: "Barlow Condensed", "IBM Plex Sans KR", sans-serif;
+  --f-body: "IBM Plex Sans KR", "Apple SD Gothic Neo", "Malgun Gothic", sans-serif;
+  --f-mono: "JetBrains Mono", ui-monospace, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --bg: #141a1d; --panel: #1c2428; --ink: #e3e8e8; --muted: #94a1a5; --line: #2f3a3f;
+  --accent: #7fb0dc; --accent-soft: #223546; --gate: #e3a548; --gate-soft: #3a2d18; --on: #7fb0dc; color-scheme: dark; } }
+:root[data-theme="dark"] {
+  --bg: #141a1d; --panel: #1c2428; --ink: #e3e8e8; --muted: #94a1a5; --line: #2f3a3f;
+  --accent: #7fb0dc; --accent-soft: #223546; --gate: #e3a548; --gate-soft: #3a2d18; --on: #7fb0dc; color-scheme: dark; }
+* { box-sizing: border-box; }
+body { background: var(--bg); color: var(--ink); font: 15px/1.65 var(--f-body); }
+.wrap { max-width: 1120px; margin: 0 auto; padding-block: 40px 80px;
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); display: grid; gap: 56px; }
+h1, h2, h3 { text-wrap: balance; margin: 0; }
+h1 { font: 700 clamp(30px, 5vw, 46px)/1.1 var(--f-display); letter-spacing: .01em; }
+h2 { font: 700 26px/1.2 var(--f-display); letter-spacing: .02em; display: flex; gap: 12px; align-items: baseline; }
+h2 .sec { font: 500 13px var(--f-mono); color: var(--accent); }
+h3 { font-size: 16px; font-weight: 700; }
+p { margin: 0; max-width: 68ch; }
+section { display: grid; gap: 18px; min-width: 0; }
+.muted { color: var(--muted); }
+.eyebrow { font: 600 12px var(--f-mono); letter-spacing: .12em; text-transform: uppercase; color: var(--muted); }
+header.top { display: grid; gap: 14px; }
+.lede { font-size: 17px; max-width: 70ch; }
+.meta { display: flex; flex-wrap: wrap; gap: 8px 18px; font: 13px var(--f-mono); color: var(--muted); }
+.summary { display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: 12px; }
+.summary div { background: var(--panel); border: 1px solid var(--line); border-radius: 6px; padding: 14px 16px; }
+.summary b { display: block; font: 700 22px var(--f-display); color: var(--accent); }
+.rail { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(7, minmax(128px, 1fr)); gap: 6px; overflow-x: auto; padding-bottom: 4px; }
+.stage button { width: 100%; text-align: left; cursor: pointer; background: var(--panel); color: var(--ink); border: 1px solid var(--line); border-radius: 6px 6px 0 0; padding: 10px 12px; display: grid; gap: 2px; font: inherit; }
+.stage button:hover { border-color: var(--accent); }
+.stage button[aria-pressed="true"] { background: var(--accent); color: var(--bg); border-color: var(--accent); }
+.stage button[aria-pressed="true"] .sen, .stage button[aria-pressed="true"] .scode { color: var(--bg); }
+.stage button:focus-visible, .agent:focus-visible { outline: 2px solid var(--gate); outline-offset: 2px; }
+.scode { font: 600 13px var(--f-mono); color: var(--accent); }
+.sname { font-weight: 700; }
+.sen { font: 12px var(--f-mono); color: var(--muted); }
+.sgate { background: var(--gate-soft); border: 1px solid var(--line); border-top: 0; border-radius: 0 0 6px 6px; padding: 6px 12px; font-size: 13px; }
+.gcode { font: 600 12px var(--f-mono); color: var(--gate); }
+.hint { font-size: 13px; color: var(--muted); }
+.grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 14px; }
+.agent { background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 16px; display: grid; gap: 10px; align-content: start; transition: opacity .2s; min-width: 0; }
+.agent.dim { opacity: .32; }
+.agent header { display: flex; gap: 12px; align-items: center; }
+.acode { font: 700 20px var(--f-display); width: 44px; height: 44px; display: grid; place-items: center; border-radius: 6px; background: var(--accent-soft); color: var(--accent); flex: none; }
+.aen { font: 12px var(--f-mono); color: var(--muted); }
+.model { color: var(--gate); }
+.dots { display: flex; gap: 4px; }
+.dots i { flex: 1; height: 5px; border-radius: 2px; background: var(--line); }
+.dots i.on { background: var(--on); }
+.duties { margin: 0; padding-left: 18px; font-size: 14px; }
+dl { margin: 0; display: grid; grid-template-columns: 52px 1fr; gap: 4px 10px; font-size: 13px; }
+dt { color: var(--muted); font-weight: 600; }
+dd { margin: 0; min-width: 0; }
+.tbl { overflow-x: auto; border: 1px solid var(--line); border-radius: 8px; background: var(--panel); }
+table { border-collapse: collapse; width: 100%; font-size: 14px; min-width: 640px; }
+th, td { text-align: left; vertical-align: top; padding: 10px 12px; border-bottom: 1px solid var(--line); }
+thead th { font: 600 12px var(--f-mono); letter-spacing: .06em; color: var(--muted); text-transform: uppercase; }
+tr:last-child td, tr:last-child th { border-bottom: 0; }
+td ul { margin: 0; padding-left: 16px; }
+.chip { display: inline-block; font: 600 12px var(--f-mono); padding: 1px 6px; border-radius: 4px; background: var(--accent-soft); color: var(--accent); margin: 1px 0; }
+.chip.hg { background: var(--gate-soft); color: var(--gate); }
+.wfs { display: grid; gap: 8px; }
+.wf { background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 10px 14px; }
+.wf summary { cursor: pointer; font-weight: 700; display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+.wf[open] summary { margin-bottom: 10px; }
+.acode.sm { width: 34px; height: 28px; font-size: 15px; }
+.num { font-family: var(--f-mono); font-variant-numeric: tabular-nums; white-space: nowrap; }
+.leads { min-width: 180px; }
+pre.code { margin: 0; background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 14px 16px; overflow-x: auto; font: 12.5px/1.6 var(--f-mono); }
+code { font-family: var(--f-mono); font-size: .92em; }
+.two { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 14px; }
+.two > * { min-width: 0; }
+.mer { background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 12px; overflow-x: auto; }
+.mer pre { margin: 0; }
+.rules { display: grid; gap: 10px; }
+.rule { display: grid; grid-template-columns: 34px 1fr; gap: 10px; align-items: start; }
+.rule .n { font: 700 18px var(--f-display); color: var(--gate); }
+.callout { border-left: 3px solid var(--gate); background: var(--gate-soft); padding: 12px 16px; border-radius: 0 6px 6px 0; }
+.callout ul { margin: 6px 0 0; padding-left: 18px; }
+ol.road { list-style: none; margin: 0; padding: 0; display: grid; gap: 10px; }
+ol.road li { display: grid; grid-template-columns: 30px 1fr; gap: 10px; background: var(--panel); border: 1px solid var(--line); border-radius: 6px; padding: 10px 14px; }
+@media (prefers-reduced-motion: reduce) { .agent { transition: none; } }
+@media (max-width: 520px) { .wrap { gap: 44px; } dl { grid-template-columns: 48px 1fr; } }
+</style>
+
+<div class="wrap">
+<header class="top">
+  <span class="eyebrow">UrbanStrike · Studio Harness · 2026-10-26 · 초안</span>
+  <h1>UrbanStrike 스튜디오 하네스</h1>
+  <p class="lede">게임회사의 팀장 14명을 Claude 에이전트로 두고, 기획부터 출시와 유지보수까지 7단계를 게이트로 끊어 운영하는 설계입니다. HG는 CEO로서 비전, 핵심 게이트 승인, 예산·라이선스만 결정하고, 기획·설계·제작·QA·출시·운영은 전부 에이전트가 설계하고 실행합니다. PD 에이전트가 제작 총괄(오케스트레이터), 나머지 13명이 각 분야 리드입니다. 첫 적용 대상은 UrbanStrike이며 지금은 S1 프리프로덕션 후반, G1 버티컬 슬라이스 직전입니다.</p>
+  <div class="meta"><span>UE 5.8.3 · Blueprint 우선</span><span>Blender 5.2 · Houdini 19.5 FX</span><span>로컬 전용 (GitHub 금지)</span><span>Claude Code 서브에이전트 + 스킬 + 훅</span></div>
+</header>
+
+<section class="summary" aria-label="요약">
+  <div><b>CEO = HG</b>비전, 게이트 승인, 예산·라이선스, 외부 공개만. 나머지는 에이전트가 설계·실행</div>
+  <div><b>14 리드</b>PD 1 + 분야 리드 13. 각자 정의 파일 1개, 소유 폴더와 산출물이 정해져 있음</div>
+  <div><b>7 단계 · 6 게이트</b>컨셉 → 프리프로덕션 → 프로덕션 → 콘텐츠 완성 → QA → 출시 → 라이브옵스</div>
+  <div><b>4단 리뷰</b>셀프 체크 → 크로스 리뷰 → QA 검증 → PD 판정, 게이트는 HG 승인</div>
+  <div><b>120fps</b>RTX 5080, 1440p Epic 기준 프레임당 8.33ms 예산을 S1부터 매 스프린트 측정</div>
+  <div><b>보고 3종</b>실행 전 계획 보고, 실행 후 완료 보고, 10분 넘게 지연되면 지연 보고</div>
+  <div><b>파일이 계약</b>티켓 · 핸드오프 · 게이트 리포트가 Studio 폴더의 md 파일로 오감</div>
+</section>
+
+<section id="stages">
+  <h2><span class="sec">01</span>제작 단계와 게이트</h2>
+  <p class="hint">단계를 누르면 그 단계에서 일하는 리드만 아래 조직도에서 강조됩니다. 다시 누르면 전체 보기.</p>
+  <ol class="rail"><li class="stage" data-s="0"><button type="button" id="st0" aria-pressed="false">
+<span class="scode">S0</span><span class="sname">컨셉</span><span class="sen">Concept</span></button>
+<div class="sgate"><span class="gcode">G0</span> 그린라이트</div></li><li class="stage" data-s="1"><button type="button" id="st1" aria-pressed="false">
+<span class="scode">S1</span><span class="sname">프리프로덕션</span><span class="sen">Pre-production</span></button>
+<div class="sgate"><span class="gcode">G1</span> 버티컬 슬라이스</div></li><li class="stage" data-s="2"><button type="button" id="st2" aria-pressed="false">
+<span class="scode">S2</span><span class="sname">프로덕션</span><span class="sen">Production</span></button>
+<div class="sgate"><span class="gcode">G2</span> 알파 (기능 완성)</div></li><li class="stage" data-s="3"><button type="button" id="st3" aria-pressed="false">
+<span class="scode">S3</span><span class="sname">콘텐츠 완성</span><span class="sen">Content complete</span></button>
+<div class="sgate"><span class="gcode">G3</span> 베타</div></li><li class="stage" data-s="4"><button type="button" id="st4" aria-pressed="false">
+<span class="scode">S4</span><span class="sname">폴리싱·QA</span><span class="sen">Polish & QA</span></button>
+<div class="sgate"><span class="gcode">G4</span> RC / 골드</div></li><li class="stage" data-s="5"><button type="button" id="st5" aria-pressed="false">
+<span class="scode">S5</span><span class="sname">출시</span><span class="sen">Launch</span></button>
+<div class="sgate"><span class="gcode">G5</span> 출시 승인</div></li><li class="stage" data-s="6"><button type="button" id="st6" aria-pressed="false">
+<span class="scode">S6</span><span class="sname">라이브옵스·유지보수</span><span class="sen">Live ops</span></button>
+<div class="sgate"><span class="gcode">P#</span> 패치 게이트</div></li></ol>
+  <div class="mer"><pre class="mermaid">flowchart LR
+  S0[S0 컨셉] --> G0{G0 그린라이트}
+  G0 --> S1[S1 프리프로덕션] --> G1{G1 버티컬 슬라이스}
+  G1 --> S2[S2 프로덕션] --> G2{G2 알파}
+  G2 --> S3[S3 콘텐츠 완성] --> G3{G3 베타}
+  G3 --> S4[S4 폴리싱·QA] --> G4{G4 RC}
+  G4 --> S5[S5 출시] --> G5{G5 출시 승인}
+  G5 --> S6[S6 라이브옵스]
+  S6 --> P{P# 패치 게이트} --> S6
+  G1 -. 불합격 .-> S1
+  G2 -. 불합격 .-> S2
+  G4 -. 불합격 .-> S4</pre></div>
+  <div class="tbl"><table><thead><tr><th>단계</th><th>주요 산출물</th><th>게이트 통과 기준</th><th>참여 리드</th></tr></thead><tbody><tr><th scope="row"><span class="scode">S0</span> 컨셉</th><td><ul><li>한 문장 피치 + 컨셉 원페이저</li><li>레퍼런스·무드보드</li><li>범위·일정·예산(시간/토큰)</li><li>리스크 목록</li></ul></td>
+<td><span class="gcode">G0</span> <b>그린라이트</b><br>HG가 피치·타깃·범위에 동의. 만들지 않을 것 목록이 있음.</td>
+<td class="leads"><span class="chip">PD</span> <span class="chip">GD</span> <span class="chip">AD</span> <span class="chip">PB</span></td></tr><tr><th scope="row"><span class="scode">S1</span> 프리프로덕션</th><td><ul><li>GDD v1, 기술 설계(TDD), 스타일 가이드</li><li>에셋 파이프라인 검증(Blender·Houdini→UE)</li><li>프로토타입 → 90초 버티컬 슬라이스</li></ul></td>
+<td><span class="gcode">G1</span> <b>버티컬 슬라이스</b><br>한 구역이 최종 품질로 플레이 가능. 성능 목표 달성. 모든 파이프라인을 에셋 1개씩 통과.</td>
+<td class="leads"><span class="chip">PD</span> <span class="chip">GD</span> <span class="chip">LD</span> <span class="chip">AD</span> <span class="chip">A3</span> <span class="chip">TD</span> <span class="chip">TA</span> <span class="chip">AN</span> <span class="chip">SD</span> <span class="chip">UI</span></td></tr><tr><th scope="row"><span class="scode">S2</span> 프로덕션</th><td><ul><li>모든 기능 구현(임시 에셋 허용)</li><li>레벨 전 구역 블록아웃</li><li>에셋 리스트 50% 이상 최종</li></ul></td>
+<td><span class="gcode">G2</span> <b>알파 (기능 완성)</b><br>기능 목록 100% 동작. 처음부터 끝까지 플레이 가능. A급 버그 0.</td>
+<td class="leads"><span class="chip">PD</span> <span class="chip">GD</span> <span class="chip">LD</span> <span class="chip">AD</span> <span class="chip">A3</span> <span class="chip">TD</span> <span class="chip">TA</span> <span class="chip">AN</span> <span class="chip">SD</span> <span class="chip">UI</span> <span class="chip">QA</span></td></tr><tr><th scope="row"><span class="scode">S3</span> 콘텐츠 완성</th><td><ul><li>모든 에셋·사운드·애니 최종</li><li>HUD·메뉴·설정 완성</li><li>트레일러 샷 리스트</li></ul></td>
+<td><span class="gcode">G3</span> <b>베타</b><br>임시 에셋 0. 기능 동결. 알려진 버그 목록과 수정 계획.</td>
+<td class="leads"><span class="chip">PD</span> <span class="chip">GD</span> <span class="chip">LD</span> <span class="chip">AD</span> <span class="chip">A3</span> <span class="chip">TD</span> <span class="chip">TA</span> <span class="chip">AN</span> <span class="chip">SD</span> <span class="chip">UI</span> <span class="chip">QA</span> <span class="chip">BR</span> <span class="chip">PB</span></td></tr><tr><th scope="row"><span class="scode">S4</span> 폴리싱·QA</th><td><ul><li>패키지 빌드(Win64 Shipping)</li><li>성능·안정성 패스</li><li>트레일러·스크린샷·스토어 문구</li></ul></td>
+<td><span class="gcode">G4</span> <b>RC / 골드</b><br>A·B급 버그 0. 깨끗한 PC에서 설치·실행·종료 통과. 30분 무크래시.</td>
+<td class="leads"><span class="chip">PD</span> <span class="chip">AD</span> <span class="chip">A3</span> <span class="chip">TD</span> <span class="chip">TA</span> <span class="chip">AN</span> <span class="chip">SD</span> <span class="chip">UI</span> <span class="chip">QA</span> <span class="chip">BR</span> <span class="chip">PB</span></td></tr><tr><th scope="row"><span class="scode">S5</span> 출시</th><td><ul><li>스토어/포트폴리오 페이지 공개</li><li>빌드 업로드</li><li>트레일러 공개, 공지</li></ul></td>
+<td><span class="gcode">G5</span> <b>출시 승인</b><br>HG가 공개 버튼을 직접 승인. 롤백 빌드 보관 확인.</td>
+<td class="leads"><span class="chip">PD</span> <span class="chip">TD</span> <span class="chip">QA</span> <span class="chip">BR</span> <span class="chip">PB</span> <span class="chip">LO</span></td></tr><tr><th scope="row"><span class="scode">S6</span> 라이브옵스·유지보수</th><td><ul><li>피드백·크래시 수집과 분류</li><li>핫픽스 / 정기 패치</li><li>엔진 업데이트 검토, 아카이브</li></ul></td>
+<td><span class="gcode">P#</span> <b>패치 게이트</b><br>패치마다 변경 목록·회귀 테스트·HG 승인. 종료 시 소스·빌드 아카이브.</td>
+<td class="leads"><span class="chip">PD</span> <span class="chip">GD</span> <span class="chip">TD</span> <span class="chip">SD</span> <span class="chip">QA</span> <span class="chip">BR</span> <span class="chip">PB</span> <span class="chip">LO</span></td></tr></tbody></table></div>
+</section>
+
+<section id="agents">
+  <h2><span class="sec">02</span>팀장 에이전트 14명</h2>
+  <p class="hint">색 막대는 S0~S6 중 활동 단계. 모델은 기본값이며 비용을 보고 조정합니다 (판단이 큰 PD·AD·TD는 opus, 반복 작업이 많은 빌드는 haiku).</p>
+  <div class="grid" id="agentGrid"><article class="agent" data-stages="0,1,2,3,4,5,6">
+<header><span class="acode">PD</span><div><h3>제작 총괄 PD</h3><p class="aen">Executive Producer · <span class="model">opus</span></p></div></header>
+<div class="dots" aria-label="활동 단계"><i class="on" title="S0"></i><i class="on" title="S1"></i><i class="on" title="S2"></i><i class="on" title="S3"></i><i class="on" title="S4"></i><i class="on" title="S5"></i><i class="on" title="S6"></i></div>
+<ul class="duties"><li>CEO 비전을 제작 계획으로 번역, 범위·스프린트 계획</li><li>티켓 작성·배정, 병렬 실행 판단</li><li>게이트 회의 주재, 리스크·일정 관리</li><li>CEO에게 결과·결정 요청 보고</li></ul>
+<dl><dt>입력</dt><dd>CEO 지시, Studio/state.yaml, 각 리드 핸드오프</dd><dt>산출물</dt><dd>스프린트 계획, 게이트 리포트, 결정 카드</dd><dt>도구</dt><dd>Agent/Task 도구, Studio 보드, Obsidian</dd><dt>게이트</dt><dd>모든 게이트 소집. 최종 승인은 CEO</dd></dl>
+</article><article class="agent" data-stages="0,1,2,3,6">
+<header><span class="acode">GD</span><div><h3>게임디자인 리드</h3><p class="aen">Game Design · <span class="model">sonnet</span></p></div></header>
+<div class="dots" aria-label="활동 단계"><i class="on" title="S0"></i><i class="on" title="S1"></i><i class="on" title="S2"></i><i class="on" title="S3"></i><i class="" title="S4"></i><i class="" title="S5"></i><i class="on" title="S6"></i></div>
+<ul class="duties"><li>컨셉 문서·GDD 작성</li><li>코어 루프(사격·엄폐·교전) 설계</li><li>무기·적 수치 테이블, 밸런스</li><li>플레이 피드백을 스펙에 반영</li></ul>
+<dl><dt>입력</dt><dd>HG 방향, 레퍼런스(디비전, COD)</dd><dt>산출물</dt><dd>GDD.md, 수치 CSV(DataTable), 기능 스펙 티켓</dd><dt>도구</dt><dd>Obsidian, UE DataTable(Python 임포트), xlsx</dd><dt>게이트</dt><dd>G0 피치, G2 기능 완성 판정</dd></dl>
+</article><article class="agent" data-stages="1,2,3">
+<header><span class="acode">LD</span><div><h3>레벨디자인 리드</h3><p class="aen">Level Design · <span class="model">sonnet</span></p></div></header>
+<div class="dots" aria-label="활동 단계"><i class="" title="S0"></i><i class="on" title="S1"></i><i class="on" title="S2"></i><i class="on" title="S3"></i><i class="" title="S4"></i><i class="" title="S5"></i><i class="" title="S6"></i></div>
+<ul class="duties"><li>블록아웃과 동선, 교전 구역</li><li>엄폐물·시야선 배치</li><li>조명 기준 동선, 시네마틱 샷 동선</li></ul>
+<dl><dt>입력</dt><dd>GDD, 스타일 가이드</dd><dt>산출물</dt><dd>L_* 블록아웃 맵, 인카운터 표, 탑뷰 이미지</dd><dt>도구</dt><dd>UE Modeling Tools, PCG, UE Python, 스크린샷</dd><dt>게이트</dt><dd>G1·G2 레벨 플레이스루</dd></dl>
+</article><article class="agent" data-stages="0,1,2,3,4">
+<header><span class="acode">AD</span><div><h3>아트 디렉터</h3><p class="aen">Art Direction · <span class="model">opus</span></p></div></header>
+<div class="dots" aria-label="활동 단계"><i class="on" title="S0"></i><i class="on" title="S1"></i><i class="on" title="S2"></i><i class="on" title="S3"></i><i class="on" title="S4"></i><i class="" title="S5"></i><i class="" title="S6"></i></div>
+<ul class="duties"><li>비주얼 타깃·무드보드</li><li>스타일 가이드(텍셀 밀도, 색, 머티리얼 규칙)</li><li>에셋 리스트와 우선순위</li><li>모든 아트 산출물 리뷰</li></ul>
+<dl><dt>입력</dt><dd>컨셉, 레퍼런스</dd><dt>산출물</dt><dd>스타일 가이드, 에셋 리스트, 리뷰 코멘트, 키 아트</dd><dt>도구</dt><dd>ComfyUI(컨셉 이미지), Krita, Fab(HG Chrome), PIE 스크린샷</dd><dt>게이트</dt><dd>아트 품질 판정(G1·G3)</dd></dl>
+</article><article class="agent" data-stages="1,2,3,4">
+<header><span class="acode">A3</span><div><h3>3D 에셋 리드</h3><p class="aen">3D Art (Env/Prop/Weapon) · <span class="model">sonnet</span></p></div></header>
+<div class="dots" aria-label="활동 단계"><i class="" title="S0"></i><i class="on" title="S1"></i><i class="on" title="S2"></i><i class="on" title="S3"></i><i class="on" title="S4"></i><i class="" title="S5"></i><i class="" title="S6"></i></div>
+<ul class="duties"><li>환경·소품·무기 모델링, UV, 베이크</li><li>Nanite·LOD 기준 준수</li><li>UrbanStrike_Source 폴더·명명 규칙 관리</li></ul>
+<dl><dt>입력</dt><dd>에셋 리스트, 스타일 가이드</dd><dt>산출물</dt><dd>FBX + 텍스처(ORM), 소스 .blend</dd><dt>도구</dt><dd>Blender 5.2 (백그라운드 Python), Material Maker, Krita</dd><dt>게이트</dt><dd>AD 리뷰 → TA 임포트 검사</dd></dl>
+</article><article class="agent" data-stages="1,2,3,4,5,6">
+<header><span class="acode">TD</span><div><h3>테크니컬 디렉터</h3><p class="aen">Tech / Engine · <span class="model">opus</span></p></div></header>
+<div class="dots" aria-label="활동 단계"><i class="" title="S0"></i><i class="on" title="S1"></i><i class="on" title="S2"></i><i class="on" title="S3"></i><i class="on" title="S4"></i><i class="on" title="S5"></i><i class="on" title="S6"></i></div>
+<ul class="duties"><li>UE 5.8 구조 설계(BP 우선, 필요 시 C++ 표준)</li><li>게임플레이 시스템 구현</li><li>성능 예산(프레임·메모리), 프로파일링</li><li>Tools/Python 생성 스크립트, 로컬 git</li><li>크래시·메모리 버그 근본 원인 분석 (크래시 대응 규칙 책임자)</li></ul>
+<dl><dt>입력</dt><dd>기능 스펙, TDD</dd><dt>산출물</dt><dd>BP·스크립트, TDD.md, 성능 리포트</dd><dt>도구</dt><dd>UE Python 원격 실행, Tools/Python, Unreal Insights, git(로컬)</dd><dt>게이트</dt><dd>기술 리뷰(모든 코드·BP 변경)</dd></dl>
+</article><article class="agent" data-stages="1,2,3,4">
+<header><span class="acode">TA</span><div><h3>TA·FX 리드</h3><p class="aen">Tech Art / VFX · <span class="model">sonnet</span></p></div></header>
+<div class="dots" aria-label="활동 단계"><i class="" title="S0"></i><i class="on" title="S1"></i><i class="on" title="S2"></i><i class="on" title="S3"></i><i class="on" title="S4"></i><i class="" title="S5"></i><i class="" title="S6"></i></div>
+<ul class="duties"><li>Niagara 총구화염·탄착·먼지·데브리</li><li>머티리얼·데칼, 셰이더 비용 관리</li><li>Houdini 19.5 FX → 플립북·VAT·VDB</li><li>PCG 잔해 배치, 에셋 임포트 검사</li></ul>
+<dl><dt>입력</dt><dd>아트 리스트, FX 레퍼런스</dd><dt>산출물</dt><dd>NS_*, M_*/MI_*, 플립북/VAT, HDA(.hda) 소스</dd><dt>도구</dt><dd>fxhoudini MCP, hython, UE Python, Niagara</dd><dt>게이트</dt><dd>FX 성능·품질 판정</dd></dl>
+</article><article class="agent" data-stages="1,2,3,4">
+<header><span class="acode">AN</span><div><h3>애니메이션 리드</h3><p class="aen">Animation · <span class="model">sonnet</span></p></div></header>
+<div class="dots" aria-label="활동 단계"><i class="" title="S0"></i><i class="on" title="S1"></i><i class="on" title="S2"></i><i class="on" title="S3"></i><i class="on" title="S4"></i><i class="" title="S5"></i><i class="" title="S6"></i></div>
+<ul class="duties"><li>리타깃(IK Retargeter), 몽타주</li><li>재장전·조준·엄폐 애님</li><li>Motion Matching(GASP) 세팅</li></ul>
+<dl><dt>입력</dt><dd>캐릭터·무기 리그, GDD 동작 목록</dd><dt>산출물</dt><dd>AM_*, ABP 수정, 소스 .blend</dd><dt>도구</dt><dd>Blender, Control Rig, Cascadeur 무료판, Mixamo</dd><dt>게이트</dt><dd>AD·TD 리뷰</dd></dl>
+</article><article class="agent" data-stages="1,2,3,4,6">
+<header><span class="acode">SD</span><div><h3>사운드 리드</h3><p class="aen">Audio · <span class="model">sonnet</span></p></div></header>
+<div class="dots" aria-label="활동 단계"><i class="" title="S0"></i><i class="on" title="S1"></i><i class="on" title="S2"></i><i class="on" title="S3"></i><i class="on" title="S4"></i><i class="" title="S5"></i><i class="on" title="S6"></i></div>
+<ul class="duties"><li>총기·탄착·환경음 제작과 편집</li><li>MetaSounds, 감쇠·리버브</li><li>영상용 최종 믹스</li></ul>
+<dl><dt>입력</dt><dd>SFX 리스트, 영상 컷</dd><dt>산출물</dt><dd>WAV 48k/24bit, MS_*, ATT_*, 믹스 스템</dd><dt>도구</dt><dd>Audacity, Freesound CC0, Sonniss, MetaSounds, ffmpeg</dd><dt>게이트</dt><dd>청감 리뷰 + 라우드니스 측정</dd></dl>
+</article><article class="agent" data-stages="1,2,3,4">
+<header><span class="acode">UI</span><div><h3>UI/UX 리드</h3><p class="aen">UI / UX · <span class="model">sonnet</span></p></div></header>
+<div class="dots" aria-label="활동 단계"><i class="" title="S0"></i><i class="on" title="S1"></i><i class="on" title="S2"></i><i class="on" title="S3"></i><i class="on" title="S4"></i><i class="" title="S5"></i><i class="" title="S6"></i></div>
+<ul class="duties"><li>HUD(조준점, 탄약, 피격 방향)</li><li>메뉴·설정·일시정지</li><li>키 매핑, 접근성 옵션</li></ul>
+<dl><dt>입력</dt><dd>GDD, 스타일 가이드</dd><dt>산출물</dt><dd>Figma 목업, WBP_* 위젯</dd><dt>도구</dt><dd>Figma MCP, UMG, Krita</dd><dt>게이트</dt><dd>AD·GD 리뷰</dd></dl>
+</article><article class="agent" data-stages="2,3,4,5,6">
+<header><span class="acode">QA</span><div><h3>QA 리드</h3><p class="aen">Quality Assurance · <span class="model">sonnet</span></p></div></header>
+<div class="dots" aria-label="활동 단계"><i class="" title="S0"></i><i class="" title="S1"></i><i class="on" title="S2"></i><i class="on" title="S3"></i><i class="on" title="S4"></i><i class="on" title="S5"></i><i class="on" title="S6"></i></div>
+<ul class="duties"><li>테스트 계획, 스모크 테스트 자동 실행</li><li>에셋 검증(명명, 참조 누락, 텍스처 크기)</li><li>버그 등록·등급(A/B/C), 회귀 테스트</li><li>성능 캡처 비교</li><li>크래시 로그 수집·분류, 재현 테스트를 회귀 목록에 추가</li></ul>
+<dl><dt>입력</dt><dd>빌드, 티켓의 완료 기준</dd><dt>산출물</dt><dd>테스트 리포트, BUG-*.md, 게이트 체크리스트</dd><dt>도구</dt><dd>UE Automation·Map Check, PIE 스크린샷, stat 명령</dd><dt>게이트</dt><dd>모든 게이트에 QA 리포트 필수</dd></dl>
+</article><article class="agent" data-stages="3,4,5,6">
+<header><span class="acode">BR</span><div><h3>빌드·릴리즈 엔지니어</h3><p class="aen">Build & Release · <span class="model">haiku</span></p></div></header>
+<div class="dots" aria-label="활동 단계"><i class="" title="S0"></i><i class="" title="S1"></i><i class="" title="S2"></i><i class="on" title="S3"></i><i class="on" title="S4"></i><i class="on" title="S5"></i><i class="on" title="S6"></i></div>
+<ul class="duties"><li>BuildCookRun 패키징(Win64)</li><li>버전 규칙 0.x.y, 체인지로그, git 태그</li><li>빌드 아카이브, 롤백 보관</li></ul>
+<dl><dt>입력</dt><dd>G4 승인 커밋</dd><dt>산출물</dt><dd>패키지 zip, CHANGELOG.md, 태그</dd><dt>도구</dt><dd>RunUAT, 7-Zip, git(로컬), butler(HG 승인 후)</dd><dt>게이트</dt><dd>깨끗한 설치 테스트 통과</dd></dl>
+</article><article class="agent" data-stages="0,3,4,5,6">
+<header><span class="acode">PB</span><div><h3>퍼블리싱·마케팅 리드</h3><p class="aen">Publishing · <span class="model">sonnet</span></p></div></header>
+<div class="dots" aria-label="활동 단계"><i class="on" title="S0"></i><i class="" title="S1"></i><i class="" title="S2"></i><i class="on" title="S3"></i><i class="on" title="S4"></i><i class="on" title="S5"></i><i class="on" title="S6"></i></div>
+<ul class="duties"><li>포지셔닝, 공개 일정</li><li>itch.io·ArtStation·YouTube 페이지 문구</li><li>트레일러 편집, 스크린샷</li><li>공지·커뮤니티 답변 초안</li></ul>
+<dl><dt>입력</dt><dd>베타 빌드, 샷 리스트</dd><dt>산출물</dt><dd>트레일러 mp4(명명 규칙), 페이지 초안, 공지 초안</dd><dt>도구</dt><dd>MRQ, DaVinci Resolve, ffmpeg</dd><dt>게이트</dt><dd>외부 게시는 전부 HG 승인</dd></dl>
+</article><article class="agent" data-stages="5,6">
+<header><span class="acode">LO</span><div><h3>라이브옵스 리드</h3><p class="aen">Live Ops · <span class="model">sonnet</span></p></div></header>
+<div class="dots" aria-label="활동 단계"><i class="" title="S0"></i><i class="" title="S1"></i><i class="" title="S2"></i><i class="" title="S3"></i><i class="" title="S4"></i><i class="on" title="S5"></i><i class="on" title="S6"></i></div>
+<ul class="duties"><li>피드백·크래시 로그 수집과 분류</li><li>핫픽스·패치 계획</li><li>UE 5.8.x 업데이트 영향 검토</li><li>에셋 라이선스 대장 관리</li></ul>
+<dl><dt>입력</dt><dd>출시 빌드, 코멘트, Saved/Crashes</dd><dt>산출물</dt><dd>패치 계획, 패치 노트, 라이선스 대장</dd><dt>도구</dt><dd>Obsidian, 크래시 로그 파서, Studio 보드</dd><dt>게이트</dt><dd>패치 게이트 P# 제안</dd></dl>
+</article></div>
+</section>
+
+<section id="workflow">
+  <h2><span class="sec">03</span>리드별 작업 워크플로우</h2>
+  <p>리드마다 실제로 일하는 순서입니다. 모든 리드는 단계 ① 전에 레퍼런스를 조사하고, 단계마다 Studio/log에 기록합니다. 이름을 누르면 펼쳐집니다.</p>
+  <div class="wfs"><details class='wf'><summary><span class='acode sm'>PD</span> 제작 총괄 PD <span class='aen'>Executive Producer · 6단계</span></summary><div class='tbl'><table><thead><tr><th>단계</th><th>하는 일</th><th>도구</th><th>목표·완료 기준</th></tr></thead><tbody><tr><td><b>① 접수</b></td><td>CEO 지시를 목표·범위·마감으로 정리, 결정 기록(decisions.md)</td><td>프로젝트 채팅, Studio/decisions.md</td><td>지시 1건당 목표 한 문장 + 완료 조건</td></tr><tr><td><b>② 계획</b></td><td>티켓·모듈(30분 이내) 분해, 의존성·담당·순서, 리스크 목록</td><td>Studio/board, state.yaml, risks.md</td><td>계획 보고를 CEO에게 보냄</td></tr><tr><td><b>③ 배정</b></td><td>독립 티켓은 병렬(최대 3~4), 에디터 작업은 editor.lock 순번</td><td>Agent 도구, Remote Control, editor.lock</td><td>동시에 에디터를 쓰는 세션 1개</td></tr><tr><td><b>④ 추적</b></td><td>5분 하트비트, 10분 초과 지연 보고, 크래시 2회 시 중지</td><td>state.yaml, Studio/log</td><td>모든 모듈에 시작·끝 시각</td></tr><tr><td><b>⑤ 리뷰·게이트</b></td><td>핸드오프 수집, 크로스 리뷰·QA 요청, gate-review 리포트</td><td>gate-review 스킬, Studio/gates</td><td>게이트 리포트 + CEO 결정 카드</td></tr><tr><td><b>⑥ 회고</b></td><td>스프린트 끝에 걸린 시간·토큰·막힌 일 정리, 규칙 조정</td><td>Studio/sprints, Obsidian</td><td>다음 스프린트 개선 3가지</td></tr></tbody></table></div></details><details class='wf'><summary><span class='acode sm'>GD</span> 게임디자인 리드 <span class='aen'>Game Design · 6단계</span></summary><div class='tbl'><table><thead><tr><th>단계</th><th>하는 일</th><th>도구</th><th>목표·완료 기준</th></tr></thead><tbody><tr><td><b>① 조사</b></td><td>레퍼런스 게임(디비전 2, CoD MW) 플레이 영상·GDC 강연에서 루프·수치 추출</td><td>YouTube, GDC Vault, Studio/refs</td><td>레퍼런스 3개 이상 요약</td></tr><tr><td><b>② 컨셉</b></td><td>한 문장 피치, 코어 루프, 안 만들 것 목록</td><td>Obsidian, Docs/GDD.md</td><td>G0에서 CEO 동의</td></tr><tr><td><b>③ 시스템 설계</b></td><td>무기·적·체력·리스폰·엄폐 규칙, 상태 흐름</td><td>GDD.md, mermaid 다이어그램</td><td>기능마다 입력·출력·예외 정의</td></tr><tr><td><b>④ 수치</b></td><td>무기·적 CSV → UE DataTable, 교전 시간(TTK) 계산</td><td>xlsx/CSV, dump_gameplay_data.py</td><td>TTK 목표 범위 안 (예: 적 3~5발)</td></tr><tr><td><b>⑤ 플레이테스트</b></td><td>QA 녹화·로그로 막힘·밸런스 확인, 수치 조정</td><td>PIE, qa 리포트</td><td>조정 1회당 변경 이유 기록</td></tr><tr><td><b>⑥ 스펙 동결</b></td><td>G2 기능 동결, 변경은 CEO 승인</td><td>GDD 버전 표기</td><td>G2 이후 무단 변경 0</td></tr></tbody></table></div></details><details class='wf'><summary><span class='acode sm'>LD</span> 레벨디자인 리드 <span class='aen'>Level Design · 5단계</span></summary><div class='tbl'><table><thead><tr><th>단계</th><th>하는 일</th><th>도구</th><th>목표·완료 기준</th></tr></thead><tbody><tr><td><b>① 조사</b></td><td>디비전 2 실내 교전 공간, 동선·엄폐 간격 레퍼런스</td><td>스크린샷, Studio/refs</td><td>레퍼런스 탑뷰 3장</td></tr><tr><td><b>② 블록아웃</b></td><td>회색 박스로 동선·교전 구역·엄폐물</td><td>UE Modeling Tools, Python 배치</td><td>시작→끝 플레이 가능</td></tr><tr><td><b>③ 인카운터</b></td><td>적 스폰·순찰·시야선, 부활 지점 안전 검사</td><td>PlayerStart, 스포너, 시야 트레이스 스크립트</td><td>부활 직후 시야 노출 0</td></tr><tr><td><b>④ 아트 패스 연계</b></td><td>블록아웃을 에셋으로 교체 요청, PCG 잔해 영역</td><td>PCG, Send2UE 에셋</td><td>교체 후 동선·충돌 회귀 0</td></tr><tr><td><b>⑤ 조명·성능 동선</b></td><td>TD·TA와 조명 밀도, 가시 범위(컬링) 확인</td><td>stat scenerendering, Lumen 시각화</td><td>구역별 GPU 예산 안</td></tr></tbody></table></div></details><details class='wf'><summary><span class='acode sm'>AD</span> 아트 디렉터 <span class='aen'>Art Direction · 5단계</span></summary><div class='tbl'><table><thead><tr><th>단계</th><th>하는 일</th><th>도구</th><th>목표·완료 기준</th></tr></thead><tbody><tr><td><b>① 비주얼 타깃</b></td><td>무드보드, 색·재질·조명 기준</td><td>ComfyUI(컨셉), Krita, PureRef</td><td>타깃 이미지 5장 + 설명</td></tr><tr><td><b>② 스타일 가이드</b></td><td>텍셀 밀도(예: 512px/m), 머티리얼 규칙, 색 범위</td><td>Docs/Art/StyleGuide.md</td><td>모든 리드가 참조 가능</td></tr><tr><td><b>③ 에셋 리스트</b></td><td>필요 에셋·우선순위·예산(삼각형·텍스처)</td><td>Docs/Art/AssetList.csv</td><td>에셋마다 담당·예산</td></tr><tr><td><b>④ 리뷰</b></td><td>PIE 스크린샷 비교, 반려 사유·수정 티켓</td><td>PIE 캡처, 비교 시트</td><td>리뷰 48시간 안</td></tr><tr><td><b>⑤ 최종 룩</b></td><td>후처리·LUT·노출, 영상 룩 확정</td><td>Post Process Volume, MRQ</td><td>G3에서 CEO 승인</td></tr></tbody></table></div></details><details class='wf'><summary><span class='acode sm'>A3</span> 3D 에셋 리드 <span class='aen'>3D Art (Env/Prop/Weapon) · 5단계</span></summary><div class='tbl'><table><thead><tr><th>단계</th><th>하는 일</th><th>도구</th><th>목표·완료 기준</th></tr></thead><tbody><tr><td><b>① 조사</b></td><td>실사 잔해·건물 레퍼런스 사진, 스캔 에셋 비교</td><td>Studio/refs, Fab(무료)</td><td>레퍼런스 사진 5장</td></tr><tr><td><b>② 모델링</b></td><td>블록 → 디테일, 실측 cm 단위</td><td>Blender 5.2 (배치 Python)</td><td>예산 삼각형 안</td></tr><tr><td><b>③ UV·베이크</b></td><td>UV, 노멀·AO 베이크, ORM 패킹</td><td>Blender Bake, Material Maker</td><td>텍셀 밀도 가이드 ±20%</td></tr><tr><td><b>④ 내보내기</b></td><td>Send2UE(Export 컬렉션) 또는 FBX, UCX 충돌</td><td>Send2UE 2.4.3, _Export</td><td>Nanite·충돌 자동 설정</td></tr><tr><td><b>⑤ 엔진 검증</b></td><td>레벨 배치, PIE 스크린샷, asset_check</td><td>UE, qa_asset_check.py</td><td>명명 위반 0, AD 승인</td></tr></tbody></table></div></details><details class='wf'><summary><span class='acode sm'>TD</span> 테크니컬 디렉터 <span class='aen'>Tech / Engine · 6단계</span></summary><div class='tbl'><table><thead><tr><th>단계</th><th>하는 일</th><th>도구</th><th>목표·완료 기준</th></tr></thead><tbody><tr><td><b>① 기술 설계</b></td><td>기능 스펙 → TDD(클래스·BP 구조, 데이터 흐름)</td><td>Docs/TDD.md, Epic 문서</td><td>기능마다 담당 BP·스크립트 명시</td></tr><tr><td><b>② 구현</b></td><td>BP 우선, 스크립트(Tools/Python)로 재현 가능하게</td><td>UE Python, Blueprint DSL, git(로컬)</td><td>컴파일 에러 0, 스크립트 재실행 안전</td></tr><tr><td><b>③ 테스트</b></td><td>기능별 PIE 테스트 스크립트 작성</td><td>test_*_pie.py, qa_integration.py</td><td>새 기능마다 테스트 1개 이상</td></tr><tr><td><b>④ 성능</b></td><td>프레임 예산 관리, 프로파일링, 병목 티켓</td><td>Unreal Insights, stat unit/gpu, ProfileGPU</td><td>RTX 5080 1440p 120fps (8.3ms)</td></tr><tr><td><b>⑤ 크래시 대응</b></td><td>크래시 2회 시 triage, 근본 원인·우회 분리</td><td>Saved/Crashes, memreport, -stompmalloc</td><td>C-#### 티켓, 회귀 테스트</td></tr><tr><td><b>⑥ 빌드 준비</b></td><td>패키징 설정, 쿠킹 경고 정리</td><td>RunUAT, Project Settings</td><td>쿠킹 경고 0</td></tr></tbody></table></div></details><details class='wf'><summary><span class='acode sm'>TA</span> TA·FX 리드 <span class='aen'>Tech Art / VFX · 5단계</span></summary><div class='tbl'><table><thead><tr><th>단계</th><th>하는 일</th><th>도구</th><th>목표·완료 기준</th></tr></thead><tbody><tr><td><b>① 조사</b></td><td>실사 탄착·먼지 레퍼런스, Niagara 강연</td><td>YouTube, Epic 문서, Studio/refs</td><td>레퍼런스 영상 3개</td></tr><tr><td><b>② 셰이더·머티리얼</b></td><td>마스터 머티리얼 + MI, Substrate 여부</td><td>Material Editor, Shader Complexity 뷰</td><td>인스트럭션 예산 안</td></tr><tr><td><b>③ FX 제작</b></td><td>Niagara 이미터, 플립북·메시 파편, 표면별 분기</td><td>Niagara, PhysMat, M_FX_*</td><td>표면 5종 전부 연결</td></tr><tr><td><b>④ 파이프라인 도구</b></td><td>임포트 검사, PCG 배치 그래프</td><td>PCG, Python</td><td>에셋 임포트 자동 검사 통과</td></tr><tr><td><b>⑤ FX 성능</b></td><td>20발 동시 GPU 측정, 오버드로·파티클 수 제한</td><td>stat gpu, Niagara Debugger, fx.Budget</td><td>FX GPU 0.5ms 이하</td></tr></tbody></table></div></details><details class='wf'><summary><span class='acode sm'>AN</span> 애니메이션 리드 <span class='aen'>Animation · 5단계</span></summary><div class='tbl'><table><thead><tr><th>단계</th><th>하는 일</th><th>도구</th><th>목표·완료 기준</th></tr></thead><tbody><tr><td><b>① 조사</b></td><td>TPS 재장전·조준 레퍼런스, Epic 레이어 애님 문서</td><td>Studio/refs</td><td>레퍼런스 3개</td></tr><tr><td><b>② 리타깃</b></td><td>IK Rig·Retargeter로 스켈레톤 맞춤</td><td>IK Retargeter</td><td>포즈 깨짐 0</td></tr><tr><td><b>③ 몽타주·레이어</b></td><td>상체 슬롯, Layered blend, 에임 오프셋</td><td>Anim Blueprint, Montage</td><td>걸으면서 재장전 동작</td></tr><tr><td><b>④ 폴리싱</b></td><td>왼손 IK, 반동·흔들림, 블렌드 시간</td><td>Control Rig, Blender</td><td>조준 시 손 떨어짐 0</td></tr><tr><td><b>⑤ 검증</b></td><td>PIE 테스트·스크린샷, 애님 비용 확인</td><td>test_tps_*_pie.py, stat anim</td><td>애님 게임스레드 1ms 이하</td></tr></tbody></table></div></details><details class='wf'><summary><span class='acode sm'>SD</span> 사운드 리드 <span class='aen'>Audio · 5단계</span></summary><div class='tbl'><table><thead><tr><th>단계</th><th>하는 일</th><th>도구</th><th>목표·완료 기준</th></tr></thead><tbody><tr><td><b>① 조사</b></td><td>실사 총성·실내 반향 레퍼런스</td><td>Studio/refs, 레퍼런스 영상</td><td>레퍼런스 3개</td></tr><tr><td><b>② 소스 선별</b></td><td>Sonniss·Freesound CC0에서 후보 고르기, 라이선스 기록</td><td>Sonniss GDC 2026, installs.md</td><td>출처 100% 기록</td></tr><tr><td><b>③ 편집</b></td><td>잘라내기·레이어링·정규화 48k/24bit</td><td>Audacity, Reaper(선택)</td><td>피크 -1dBFS 이하</td></tr><tr><td><b>④ 엔진 연결</b></td><td>MetaSounds, 감쇠·리버브, 동시 재생 제한</td><td>MetaSounds, Sound Concurrency</td><td>임시음 0</td></tr><tr><td><b>⑤ 믹스</b></td><td>카테고리별 볼륨, 영상용 최종 믹스</td><td>Submix, ffmpeg loudnorm</td><td>영상 -14 LUFS</td></tr></tbody></table></div></details><details class='wf'><summary><span class='acode sm'>UI</span> UI/UX 리드 <span class='aen'>UI / UX · 5단계</span></summary><div class='tbl'><table><thead><tr><th>단계</th><th>하는 일</th><th>도구</th><th>목표·완료 기준</th></tr></thead><tbody><tr><td><b>① 조사</b></td><td>CoD·디비전 HUD, 조준점 UX</td><td>Studio/refs</td><td>레퍼런스 3개</td></tr><tr><td><b>② 목업</b></td><td>HUD·메뉴 레이아웃, 안전 영역</td><td>Figma MCP, Krita</td><td>16:9·21:9 안전 영역 확인</td></tr><tr><td><b>③ 구현</b></td><td>HUD(Canvas 또는 UMG), 메뉴·설정</td><td>BP_UrbanHUD, UMG</td><td>정보 표시 지연 1프레임 이내</td></tr><tr><td><b>④ 설정 메뉴</b></td><td>그래픽 품질·해상도·감도·키 매핑</td><td>Game User Settings, Enhanced Input</td><td>설정 저장·복원</td></tr><tr><td><b>⑤ 검증</b></td><td>해상도별 스크린샷, UI 비용</td><td>stat slate, PIE</td><td>UI 0.5ms 이하</td></tr></tbody></table></div></details><details class='wf'><summary><span class='acode sm'>QA</span> QA 리드 <span class='aen'>Quality Assurance · 5단계</span></summary><div class='tbl'><table><thead><tr><th>단계</th><th>하는 일</th><th>도구</th><th>목표·완료 기준</th></tr></thead><tbody><tr><td><b>① 테스트 계획</b></td><td>티켓 완료 기준 → 테스트 항목</td><td>Studio/gates, test 목록</td><td>기능마다 테스트 매핑</td></tr><tr><td><b>② 자동 테스트</b></td><td>스모크·통합·에셋 검사 매일 실행</td><td>qa_smoke.py, qa_integration.py, qa_asset_check.py</td><td>기준선 대비 회귀 0</td></tr><tr><td><b>③ 성능 테스트</b></td><td>고정 카메라 경로로 프레임 측정 (csv)</td><td>perf_capture.py, csvprofile, startfpschart</td><td>평균·1% low 기록</td></tr><tr><td><b>④ 버그 관리</b></td><td>A/B/C 등급, 재현 절차, 담당 지정</td><td>Studio/bugs, 크래시는 bugs/crash</td><td>A급 24시간 안 담당 배정</td></tr><tr><td><b>⑤ 게이트 판정</b></td><td>게이트 체크리스트 통과 여부</td><td>gate-review</td><td>QA 리포트 없는 게이트 0</td></tr></tbody></table></div></details><details class='wf'><summary><span class='acode sm'>BR</span> 빌드·릴리즈 엔지니어 <span class='aen'>Build & Release · 5단계</span></summary><div class='tbl'><table><thead><tr><th>단계</th><th>하는 일</th><th>도구</th><th>목표·완료 기준</th></tr></thead><tbody><tr><td><b>① 빌드 설정</b></td><td>Shipping 구성, 쿠킹 대상 맵, 압축</td><td>Project Settings, DefaultGame.ini</td><td>설정 문서화</td></tr><tr><td><b>② 패키징</b></td><td>BuildCookRun Win64</td><td>RunUAT</td><td>빌드 성공, 경고 목록</td></tr><tr><td><b>③ 설치 테스트</b></td><td>깨끗한 폴더에서 실행·종료·30분 플레이</td><td>패키지 zip, QA</td><td>크래시 0</td></tr><tr><td><b>④ 버전·아카이브</b></td><td>0.x.y, CHANGELOG, git 태그, _Builds 보관</td><td>git(로컬), 7-Zip</td><td>롤백 빌드 1개 이상 보관</td></tr><tr><td><b>⑤ 업로드 준비</b></td><td>itch.io butler 설정 (업로드는 CEO 승인 후)</td><td>butler</td><td>업로드 명령 준비 완료</td></tr></tbody></table></div></details><details class='wf'><summary><span class='acode sm'>PB</span> 퍼블리싱·마케팅 리드 <span class='aen'>Publishing · 4단계</span></summary><div class='tbl'><table><thead><tr><th>단계</th><th>하는 일</th><th>도구</th><th>목표·완료 기준</th></tr></thead><tbody><tr><td><b>① 포지셔닝</b></td><td>타깃(포트폴리오 열람자), 핵심 메시지</td><td>Docs/Marketing</td><td>한 줄 소개</td></tr><tr><td><b>② 영상</b></td><td>샷 리스트 → MRQ 렌더 → 편집, 명명 규칙</td><td>MRQ, DaVinci Resolve, ffmpeg</td><td>YYMMDD_urbanstrike_&lt;scene&gt;_&lt;res&gt;_v###.mp4</td></tr><tr><td><b>③ 스크린샷·페이지</b></td><td>스토어·포트폴리오 문구, 스크린샷 5장</td><td>itch.io, ArtStation 초안</td><td>초안 완성</td></tr><tr><td><b>④ 공개</b></td><td>공개 일정, 공지 초안 → CEO 승인 후 게시</td><td>초안 문서</td><td>CEO 승인 없는 게시 0</td></tr></tbody></table></div></details><details class='wf'><summary><span class='acode sm'>LO</span> 라이브옵스 리드 <span class='aen'>Live Ops · 5단계</span></summary><div class='tbl'><table><thead><tr><th>단계</th><th>하는 일</th><th>도구</th><th>목표·완료 기준</th></tr></thead><tbody><tr><td><b>① 수집</b></td><td>코멘트·크래시 리포트·설문 정리</td><td>itch 코멘트, Saved/Crashes</td><td>주 1회 정리</td></tr><tr><td><b>② 분류</b></td><td>버그·요청·밸런스로 나누고 우선순위</td><td>Studio/bugs, 보드</td><td>A급은 핫픽스 후보</td></tr><tr><td><b>③ 패치 계획</b></td><td>핫픽스/정기 패치 범위, 회귀 목록</td><td>patch-release 스킬</td><td>패치 노트 초안</td></tr><tr><td><b>④ 엔진 유지</b></td><td>UE 5.8.x 업데이트 영향 검토</td><td>릴리스 노트, 테스트 브랜치</td><td>업데이트는 CEO 승인</td></tr><tr><td><b>⑤ 아카이브</b></td><td>소스·빌드·라이선스 대장 보관</td><td>_Builds, installs.md</td><td>종료 시 복원 가능</td></tr></tbody></table></div></details></div>
+</section>
+
+<section id="perf">
+  <h2><span class="sec">04</span>최적화 · RTX 5080 120fps</h2>
+  <p>최적화는 마지막에 몰아서 하지 않고 S1부터 매 스프린트 측정합니다. 책임은 TD(Technical Director, 기술 리드), 측정 자동화는 QA, GPU 콘텐츠 비용은 TA·A3가 맡습니다.</p>
+  <div class="tbl"><table style="min-width:0"><tbody><tr><th scope='row'>기준 하드웨어</th><td>NVIDIA RTX 5080, Windows 11, DX12/SM6</td></tr><tr><th scope='row'>해상도·품질</th><td>2560×1440, 엔진 스케일러빌리티 Epic, TSR 품질 모드, Lumen·VSM·Nanite 켬</td></tr><tr><th scope='row'>목표 프레임</th><td>평균 120fps (프레임당 8.33ms), 1% low 90fps 이상, 히치(50ms 넘는 프레임) 0</td></tr><tr><th scope='row'>보조 목표</th><td>4K TSR 50%에서 평균 90fps 이상 (참고용)</td></tr><tr><th scope='row'>메모리</th><td>VRAM 12GB 이하 (5080 16GB의 75%), 시스템 RAM 12GB 이하</td></tr></tbody></table></div>
+  <h3>프레임 예산 (8.33ms)</h3>
+  <div class="tbl"><table><thead><tr><th>항목</th><th>예산</th><th>주로 좌우하는 것</th><th>담당</th></tr></thead><tbody><tr><td>Game 스레드</td><td class='num'>6.0ms</td><td>BP Tick, AI(StateTree), 애님</td><td><span class=chip>TD</span> <span class=chip>AN</span></td></tr><tr><td>Render 스레드</td><td class='num'>6.0ms</td><td>드로우콜, 가시성, 섀도 셋업</td><td><span class=chip>TD</span> <span class=chip>TA</span></td></tr><tr><td>GPU 합계</td><td class='num'>8.0ms</td><td>아래 항목 합계 (여유 0.3ms)</td><td><span class=chip>TD</span></td></tr><tr><td>  Lumen GI·반사</td><td class='num'>2.5ms</td><td>Lumen 품질, 반사 방식</td><td><span class=chip>TA</span></td></tr><tr><td>  섀도 (VSM)</td><td class='num'>1.2ms</td><td>섀도 캐스팅 라이트 수</td><td><span class=chip>TA</span> <span class=chip>LD</span></td></tr><tr><td>  Base pass·Nanite</td><td class='num'>2.0ms</td><td>삼각형, 머티리얼 비용</td><td><span class=chip>A3</span> <span class=chip>TA</span></td></tr><tr><td>  FX·반투명</td><td class='num'>0.5ms</td><td>파티클 수, 오버드로</td><td><span class=chip>TA</span></td></tr><tr><td>  후처리·TSR</td><td class='num'>1.3ms</td><td>TSR, 블룸, 노출</td><td><span class=chip>AD</span> <span class=chip>TA</span></td></tr><tr><td>  UI</td><td class='num'>0.5ms</td><td>HUD 그리기</td><td><span class=chip>UI</span></td></tr></tbody></table></div>
+  <h3>단계별 최적화</h3>
+  <div class="tbl"><table><thead><tr><th>단계</th><th>할 일</th><th>게이트 기준</th></tr></thead><tbody><tr><td><b>S1 프리프로덕션</b></td><td>예산표 확정, 성능 테스트 맵·카메라 경로 고정, 기준선 측정</td><td>G1: 테스트 경로 평균 120fps</td></tr><tr><td><b>S2 프로덕션</b></td><td>스프린트마다 perf_capture 자동 실행, 예산 넘으면 성능 티켓</td><td>회귀 5% 넘으면 그 스프린트 안에 수정</td></tr><tr><td><b>S3 콘텐츠 완성</b></td><td>에셋별 예산 검사(삼각형·텍스처·머티리얼), 구역별 GPU 측정</td><td>G3: 모든 구역 예산 안</td></tr><tr><td><b>S4 폴리싱·QA</b></td><td>최적화 패스: 병목 상위 5개 해결, 셰이더 사전 컴파일(PSO), 히치 제거</td><td>G4: 패키지 빌드에서 목표 달성</td></tr><tr><td><b>S6 라이브옵스</b></td><td>패치마다 성능 회귀 테스트</td><td>패치 전후 차이 5% 이내</td></tr></tbody></table></div>
+  <h3>측정 → 수정 루프</h3>
+  <div class="rules"><div class='rule'><span class='n'>1</span><p><b>측정.</b> 고정 경로 60초, stat unit·stat gpu, csvprofile로 CSV 저장 <span class='muted'>(perf_capture.py, -csvprofile)</span></p></div><div class='rule'><span class='n'>2</span><p><b>병목 찾기.</b> Game/Render/GPU 중 가장 긴 것부터 <span class='muted'>(stat unit, Unreal Insights 트레이스)</span></p></div><div class='rule'><span class='n'>3</span><p><b>세부 분석.</b> GPU는 ProfileGPU·stat gpu, CPU는 Insights 타이밍 <span class='muted'>(ProfileGPU, Insights, NVIDIA Nsight(선택))</span></p></div><div class='rule'><span class='n'>4</span><p><b>수정.</b> 가장 큰 항목 하나만 고치고 다시 측정 <span class='muted'>(담당 리드 티켓)</span></p></div><div class='rule'><span class='n'>5</span><p><b>기록.</b> 전후 수치를 Studio/perf/YYMMDD.md에 기록 <span class='muted'>(Studio/perf)</span></p></div></div>
+  <p class="muted">도구: stat unit / stat gpu / stat scenerendering / stat rhi · Unreal Insights · ProfileGPU · csvprofile · startfpschart · memreport -full · r.ScreenPercentage · sg.* 스케일러빌리티 · Lumen·Nanite 시각화 뷰 · NVIDIA FrameView(선택)</p>
+</section>
+
+<section id="raci">
+  <h2><span class="sec">05</span>산출물별 책임 (RACI)</h2>
+  <p>R은 만드는 리드, A는 승인자, C는 의견을 내는 리드입니다. 자기 작업을 자기가 승인하는 칸은 없습니다.</p>
+  <div class="tbl"><table><thead><tr><th>산출물</th><th>R 책임</th><th>A 승인</th><th>C 협의</th></tr></thead><tbody><tr><td>컨셉 원페이저</td><td><span class='chip'>GD</span></td><td><span class='chip hg'>HG</span></td><td>PD AD PB</td></tr><tr><td>GDD·수치 테이블</td><td><span class='chip'>GD</span></td><td><span class='chip '>PD</span></td><td>LD TD</td></tr><tr><td>레벨 블록아웃</td><td><span class='chip'>LD</span></td><td><span class='chip '>GD</span></td><td>AD TD</td></tr><tr><td>스타일 가이드·에셋 리스트</td><td><span class='chip'>AD</span></td><td><span class='chip '>PD</span></td><td>A3 TA</td></tr><tr><td>3D 에셋</td><td><span class='chip'>A3</span></td><td><span class='chip '>AD</span></td><td>TA</td></tr><tr><td>게임플레이 BP·시스템</td><td><span class='chip'>TD</span></td><td><span class='chip '>PD</span></td><td>GD QA</td></tr><tr><td>FX·머티리얼</td><td><span class='chip'>TA</span></td><td><span class='chip '>AD</span></td><td>TD</td></tr><tr><td>애니메이션</td><td><span class='chip'>AN</span></td><td><span class='chip '>AD</span></td><td>TD</td></tr><tr><td>사운드·믹스</td><td><span class='chip'>SD</span></td><td><span class='chip '>PD</span></td><td>PB</td></tr><tr><td>HUD·메뉴</td><td><span class='chip'>UI</span></td><td><span class='chip '>GD</span></td><td>AD</td></tr><tr><td>테스트 리포트·버그 등급</td><td><span class='chip'>QA</span></td><td><span class='chip '>PD</span></td><td>전 리드</td></tr><tr><td>패키지 빌드·버전</td><td><span class='chip'>BR</span></td><td><span class='chip '>TD</span></td><td>QA</td></tr><tr><td>트레일러·스토어 페이지</td><td><span class='chip'>PB</span></td><td><span class='chip hg'>HG</span></td><td>AD SD</td></tr><tr><td>패치·유지보수</td><td><span class='chip'>LO</span></td><td><span class='chip hg'>HG</span></td><td>TD QA BR</td></tr></tbody></table></div>
+</section>
+
+<section id="harness">
+  <h2><span class="sec">06</span>하네스 구조</h2>
+  <p>Claude Code가 프로젝트 폴더에서 실행되면 <code>.claude/agents</code>의 리드들을 서브에이전트로 부릅니다. 리드끼리는 직접 대화하지 않고 <code>Studio</code> 폴더의 파일(티켓, 핸드오프, 게이트 리포트)로만 주고받습니다. 그래서 세션이 끊겨도 상태가 남고, HG가 Obsidian 사본으로 언제든 확인할 수 있습니다.</p>
+  <pre class="code">UrbanStrike\          ← 언리얼 프로젝트 (로컬 git, GitHub 금지)
+├─ .claude\
+│  ├─ agents\        pd.md · gd-lead.md · ld-lead.md · ad-lead.md · a3-lead.md
+│  │                 td-lead.md · ta-fx-lead.md · anim-lead.md · sound-lead.md
+│  │                 ui-lead.md · qa-lead.md · build-release.md · publishing.md · liveops.md
+│  ├─ skills\        studio-ticket · handoff · gate-review · asset-check
+│  │                 render-video · build-package · patch-release
+│  └─ settings.json  훅·권한 (git push 차단 등)
+├─ Studio\                                ← 하네스 상태 (모든 에이전트가 읽고 씀)
+│  ├─ state.yaml     현재 단계, 스프린트, 게이트 상태
+│  ├─ board\         T-0001_sd_real-gunshots.md …
+│  ├─ handoffs\      T-0001.handoff.md …
+│  ├─ gates\         G1_vertical_slice.md …
+│  ├─ bugs\          BUG-0001.md …
+│  ├─ decisions.md   결정 기록 (ADR)
+│  └─ risks.md
+├─ Docs\  Tools\Python\  Content\_Demo\   ← 기존 그대로
+UrbanStrike_Source\    ← DCC 소스 (.blend, .hip, .hda, WAV)
+_Builds\               ← 패키지 빌드 아카이브
+Obsidian 70_게임개발\UrbanStrike 스튜디오\ ← 계획·게이트 리포트 사본 (HG 열람용)</pre>
+  <div class="mer"><pre class="mermaid">sequenceDiagram
+  participant HG as HG (CEO)
+  participant PD as PD 프로듀서
+  participant L as 리드 에이전트들
+  participant QA as QA 리드
+  HG->>PD: 목표·방향 (프로젝트 채팅)
+  PD->>PD: state.yaml 읽기, 스프린트 티켓 작성
+  par 독립 티켓은 병렬
+    PD->>L: TA 티켓
+  and
+    PD->>L: SD 티켓
+  end
+  L->>L: 작업 → 완료 기준 셀프 체크
+  L-->>PD: handoff.md
+  PD->>L: 크로스 리뷰 요청 (AD·TD)
+  PD->>QA: 검증 요청
+  QA-->>PD: 테스트 리포트, 버그 등급
+  PD->>HG: 게이트 리포트 + 결정 카드
+  HG-->>PD: 승인 / 재작업</pre></div>
+  <div class="two">
+    <div class="tbl"><table style="min-width:0"><thead><tr><th>훅</th><th>하는 일</th></tr></thead><tbody><tr><td><code>SessionStart</code></td><td>state.yaml 요약, 열린 티켓, 이번 주 게이트를 세션에 넣는다.</td></tr><tr><td><code>PreToolUse · Bash</code></td><td>git push, git remote add, Content 폴더 대량 삭제를 차단한다.</td></tr><tr><td><code>PostToolUse · Write/Edit</code></td><td>Content·Source 경로 변경 시 asset-check(명명·크기) 실행, 티켓 로그에 한 줄 추가.</td></tr><tr><td><code>SubagentStop</code></td><td>배정 티켓의 handoff 파일이 없으면 종료를 막고 작성을 요구한다.</td></tr><tr><td><code>PostToolUse · Bash (UE 실행)</code></td><td>UnrealEditor 종료 코드가 비정상이면 크래시 카운터를 올리고, 같은 명령이 2번째면 재실행을 막고 crash-triage를 요구.</td></tr><tr><td><code>PD 하트비트 (5분마다)</code></td><td>진행 중 모듈의 시작 시각을 확인해 예상보다 10분 넘으면 지연 보고를 CEO에게 보냄.</td></tr><tr><td><code>Stop</code></td><td>state.yaml의 티켓 상태를 갱신하고, HG 승인이 필요한 항목이 있으면 알림을 보낸다.</td></tr></tbody></table></div>
+    <div class="tbl"><table style="min-width:0"><thead><tr><th>스킬</th><th>하는 일</th></tr></thead><tbody><tr><td><code>studio-ticket</code></td><td>티켓 템플릿 생성·상태 변경·의존성 검사</td></tr><tr><td><code>handoff</code></td><td>핸드오프 템플릿, 다음 담당 지정</td></tr><tr><td><code>gate-review</code></td><td>게이트 체크리스트 수집 → 리드별 판정 → 리포트 + HG 결정 카드</td></tr><tr><td><code>asset-check</code></td><td>UE 명명 규칙, 텍스처 크기, 참조 누락, LOD·Nanite 확인</td></tr><tr><td><code>render-video</code></td><td>MRQ 렌더 + ffmpeg 오디오 합성, YYMMDD_urbanstrike_… 명명</td></tr><tr><td><code>build-package</code></td><td>RunUAT BuildCookRun, 버전 태그, 아카이브</td></tr><tr><td><code>crash-triage</code></td><td>크래시 로그 수집·예외 분류·메모리 확인 명령·C-#### 티켓 작성·CEO 크래시 보고</td></tr><tr><td><code>stage-test</code></td><td>공정별 순서 테스트(2026-10-27 HG): 테스트를 공정·에셋 단위로 나눠 한 번에 하나씩 순서대로(맵·충돌 → 주인공·카메라 → 발사 → 표적 → 반동·애님 → 탄착 FX → 총구 FX → 외부 팩 FX → 사운드 → HUD → 통합·성능). 단계마다 시간 제한·통과 기준, 통과해야 다음, 그 에셋 파일만 커밋, 단계별 즉시 보고. 시도마다 동영상 urbanstrike_st##_테스트명_v###_t##.mp4. 공용 모듈 stage_test_lib.py + 저장 없는 미리 실행(10초) 먼저, 읽기·측정은 미러 프로젝트 헤드리스, 저장·PIE·녹화만 본 에디터. 소리·성능·통합 영상·쇼케이스 녹화는 PC 비는 시간(매일 밤 01:00~08:00 KST, HG 2026-10-27 승인)에만 돌리고, 시작 전 알림·끝나면 결과 보고.</td></tr><tr><td><code>game-bug-fix</code></td><td>게임 테스트 버그 수정 루프: 재현 → 원인 가설 1개 → 최소 수정 → 재테스트(시간 제한) → 같은 실패 2회면 되돌리고 보고. 재시도 전 반복 보고, qa_smoke 통과 후에만 커밋, B-#### 기록·회귀 테스트 추가</td></tr><tr><td><code>patch-release</code></td><td>패치 노트, 회귀 테스트 목록, 롤백 빌드 확인</td></tr></tbody></table></div>
+  </div>
+  <h3>도구 연결</h3>
+  <div class="tbl"><table><thead><tr><th>도구</th><th>연결 방식</th><th>사용 리드</th></tr></thead><tbody><tr><td><b>Unreal Engine 5.8.3</b></td><td>UE Python 원격 실행 + 기존 Tools/Python 생성 스크립트, RunUAT, Automation</td><td><span class=chip>TD</span> <span class=chip>TA</span> <span class=chip>LD</span> <span class=chip>QA</span> <span class=chip>BR</span></td></tr><tr><td><b>Houdini 19.5 FX</b></td><td>fxhoudini MCP (Houdini 실행 중일 때), hython 배치</td><td><span class=chip>TA</span></td></tr><tr><td><b>Blender 5.2</b></td><td>blender --background --python 배치, FBX 내보내기</td><td><span class=chip>A3</span> <span class=chip>AN</span></td></tr><tr><td><b>ComfyUI</b></td><td>컨셉 이미지·무드보드 ((로컬 작업 폴더) 하네스 재사용)</td><td><span class=chip>AD</span> <span class=chip>PB</span></td></tr><tr><td><b>Obsidian</b></td><td>계획·게이트 리포트 사본, MOC 연결</td><td><span class=chip>PD</span> <span class=chip>GD</span> <span class=chip>LO</span></td></tr><tr><td><b>Figma MCP</b></td><td>HUD·메뉴 목업</td><td><span class=chip>UI</span></td></tr><tr><td><b>ffmpeg / Resolve</b></td><td>영상 편집·오디오 믹스</td><td><span class=chip>SD</span> <span class=chip>PB</span></td></tr><tr><td><b>Claude 앱 프로젝트</b></td><td>HG 보고, 결정 카드, 스레드별 작업 분리</td><td><span class=chip>PD</span></td></tr></tbody></table></div>
+</section>
+
+<section id="contracts">
+  <h2><span class="sec">07</span>티켓과 핸드오프 형식</h2>
+  <div class="two">
+    <div style="display:grid;gap:8px"><h3>티켓 · Studio/board/T-0004.md</h3><pre class="code">---
+id: T-0004
+title: 탄착 먼지 FX (Houdini 플립북)
+owner: TA            # 책임 리드 (R)
+reviewers: [AD, TD]  # 크로스 리뷰
+stage: S1
+sprint: 1
+status: todo         # todo → doing → review → qa → done
+depends_on: [T-0001]
+---
+## 목표
+콘크리트 탄착 시 먼지 뭉치 + 잔 파편. 디비전 수준 밀도.
+## 입력
+UrbanStrike_Source/40_FX/ref, 기존 NS_Impact_Concrete
+## 완료 기준
+- [ ] 8×8 플립북 2048px, NS_Impact_Dust 적용
+- [ ] 동시 20발에서 GPU 0.5ms 이하 (stat gpu)
+- [ ] PIE 스크린샷 3장 Studio/handoffs/에 첨부</pre></div>
+    <div style="display:grid;gap:8px"><h3>핸드오프 · Studio/handoffs/T-0004.handoff.md</h3><pre class="code"># T-0004 핸드오프 — TA → AD, TD, QA
+- 결과물: /Game/_Demo/FX/NS_Impact_Dust, T_Dust_Flip_8x8
+- 소스: UrbanStrike_Source/40_FX/dust_impact_v003.hip
+- 확인 방법: L_UnfinishedBuilding PIE, 기둥 B2에 사격
+- 완료 기준: 3/3 통과 (측정값 0.38ms)
+- 남은 문제: 저각도에서 플립북 루프 끊김 보임 → T-0011 제안
+- 다음 담당: AD(품질), QA(성능 회귀)</pre></div>
+  </div>
+  <h3>에이전트 정의 예시 · .claude/agents/ta-fx-lead.md</h3>
+  <pre class="code">---
+name: ta-fx-lead
+description: UrbanStrike TA·FX 리드. Niagara, 머티리얼, 데칼, Houdini 19.5 FX(플립북·VAT·VDB), PCG 잔해 티켓을 맡는다. 티켓 owner가 TA일 때 사용.
+tools: Read, Write, Edit, Bash, Glob, Grep, mcp__fxhoudini__*
+model: sonnet
+---
+너는 UrbanStrike 스튜디오의 TA·FX 리드다.
+- 시작: Studio/state.yaml과 배정된 티켓을 읽는다. 티켓 밖 작업은 하지 않는다.
+- 규칙: 파이프라인 문서의 폴더·명명 규칙, Houdini 19.5 파일 기반 출력(Houdini Engine 없음).
+- UE 작업은 Tools/Python에 스크립트로 남기고 원격 실행한다.
+- 끝: 완료 기준을 스스로 확인하고 Studio/handoffs/&lt;티켓&gt;.handoff.md를 쓴다.
+- 금지: git push, 외부 게시, 다른 리드 소유 파일 수정, 자기 작업 승인.</pre>
+</section>
+
+<section id="gates">
+  <h2><span class="sec">08</span>리뷰와 게이트 규칙</h2>
+  <div class="rules">
+    <div class="rule"><span class="n">1</span><p><b>셀프 체크.</b> 담당 리드가 티켓의 완료 기준을 하나씩 확인하고 측정값·스크린샷을 핸드오프에 남깁니다.</p></div>
+    <div class="rule"><span class="n">2</span><p><b>크로스 리뷰.</b> 티켓의 reviewers(예: FX는 AD와 TD)가 품질과 기술을 각각 봅니다. 반려는 사유와 수정 티켓을 남깁니다.</p></div>
+    <div class="rule"><span class="n">3</span><p><b>QA 검증.</b> QA가 스모크 테스트·에셋 검증·성능 비교를 돌리고 버그를 A(진행 불가)·B(눈에 띔)·C(사소함)로 등급을 매깁니다.</p></div>
+    <div class="rule"><span class="n">4</span><p><b>PD 판정과 HG 승인.</b> 스프린트 안 티켓은 PD가 닫습니다. 단계 게이트는 PD가 gate-review로 리포트를 만들고 HG가 결정 카드로 승인하거나 재작업을 고릅니다.</p></div>
+    <div class="rule"><span class="n">5</span><p><b>공정별 순서 테스트 (2026-10-27 HG).</b> 테스트는 공정·에셋 단위로 나눠 한 번에 하나씩, 정해진 순서대로 합니다. 맵·충돌 → 주인공·카메라 → 발사 → 표적 → 반동·애님 → 탄착 FX → 총구 FX → 외부 팩 FX → 사운드 → HUD → 통합·성능. 단계마다 시간 제한과 통과 기준을 미리 정하고, 통과해야 다음 단계로 갑니다. 통과하면 그 에셋 파일만 커밋하고 바로 보고합니다. 시도마다 동영상을 남기고, 이름은 프로젝트_진행단계_테스트명_버전_시도횟수(예: urbanstrike_st03_weaponfire_v001_t02.mp4)로 저장합니다. 여러 에셋을 한 번에 묶어 테스트하지 않습니다. 순서표는 HG 승인 후 시작합니다. 소리·성능·통합 영상·쇼케이스 녹화는 PC 비는 시간(매일 밤 01:00~08:00 KST, HG 2026-10-27 승인)에만 돌립니다. 시작 전에 알리고 끝나면 결과를 보고합니다.</p></div>
+  </div>
+  <div class="callout"><b>CEO(HG)만 결정하는 일</b> (에이전트는 준비와 추천까지 하고 멈춤)<ul><li>비전·방향 설정, 게이트(G0~G5, P#) 최종 승인</li><li>스토어·SNS·YouTube 등 외부 공개 게시</li><li>예산: 유료 구매·구독, 라이선스 동의, 계정 가입·로그인 (무료 설치·다운로드는 리드 자율)</li><li>Epic Launcher·UAC 승인 클릭 (PC 앞에서만 가능)</li><li>엔진 버전 업그레이드, 에셋 대량 삭제</li><li>GitHub 업로드 (금지 규칙, 바꾸려면 HG가 직접 말해야 함)</li></ul></div>
+</section>
+
+<section id="reports">
+  <h2><span class="sec">09</span>CEO 보고 규칙과 작업 모듈화</h2>
+  <p>중요 단계마다 CEO에게 보고한 뒤 진행합니다. 보고는 PD가 프로젝트 채팅으로 보내고, 같은 내용이 Studio/log와 Obsidian에 남습니다.</p>
+  <div class="tbl"><table><thead><tr><th>보고</th><th>시점</th><th>내용</th></tr></thead><tbody><tr><td><b>계획 보고</b></td><td><span class='chip hg'>실행 전</span></td><td>단계·모듈을 시작하기 전에 조사한 레퍼런스, 목표, 모듈 목록, 예상 시간, 필요한 설치·다운로드, 위험을 보고하고 바로 진행. 게이트와 CEO 결정 항목만 승인을 기다림.</td></tr><tr><td><b>완료 보고</b></td><td><span class='chip hg'>실행 후</span></td><td>결과물 위치, 완료 기준 통과 여부, 측정값·스크린샷, 남은 문제, 다음 모듈.</td></tr><tr><td><b>지연 보고</b></td><td><span class='chip hg'>10분 초과</span></td><td>한 모듈이 예상보다 10분 넘게 걸리면 즉시: 어디서 막혔는지, 시도한 것, 다음 시도, 새 예상 시간.</td></tr><tr><td><b>즉시 알림</b></td><td><span class='chip hg'>완료·승인·답변 필요 시 바로</span></td><td>작업이 끝났거나, 중간에 CEO 승인이 필요하거나, CEO 답변이 필요하면 기다리지 말고 그 즉시 CEO에게 보여줌: 승인·질문은 선택 카드로, CEO가 직접 할 일은 실행할 명령이나 링크를 함께. 다음 정기 보고까지 미루지 않음. 답을 기다리는 동안 추천안으로 되돌릴 수 있는 작업은 계속.</td></tr><tr><td><b>알림 줄이기</b></td><td><span class='chip hg'>항상</span></td><td>알림은 단계 통과·실패, HG 결정·답변 필요, 완료에만. 재시도·중간 진행은 체크리스트·웹 콘솔·Studio/log에, 반복 보고는 한 줄. 선택 카드는 프로젝트 채팅에도 같이 올려 10분 시계를 시작 (2026-10-27).</td></tr><tr><td><b>10분 자동 선택</b></td><td><span class='chip hg'>선택지를 올릴 때</span></td><td>가장 추천하는 방법을 1번에 둔다. 10분 동안 HG 답이 없으면 1번으로 자동 진행하고 &#x27;자동 선택&#x27;이라고 보고. 예외(기다림): 유료 결제, 가입·로그인, UAC, 되돌릴 수 없는 삭제, 게이트 승인, 외부 공개 (2026-10-27 HG).</td></tr><tr><td><b>반복 보고</b></td><td><span class='chip hg'>같은 테스트·단계를 다시 할 때 바로</span></td><td>같은 테스트나 단계를 다시 돌리거나 재시도하게 되면, 돌리기 전에 즉시 CEO에게 보고: 몇 번째인지, 왜 다시 하는지(이전 결과·실패 원인), 이번에 무엇을 바꿨는지, 언제까지 끝낼지. 같은 실패 2회면 crash-triage 규칙으로 중지 (2026-10-27 HG).</td></tr><tr><td><b>단계 보고</b></td><td><span class='chip hg'>중요 단계마다</span></td><td>단계(S0~S6) 진입·종료, 게이트 리포트, 스프린트 시작·회고는 반드시 CEO에게 보고 후 진행.</td></tr></tbody></table></div>
+  <div class="two">
+    <div style="display:grid;gap:8px"><h3>작업 모듈화</h3><ul class="duties"><li>새 단계·티켓을 시작하기 전에 레퍼런스부터 조사: 공식 문서, 강연·튜토리얼 영상, 비슷한 게임 사례, 참고 에셋을 찾아 Studio/refs/&lt;티켓&gt;.md에 요약하고 계획 보고에 첨부</li><li>모듈 1개 = 한 리드가 한 번에 끝내는 가장 작은 작업 (목표 30분 이내, 산출물 1개)</li><li>티켓은 모듈 여러 개로 쪼갬: T-0004-M01, M02 … 각 모듈에 시작·종료 시각과 완료 기준</li><li>모듈마다 Studio/log/YYMMDD_&lt;티켓&gt;-M##.md 에 한 장 기록 (한 일, 결과, 걸린 시간)</li><li>모듈이 끝나야 다음 모듈 시작. 실패한 모듈은 되돌리고 원인과 함께 새 모듈로 다시</li></ul></div>
+    <div style="display:grid;gap:8px"><h3>설치·다운로드는 리드 자율</h3><ul class="duties"><li>중간 작업 권한 위임 (2026-10-26 HG): 작업 중 필요한 중간 단계(런처·툴 조작, 설치, 다운로드, 설정, 스크립트 실행, 에디터 재시작 등)는 CEO에게 묻지 않고 리드가 직접 처리하고 결과만 보고. 예외는 게이트 승인, 유료 결제, 계정 가입·로그인, 라이선스 동의, UAC처럼 HG 손이 꼭 필요한 것</li><li>무료 프로그램·플러그인·무료 에셋의 설치와 다운로드는 담당 리드가 자율 진행</li><li>다운로드는 _Downloads 에 저장, 압축 해제까지 리드가 처리</li><li>설치할 때마다 Studio/installs.md 대장에 이름·버전·출처·라이선스·용도 기록</li><li>계획 보고에 설치 항목을 미리 적고, 완료 보고에 결과를 적음</li><li>유료 결제, 계정 가입·로그인, 라이선스 동의는 CEO 결정. UAC·Epic Launcher 클릭은 PC 앞에서만 가능하니 미리 알림</li></ul></div>
+  </div>
+  <h3>보고 예시</h3>
+  <pre class="code">[계획] T-0004 탄착 먼지 FX · TA
+모듈: M01 Houdini 씬 세팅(20분) → M02 Pyro 시뮬(30분) → M03 플립북 렌더(20분) → M04 UE 적용(20분)
+설치: 없음 · 위험: 시뮬 시간 초과 가능 → 해상도 낮춰 재시도
+바로 진행합니다.
+
+[지연] T-0004-M02 · 예상 30분 → 42분 경과
+원인: 복셀 0.02에서 캐시 느림 · 다음: 0.04로 낮춰 재시뮬 · 새 예상 15분
+
+[완료] T-0004 · 4/4 모듈 통과 · GPU 0.38ms · 스크린샷 3장
+결과: /Game/_Demo/FX/NS_Impact_Dust · 다음: AD 리뷰</pre>
+</section>
+
+<section id="debug">
+  <h2><span class="sec">10</span>디버깅·크래시 대응</h2>
+  <p>크래시가 반복되면 다시 돌려 보기 전에 원인부터 좁힙니다. 담당은 TD(Technical Director, 기술 리드), 로그 수집과 회귀 테스트는 QA(Quality Assurance, 품질)입니다.</p>
+  <div class="rules"><div class='rule'><span class='n'>1</span><p><b>멈춤.</b> 같은 크래시·에러가 2번 나면 그대로 재시도하지 않는다. 현재 모듈을 멈추고 잠금(editor.lock)을 푼다.</p></div><div class='rule'><span class='n'>2</span><p><b>수집.</b> Saved/Crashes/&lt;id&gt;/ (CrashContext.runtime-xml, UEMinidump.dmp), Saved/Logs/*.log, 실행 명령줄, 마지막 성공 커밋을 모은다.</p></div><div class='rule'><span class='n'>3</span><p><b>분류.</b> 예외 종류로 나눈다: EXCEPTION_ACCESS_VIOLATION(0x0 근처면 null, 엉뚱한 주소면 해제 후 사용·덮어쓰기), Assertion/check·ensure, Out of memory, GPU(D3D device removed·TDR), 헤드리스 전용(-nullrhi, 렌더 없는 Niagara·머티리얼 컴파일).</p></div><div class='rule'><span class='n'>4</span><p><b>메모리 확인.</b> 반복 실행하며 메모리 추이 기록: stat memory, memreport -full, -llm. 의심되면 -stompmalloc(해제 후 사용 탐지), -d3ddebug, -onethread로 재현.</p></div><div class='rule'><span class='n'>5</span><p><b>최소 재현.</b> 모듈을 더 쪼개고 이분 탐색으로 원인 노드·에셋·스크립트 줄을 좁힌다. 같은 조건으로 3번 재현되면 확정.</p></div><div class='rule'><span class='n'>6</span><p><b>기록.</b> Studio/bugs/crash/C-####.md: 증상, 횟수, 로그 경로, 콜스택 상위 5줄, 가설, 시도한 것, 우회책, 리스크, 근본 해결 계획.</p></div><div class='rule'><span class='n'>7</span><p><b>우회와 근본 해결 분리.</b> 우회(예: 헤드리스 대신 에디터 GUI에서 실행, 기능 끄기)는 workaround로 표시하고 근본 해결 티켓을 따로 연다.</p></div><div class='rule'><span class='n'>8</span><p><b>보고.</b> 2번째 크래시에서 CEO에게 크래시 보고(원인 가설·다음 시도·새 예상). 서로 다른 시도 3번이 실패하면 TD 에스컬레이션 + CEO 결정(범위 축소·대체 방식).</p></div><div class='rule'><span class='n'>9</span><p><b>회귀 테스트.</b> 고친 크래시는 qa_integration.py에 재현 테스트로 추가해 다시 나오지 않는지 매번 확인.</p></div></div>
+  <div class="callout"><b>사례</b><ul><li>2026-10-26 FX v2 Niagara 헤드리스 크래시 7회 → 우회 수정 (커밋 7eece96). 같은 실행을 반복하다 7회까지 간 사례라, 이 규칙대로면 2회째에 멈추고 로그 분류부터 했어야 함.</li><li>Obsidian: 게임개발 - UrbanStrike FX v2 Niagara 헤드리스 크래시 디버깅</li></ul></div>
+  <h3>크래시 티켓 · Studio/bugs/crash/C-0001.md</h3>
+  <pre class="code">---
+id: C-0001
+title: FX v2 Niagara 헤드리스 실행 중 크래시
+owner: TD            # 근본 원인 담당
+reported_by: TA
+count: 7
+type: EXCEPTION_ACCESS_VIOLATION   # assert / OOM / GPU / headless-only
+status: workaround   # open → investigating → workaround → fixed
+---
+## 증상
+UnrealEditor-Cmd -run=pythonscript fx2_*.py 실행 중 종료
+## 로그
+Saved/Crashes/&lt;id&gt;/, Saved/Logs/UrbanStrike.log
+## 콜스택 상위 5줄
+...
+## 가설 / 시도
+1. ... → 실패
+## 우회 (workaround)
+... (커밋 7eece96)
+## 리스크
+GUI 에디터가 꼭 필요해짐 → 무인 실행 불가
+## 근본 해결 계획
+...
+## 회귀 테스트
+Tools/Python/qa_integration.py 에 test_fx2_headless 추가</pre>
+</section>
+
+<section id="apply">
+  <h2><span class="sec">11</span>UrbanStrike 적용</h2>
+  <p><b>현재 위치는 S1 후반입니다.</b> TPS 어깨 카메라, Quantum 군인 적 교전, 피격 피드백, 앉기·엄폐, L_UnfinishedBuilding 쇼케이스 영상까지 나왔습니다. 남은 빈칸은 실제 사운드, Houdini FX, 재장전 애님, HUD, 패키지 빌드입니다.</p>
+  <p><b>출시 형태 기본안:</b> 포트폴리오 데모 v0.1, itch.io 무료 Win64 빌드와 90초 트레일러(YouTube·ArtStation). 다르게 가려면 G0 재확인 때 바꿉니다.</p>
+  <p><b>G1 버티컬 슬라이스 기준:</b> L_UnfinishedBuilding 한 층을 90초 동안 플레이, 임시 사운드 0, RTX 5080 1440p 평균 120fps, 탄착 FX와 잔해 최종, 영상 v001.</p>
+  <h3>스프린트 1 (2주) 티켓</h3>
+  <div class="tbl"><table><thead><tr><th>리드</th><th>작업</th><th>산출물</th></tr></thead><tbody><tr><td><span class='chip'>PD</span></td><td>Studio 폴더·보드 만들고 S1 상태 기록</td><td><code>Studio/state.yaml, 티켓 12개</code></td></tr><tr><td><span class='chip'>GD</span></td><td>현재 전투 루프를 GDD v1로 정리 (TPS, 엄폐, 적 교전)</td><td><code>GDD.md, 무기·적 수치 CSV</code></td></tr><tr><td><span class='chip'>SD</span></td><td>실제 총성·탄착·환경음 교체 (우선순위 1)</td><td><code>SFX 8종 WAV + MetaSounds</code></td></tr><tr><td><span class='chip'>TA</span></td><td>Houdini 먼지·데브리 FX 2종 → 플립북/VAT (우선순위 2)</td><td><code>NS_Impact_Dust, NS_Debris</code></td></tr><tr><td><span class='chip'>TA</span></td><td>잔해 HDA + PCG 배치 (우선순위 3)</td><td><code>HDA 1개, PCG 그래프</code></td></tr><tr><td><span class='chip'>AN</span></td><td>재장전·조준 애님 연결</td><td><code>AM_Rifle_Reload, ABP 블렌드</code></td></tr><tr><td><span class='chip'>UI</span></td><td>최소 HUD (조준점, 탄약, 피격 방향)</td><td><code>WBP_HUD</code></td></tr><tr><td><span class='chip'>QA</span></td><td>스모크 테스트 + 에셋 검증 스크립트</td><td><code>Tools/Python/qa_smoke.py, 리포트</code></td></tr><tr><td><span class='chip'>PB</span></td><td>G1 영상 v001 컷 편집</td><td><code>261109_urbanstrike_vslice_1080p_v001.mp4</code></td></tr></tbody></table></div>
+</section>
+
+<section id="roadmap">
+  <h2><span class="sec">12</span>하네스 구축 순서</h2>
+  <ol class="road"><li><span class='scode'>A</span><div><b>골격</b> <span class='muted'>0.5일</span><br>Studio 폴더, state.yaml, 에이전트 14개 정의 파일</div></li><li><span class='scode'>B</span><div><b>스킬</b> <span class='muted'>1일</span><br>ticket · handoff · gate-review · asset-check 먼저, 나머지는 S3 전</div></li><li><span class='scode'>C</span><div><b>훅</b> <span class='muted'>0.5일</span><br>push 차단, handoff 강제, asset-check 자동 실행</div></li><li><span class='scode'>D</span><div><b>도구 연결 확인</b> <span class='muted'>0.5일</span><br>UE 원격 실행, fxhoudini, Blender CLI를 각 1회 실행</div></li><li><span class='scode'>E</span><div><b>스프린트 1 실행</b> <span class='muted'>2주</span><br>아래 9개 티켓으로 G1 버티컬 슬라이스 도전</div></li><li><span class='scode'>F</span><div><b>회고·조정</b> <span class='muted'>0.5일</span><br>에이전트 프롬프트·게이트 기준·토큰 사용량 조정</div></li></ol>
+  <p class="muted">비용 관리: 티켓이 있을 때만 리드를 부르고, 동시에 3~4명까지 병렬. 게이트 리뷰처럼 여러 리드를 한꺼번에 돌리는 일은 HG가 요청할 때만 워크플로로 실행합니다.</p>
+</section>
+</div>
+
+<script>
+(function () {
+  var btns = document.querySelectorAll('.stage button');
+  var cards = document.querySelectorAll('.agent');
+  var cur = -1;
+  function apply(s) {
+    cur = s;
+    btns.forEach(function (b, i) { b.setAttribute('aria-pressed', i === s ? 'true' : 'false'); });
+    cards.forEach(function (c) {
+      var st = c.dataset.stages.split(',').map(Number);
+      c.classList.toggle('dim', s >= 0 && st.indexOf(s) < 0);
+    });
+  }
+  btns.forEach(function (b, i) { b.addEventListener('click', function () { apply(cur === i ? -1 : i); }); });
+})();
+</script>
+
+<!--claude-mermaid-runtime-begin:3477-->
+<style>.mermaid-diagram{margin-block:4px}.mermaid-diagram svg{display:block;margin:0 auto;max-width:100%;height:auto}</style>
+<script src="vendor/mermaid-11.4.1.min.js"></script>
+<script>(function(){
+var CFG={"palettes":{"light":{"surface":"#f4efe4","text":"#42392e","line":"#8a7f6d","border":"#7a6c52","bg":"#fffdf8"},"dark":{"surface":"#262b34","text":"#f2f3f5","line":"#a8adb8","border":"#9aa4b8","bg":"#1f232b"}}};
+if(typeof mermaid==='undefined')return;
+var pres=Array.prototype.slice.call(document.querySelectorAll('pre.mermaid')).filter(function(p){if(p.hasAttribute('data-claude-mermaid-claimed'))return false;p.setAttribute('data-claude-mermaid-claimed','1');return true;});
+if(!pres.length)return;
+var mq=window.matchMedia?window.matchMedia('(prefers-color-scheme: dark)'):null;
+var root=document.documentElement;
+var items=pres.map(function(pre){
+var mount=document.createElement('div');mount.className='mermaid-diagram';
+return {pre:pre,mount:mount,src:pre.textContent||''};
+});
+var seq=0;
+var renderGen=0;
+var lastKey='';
+function pageBg(fallback){
+var els=[document.body,document.documentElement];
+for(var i=0;i<els.length;i++){
+var c=els[i]&&getComputedStyle(els[i]).backgroundColor;
+if(c&&c!=='transparent'&&c!=='rgba(0, 0, 0, 0)')return c;
+}
+return fallback;
+}
+function render(){
+var theme=root.getAttribute('data-theme');
+var dark=theme==='dark'||(!!(mq&&mq.matches)&&theme!=='light');
+var pal=dark?CFG.palettes.dark:CFG.palettes.light;
+var bg=pageBg(pal.bg);
+var key=(dark?'d':'l')+'|'+bg;
+if(key===lastKey)return;
+lastKey=key;
+var gen=++renderGen;
+var font=getComputedStyle(document.body).fontFamily||'sans-serif';
+var nat={useMaxWidth:false};
+mermaid.initialize({
+startOnLoad:false,securityLevel:'strict',theme:'base',
+flowchart:nat,sequence:nat,er:nat,state:nat,class:nat,pie:nat,
+gantt:nat,journey:nat,timeline:nat,gitGraph:nat,mindmap:nat,xyChart:nat,
+quadrantChart:nat,sankey:nat,c4:nat,requirement:nat,block:nat,
+packet:nat,kanban:nat,architecture:nat,radar:nat,
+themeVariables:{background:bg,mainBkg:pal.surface,primaryColor:pal.surface,
+primaryTextColor:pal.text,lineColor:pal.line,primaryBorderColor:pal.border,
+nodeBorder:pal.border,clusterBorder:pal.border,edgeLabelBackground:bg,
+clusterBkg:'rgba(127,127,127,0.07)',titleColor:pal.text,
+darkMode:dark,rowOdd:bg,rowEven:'rgba(127,127,127,0.07)',
+attributeBackgroundColorOdd:bg,attributeBackgroundColorEven:'rgba(127,127,127,0.07)',
+fontSize:'16px',fontFamily:font},
+themeCSS:'.node rect, .node circle, .node polygon, .node path, .cluster rect { stroke-width: 2px; }'
+});
+items.forEach(function(it){
+var id='claude-mermaid-'+seq++;
+mermaid.render(id,it.src).then(function(r){
+if(gen!==renderGen)return;
+var prev=it.pre.previousElementSibling;
+if(prev&&prev.className==='mermaid-diagram'&&prev!==it.mount)return;
+it.mount.innerHTML=r.svg;
+if(!it.mount.parentNode)it.pre.parentNode.insertBefore(it.mount,it.pre);
+it.pre.style.display='none';
+},function(){
+var scratch=document.getElementById(id);
+if(scratch)scratch.parentNode.removeChild(scratch);
+scratch=document.getElementById('d'+id);
+if(scratch)scratch.parentNode.removeChild(scratch);
+if(gen!==renderGen)return;
+if(it.mount.parentNode)it.mount.parentNode.removeChild(it.mount);
+it.pre.style.display='';
+});
+});
+}
+render();
+if(mq&&mq.addEventListener)mq.addEventListener('change',render);
+if(typeof MutationObserver!=='undefined')new MutationObserver(render).observe(root,{attributes:true,attributeFilter:['data-theme']});
+})();</script>
+<!--claude-mermaid-runtime-end-->
+
+</body></html>

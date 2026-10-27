@@ -1,0 +1,261 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>UrbanStrike 스튜디오 콘솔</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+KR:wght@400;500;700&family=IBM+Plex+Mono:wght@400;500&family=Gothic+A1:wght@800;900&display=swap">
+<style>
+/* Layout: 상단 상태 띠(단계·게이트·스프린트) + 탭 7개. 사격장 표지판처럼 굵은 표제, 나머지는 조용한 작업 화면. */
+:root{
+  --bg:#eef0ec; --panel:#fbfbf8; --sunk:#e3e6e0; --fg:#1b201d; --muted:#5b6560; --line:#cdd3cc;
+  --accent:#c2541b; --accent-ink:#ffffff; --steel:#2f4a5a;
+  --ok:#2f7a4c; --warn:#9a6a00; --bad:#b0281f; --idle:#69737a; --info:#2f5f8a;
+  --ok-bg:#dcefe2; --warn-bg:#f6ebcd; --bad-bg:#f7dcd9; --idle-bg:#e5e8ea; --info-bg:#dce8f3;
+  --sans:"IBM Plex Sans KR","Apple SD Gothic Neo","Malgun Gothic",system-ui,sans-serif;
+  --display:"Gothic A1","IBM Plex Sans KR","Malgun Gothic",sans-serif;
+  --mono:"IBM Plex Mono",ui-monospace,Consolas,monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#121614; --panel:#1a1f1c; --sunk:#232925; --fg:#e4e8e5; --muted:#98a39d; --line:#303833;
+  --accent:#e8834a; --accent-ink:#1a1f1c; --steel:#8fb3c7;
+  --ok:#6fc591; --warn:#e2b54b; --bad:#f08a80; --idle:#9ba6ad; --info:#86b6e0;
+  --ok-bg:#1c3426; --warn-bg:#382d12; --bad-bg:#3c1d1a; --idle-bg:#252b2f; --info-bg:#1b2c3c; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#121614; --panel:#1a1f1c; --sunk:#232925; --fg:#e4e8e5; --muted:#98a39d; --line:#303833;
+  --accent:#e8834a; --accent-ink:#1a1f1c; --steel:#8fb3c7;
+  --ok:#6fc591; --warn:#e2b54b; --bad:#f08a80; --idle:#9ba6ad; --info:#86b6e0;
+  --ok-bg:#1c3426; --warn-bg:#382d12; --bad-bg:#3c1d1a; --idle-bg:#252b2f; --info-bg:#1b2c3c; color-scheme:dark}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+body{background:var(--bg);color:var(--fg);font-family:var(--sans);font-size:14.5px;line-height:1.55}
+.wrap{max-width:1120px;margin:0 auto;padding-block:24px 56px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));display:flex;flex-direction:column;gap:20px}
+header{display:flex;flex-direction:column;gap:6px}
+.eyebrow{font-family:var(--mono);font-size:.72rem;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
+h1{font-family:var(--display);font-weight:900;font-size:clamp(1.7rem,4vw,2.4rem);line-height:1.1;margin:0;letter-spacing:-.01em;text-wrap:balance}
+h1 span{color:var(--accent)}
+h2{font-size:1.05rem;margin:0;text-wrap:balance}
+h3{font-size:.95rem;margin:0}
+p{margin:0}
+.muted{color:var(--muted)}
+.mono{font-family:var(--mono);font-variant-numeric:tabular-nums}
+.statusbar{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:1px;background:var(--line);border:1px solid var(--line);border-radius:6px;overflow:hidden}
+.statusbar>div{background:var(--panel);padding:10px 14px;display:flex;flex-direction:column;gap:2px;min-width:0}
+.statusbar b{font-family:var(--mono);font-size:1.05rem;font-weight:500}
+.statusbar small{color:var(--muted);font-size:.75rem}
+.alert{display:flex;gap:10px;align-items:flex-start;background:var(--bad-bg);color:var(--fg);border-radius:6px;padding:10px 14px;border-left:4px solid var(--bad)}
+.alert b{color:var(--bad)}
+nav{display:flex;gap:4px;flex-wrap:wrap;border-bottom:1px solid var(--line)}
+nav button{font:inherit;font-weight:500;background:none;border:0;border-bottom:3px solid transparent;color:var(--muted);padding:8px 12px;cursor:pointer;margin-bottom:-1px}
+nav button[aria-selected="true"]{color:var(--fg);border-bottom-color:var(--accent)}
+nav button:focus-visible,.chipbtn:focus-visible,a:focus-visible{outline:2px solid var(--info);outline-offset:2px}
+section.view{display:flex;flex-direction:column;gap:16px}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:6px;padding:16px}
+.grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:16px}
+.pill{display:inline-block;font-size:.72rem;font-weight:500;padding:1px 8px;border-radius:999px;white-space:nowrap}
+.s-done,.s-pass,.s-fixed,.s-closed{background:var(--ok-bg);color:var(--ok)}
+.s-review{background:var(--info-bg);color:var(--info)}
+.s-doing{background:var(--warn-bg);color:var(--warn)}
+.s-fail,.s-open{background:var(--bad-bg);color:var(--bad)}
+.s-todo,.s-wait,.s-hold{background:var(--idle-bg);color:var(--idle)}
+/* stage track */
+.track{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:6px}
+.stg{border:1px solid var(--line);border-radius:6px;padding:10px;background:var(--panel);display:flex;flex-direction:column;gap:4px;min-width:0;cursor:pointer;text-align:left;font:inherit;color:inherit}
+.stg .c{font-family:var(--mono);font-size:.75rem;color:var(--muted)}
+.stg .n{font-weight:700;font-size:.88rem;word-break:keep-all}
+.stg .g{font-family:var(--mono);font-size:.72rem;color:var(--muted)}
+.stg.past{background:var(--sunk)}
+.stg.now{border-color:var(--accent);box-shadow:inset 0 0 0 1px var(--accent)}
+.stg.now .c{color:var(--accent)}
+.stg[aria-pressed="true"]{outline:2px solid var(--steel)}
+@media (max-width:760px){.track{grid-template-columns:repeat(4,minmax(0,1fr))}}
+@media (max-width:420px){.track{grid-template-columns:repeat(2,minmax(0,1fr))}}
+/* tests */
+.steps{display:flex;flex-direction:column}
+.step{display:grid;grid-template-columns:44px 1fr auto;gap:4px 12px;align-items:start;padding:10px 0;border-bottom:1px solid var(--line)}
+.step:last-child{border-bottom:0}
+.step .num{font-family:var(--display);font-weight:900;font-size:1.4rem;line-height:1;color:var(--muted);text-align:right}
+.step.pass .num{color:var(--ok)} .step.fail .num{color:var(--bad)} .step.hold .num{opacity:.5} .step.doing .num{color:var(--warn)}
+.step .body{min-width:0;display:flex;flex-direction:column;gap:2px}
+.step .who{font-size:.78rem;color:var(--muted)}
+.meter{display:flex;height:10px;border-radius:5px;overflow:hidden;background:var(--sunk)}
+.meter i{display:block;height:100%}
+/* board */
+.filters{display:flex;gap:6px;flex-wrap:wrap;align-items:center}
+.chipbtn{font:inherit;font-size:.8rem;border:1px solid var(--line);background:var(--panel);color:var(--fg);border-radius:999px;padding:2px 10px;cursor:pointer}
+.chipbtn[aria-pressed="true"]{background:var(--steel);border-color:var(--steel);color:var(--bg)}
+.kanban{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}
+@media (max-width:860px){.kanban{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media (max-width:480px){.kanban{grid-template-columns:1fr}}
+.col{background:var(--sunk);border-radius:6px;padding:10px;display:flex;flex-direction:column;gap:8px;min-width:0}
+.col h3{display:flex;justify-content:space-between;font-size:.85rem}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:5px;padding:8px 10px;display:flex;flex-direction:column;gap:3px}
+.card .top{display:flex;justify-content:space-between;gap:6px;font-family:var(--mono);font-size:.75rem;color:var(--muted)}
+.card .t{font-size:.86rem;word-break:keep-all;overflow-wrap:anywhere}
+.empty{font-size:.8rem;color:var(--muted);padding:4px 2px}
+/* team */
+.team{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:10px}
+.lead{background:var(--panel);border:1px solid var(--line);border-radius:6px;padding:12px;display:flex;flex-direction:column;gap:6px}
+.lead .hd{display:flex;align-items:baseline;gap:8px;flex-wrap:wrap}
+.lead .code{font-family:var(--display);font-weight:900;font-size:1.15rem;color:var(--steel)}
+.lead ul{margin:0;padding-left:1.1em;font-size:.84rem}
+.lead .meta{font-size:.76rem;color:var(--muted)}
+.dots{display:flex;gap:3px}
+.dots i{width:14px;height:6px;border-radius:2px;background:var(--sunk)}
+.dots i.on{background:var(--accent)}
+table{border-collapse:collapse;width:100%;font-size:.86rem}
+th,td{text-align:left;padding:7px 8px;border-bottom:1px solid var(--line);vertical-align:top}
+th{font-size:.76rem;color:var(--muted);font-weight:500}
+.tbl{overflow-x:auto}
+ul.plain{margin:0;padding-left:1.1em;display:flex;flex-direction:column;gap:4px}
+.skill{display:flex;gap:10px;padding:8px 0;border-bottom:1px solid var(--line);align-items:flex-start}
+.skill:last-child{border-bottom:0}
+.skill code{font-family:var(--mono);font-size:.85rem;font-weight:500;white-space:nowrap}
+.skill div{min-width:0}
+.links{display:flex;flex-direction:column;gap:6px}
+.links a{color:var(--info);text-decoration:none}
+.links a:hover{text-decoration:underline}
+footer{font-size:.78rem;color:var(--muted)}
+@media (prefers-reduced-motion:no-preference){.card,.stg{transition:border-color .15s}}
+</style>
+
+<div class="wrap">
+  <header>
+    <span class="eyebrow" id="snap"></span>
+    <h1>UrbanStrike <span>스튜디오 콘솔</span></h1>
+    <p class="muted">게임 제작 하네스의 웹 버전. CEO HG, 에이전트 리드 14명, 7단계·6게이트로 운영합니다.</p>
+  </header>
+
+  <div class="statusbar" id="statusbar"></div>
+  <div class="alert" id="alert"></div>
+
+  <nav role="tablist" id="tabs"></nav>
+
+  <section class="view" id="v-overview"></section>
+  <section class="view" id="v-tests" hidden></section>
+  <section class="view" id="v-board" hidden></section>
+  <section class="view" id="v-team" hidden></section>
+  <section class="view" id="v-rules" hidden></section>
+  <section class="view" id="v-skills" hidden></section>
+  <section class="view" id="v-log" hidden></section>
+
+  <footer id="foot"></footer>
+</div>
+
+<script>
+const D = {"snap": "2026-10-27 04:40 UTC (13:40 KST) · v004", "stage": "S1", "gate": "G1", "sprint": {"id": 1, "start": "2026-10-26", "end": "2026-11-09"}, "stages": [{"code": "S0", "name": "컨셉", "en": "Concept", "gate": "G0", "gname": "그린라이트", "outs": ["한 문장 피치 + 컨셉 원페이저", "레퍼런스·무드보드", "범위·일정·예산(시간/토큰)", "리스크 목록"], "crit": "HG가 피치·타깃·범위에 동의. 만들지 않을 것 목록이 있음."}, {"code": "S1", "name": "프리프로덕션", "en": "Pre-production", "gate": "G1", "gname": "버티컬 슬라이스", "outs": ["GDD v1, 기술 설계(TDD), 스타일 가이드", "에셋 파이프라인 검증(Blender·Houdini→UE)", "프로토타입 → 90초 버티컬 슬라이스"], "crit": "한 구역이 최종 품질로 플레이 가능. 성능 목표 달성. 모든 파이프라인을 에셋 1개씩 통과."}, {"code": "S2", "name": "프로덕션", "en": "Production", "gate": "G2", "gname": "알파 (기능 완성)", "outs": ["모든 기능 구현(임시 에셋 허용)", "레벨 전 구역 블록아웃", "에셋 리스트 50% 이상 최종"], "crit": "기능 목록 100% 동작. 처음부터 끝까지 플레이 가능. A급 버그 0."}, {"code": "S3", "name": "콘텐츠 완성", "en": "Content complete", "gate": "G3", "gname": "베타", "outs": ["모든 에셋·사운드·애니 최종", "HUD·메뉴·설정 완성", "트레일러 샷 리스트"], "crit": "임시 에셋 0. 기능 동결. 알려진 버그 목록과 수정 계획."}, {"code": "S4", "name": "폴리싱·QA", "en": "Polish & QA", "gate": "G4", "gname": "RC / 골드", "outs": ["패키지 빌드(Win64 Shipping)", "성능·안정성 패스", "트레일러·스크린샷·스토어 문구"], "crit": "A·B급 버그 0. 깨끗한 PC에서 설치·실행·종료 통과. 30분 무크래시."}, {"code": "S5", "name": "출시", "en": "Launch", "gate": "G5", "gname": "출시 승인", "outs": ["스토어/포트폴리오 페이지 공개", "빌드 업로드", "트레일러 공개, 공지"], "crit": "HG가 공개 버튼을 직접 승인. 롤백 빌드 보관 확인."}, {"code": "S6", "name": "라이브옵스·유지보수", "en": "Live ops", "gate": "P#", "gname": "패치 게이트", "outs": ["피드백·크래시 수집과 분류", "핫픽스 / 정기 패치", "엔진 업데이트 검토, 아카이브"], "crit": "패치마다 변경 목록·회귀 테스트·HG 승인. 종료 시 소스·빌드 아카이브."}], "agents": [{"code": "PD", "name": "제작 총괄 PD", "en": "Executive Producer", "model": "opus", "stages": [0, 1, 2, 3, 4, 5, 6], "duties": ["CEO 비전을 제작 계획으로 번역, 범위·스프린트 계획", "티켓 작성·배정, 병렬 실행 판단", "게이트 회의 주재, 리스크·일정 관리", "CEO에게 결과·결정 요청 보고"], "inp": "CEO 지시, Studio/state.yaml, 각 리드 핸드오프", "out": "스프린트 계획, 게이트 리포트, 결정 카드", "tools": "Agent/Task 도구, Studio 보드, Obsidian", "review": "모든 게이트 소집. 최종 승인은 CEO"}, {"code": "GD", "name": "게임디자인 리드", "en": "Game Design", "model": "sonnet", "stages": [0, 1, 2, 3, 6], "duties": ["컨셉 문서·GDD 작성", "코어 루프(사격·엄폐·교전) 설계", "무기·적 수치 테이블, 밸런스", "플레이 피드백을 스펙에 반영"], "inp": "HG 방향, 레퍼런스(디비전, COD)", "out": "GDD.md, 수치 CSV(DataTable), 기능 스펙 티켓", "tools": "Obsidian, UE DataTable(Python 임포트), xlsx", "review": "G0 피치, G2 기능 완성 판정"}, {"code": "LD", "name": "레벨디자인 리드", "en": "Level Design", "model": "sonnet", "stages": [1, 2, 3], "duties": ["블록아웃과 동선, 교전 구역", "엄폐물·시야선 배치", "조명 기준 동선, 시네마틱 샷 동선"], "inp": "GDD, 스타일 가이드", "out": "L_* 블록아웃 맵, 인카운터 표, 탑뷰 이미지", "tools": "UE Modeling Tools, PCG, UE Python, 스크린샷", "review": "G1·G2 레벨 플레이스루"}, {"code": "AD", "name": "아트 디렉터", "en": "Art Direction", "model": "opus", "stages": [0, 1, 2, 3, 4], "duties": ["비주얼 타깃·무드보드", "스타일 가이드(텍셀 밀도, 색, 머티리얼 규칙)", "에셋 리스트와 우선순위", "모든 아트 산출물 리뷰"], "inp": "컨셉, 레퍼런스", "out": "스타일 가이드, 에셋 리스트, 리뷰 코멘트, 키 아트", "tools": "ComfyUI(컨셉 이미지), Krita, Fab(HG Chrome), PIE 스크린샷", "review": "아트 품질 판정(G1·G3)"}, {"code": "A3", "name": "3D 에셋 리드", "en": "3D Art (Env/Prop/Weapon)", "model": "sonnet", "stages": [1, 2, 3, 4], "duties": ["환경·소품·무기 모델링, UV, 베이크", "Nanite·LOD 기준 준수", "UrbanStrike_Source 폴더·명명 규칙 관리"], "inp": "에셋 리스트, 스타일 가이드", "out": "FBX + 텍스처(ORM), 소스 .blend", "tools": "Blender 5.2 (백그라운드 Python), Material Maker, Krita", "review": "AD 리뷰 → TA 임포트 검사"}, {"code": "TD", "name": "테크니컬 디렉터", "en": "Tech / Engine", "model": "opus", "stages": [1, 2, 3, 4, 5, 6], "duties": ["UE 5.8 구조 설계(BP 우선, 필요 시 C++ 표준)", "게임플레이 시스템 구현", "성능 예산(프레임·메모리), 프로파일링", "Tools/Python 생성 스크립트, 로컬 git", "크래시·메모리 버그 근본 원인 분석 (크래시 대응 규칙 책임자)"], "inp": "기능 스펙, TDD", "out": "BP·스크립트, TDD.md, 성능 리포트", "tools": "UE Python 원격 실행, Tools/Python, Unreal Insights, git(로컬)", "review": "기술 리뷰(모든 코드·BP 변경)"}, {"code": "TA", "name": "TA·FX 리드", "en": "Tech Art / VFX", "model": "sonnet", "stages": [1, 2, 3, 4], "duties": ["Niagara 총구화염·탄착·먼지·데브리", "머티리얼·데칼, 셰이더 비용 관리", "Houdini 19.5 FX → 플립북·VAT·VDB", "PCG 잔해 배치, 에셋 임포트 검사"], "inp": "아트 리스트, FX 레퍼런스", "out": "NS_*, M_*/MI_*, 플립북/VAT, HDA(.hda) 소스", "tools": "fxhoudini MCP, hython, UE Python, Niagara", "review": "FX 성능·품질 판정"}, {"code": "AN", "name": "애니메이션 리드", "en": "Animation", "model": "sonnet", "stages": [1, 2, 3, 4], "duties": ["리타깃(IK Retargeter), 몽타주", "재장전·조준·엄폐 애님", "Motion Matching(GASP) 세팅"], "inp": "캐릭터·무기 리그, GDD 동작 목록", "out": "AM_*, ABP 수정, 소스 .blend", "tools": "Blender, Control Rig, Cascadeur 무료판, Mixamo", "review": "AD·TD 리뷰"}, {"code": "SD", "name": "사운드 리드", "en": "Audio", "model": "sonnet", "stages": [1, 2, 3, 4, 6], "duties": ["총기·탄착·환경음 제작과 편집", "MetaSounds, 감쇠·리버브", "영상용 최종 믹스"], "inp": "SFX 리스트, 영상 컷", "out": "WAV 48k/24bit, MS_*, ATT_*, 믹스 스템", "tools": "Audacity, Freesound CC0, Sonniss, MetaSounds, ffmpeg", "review": "청감 리뷰 + 라우드니스 측정"}, {"code": "UI", "name": "UI/UX 리드", "en": "UI / UX", "model": "sonnet", "stages": [1, 2, 3, 4], "duties": ["HUD(조준점, 탄약, 피격 방향)", "메뉴·설정·일시정지", "키 매핑, 접근성 옵션"], "inp": "GDD, 스타일 가이드", "out": "Figma 목업, WBP_* 위젯", "tools": "Figma MCP, UMG, Krita", "review": "AD·GD 리뷰"}, {"code": "QA", "name": "QA 리드", "en": "Quality Assurance", "model": "sonnet", "stages": [2, 3, 4, 5, 6], "duties": ["테스트 계획, 스모크 테스트 자동 실행", "에셋 검증(명명, 참조 누락, 텍스처 크기)", "버그 등록·등급(A/B/C), 회귀 테스트", "성능 캡처 비교", "크래시 로그 수집·분류, 재현 테스트를 회귀 목록에 추가"], "inp": "빌드, 티켓의 완료 기준", "out": "테스트 리포트, BUG-*.md, 게이트 체크리스트", "tools": "UE Automation·Map Check, PIE 스크린샷, stat 명령", "review": "모든 게이트에 QA 리포트 필수"}, {"code": "BR", "name": "빌드·릴리즈 엔지니어", "en": "Build & Release", "model": "haiku", "stages": [3, 4, 5, 6], "duties": ["BuildCookRun 패키징(Win64)", "버전 규칙 0.x.y, 체인지로그, git 태그", "빌드 아카이브, 롤백 보관"], "inp": "G4 승인 커밋", "out": "패키지 zip, CHANGELOG.md, 태그", "tools": "RunUAT, 7-Zip, git(로컬), butler(HG 승인 후)", "review": "깨끗한 설치 테스트 통과"}, {"code": "PB", "name": "퍼블리싱·마케팅 리드", "en": "Publishing", "model": "sonnet", "stages": [0, 3, 4, 5, 6], "duties": ["포지셔닝, 공개 일정", "itch.io·ArtStation·YouTube 페이지 문구", "트레일러 편집, 스크린샷", "공지·커뮤니티 답변 초안"], "inp": "베타 빌드, 샷 리스트", "out": "트레일러 mp4(명명 규칙), 페이지 초안, 공지 초안", "tools": "MRQ, DaVinci Resolve, ffmpeg", "review": "외부 게시는 전부 HG 승인"}, {"code": "LO", "name": "라이브옵스 리드", "en": "Live Ops", "model": "sonnet", "stages": [5, 6], "duties": ["피드백·크래시 로그 수집과 분류", "핫픽스·패치 계획", "UE 5.8.x 업데이트 영향 검토", "에셋 라이선스 대장 관리"], "inp": "출시 빌드, 코멘트, Saved/Crashes", "out": "패치 계획, 패치 노트, 라이선스 대장", "tools": "Obsidian, 크래시 로그 파서, Studio 보드", "review": "패치 게이트 P# 제안"}], "board": [{"id": "T-0001", "title": "하네스 골격 세팅", "owner": "PD", "st": "done", "when": ""}, {"id": "T-0002", "title": "GDD v1 정리 (현재 전투 루프)", "owner": "GD", "st": "done", "when": ""}, {"id": "T-0003", "title": "스모크 테스트·에셋 검증 스크립트", "owner": "QA", "st": "done", "when": ""}, {"id": "T-0004", "title": "실제 사운드 교체", "owner": "SD", "st": "review", "when": ""}, {"id": "T-0005", "title": "재장전·조준 애님 연결", "owner": "AN", "st": "done", "when": ""}, {"id": "T-0006", "title": "최소 HUD", "owner": "UI", "st": "done", "when": ""}, {"id": "T-0007", "title": "Blender → UE 파이프라인 검증", "owner": "A3", "st": "done", "when": ""}, {"id": "T-0008", "title": "v2 탄착 FX 연결 + 성능 확인", "owner": "TA", "st": "doing", "when": ""}, {"id": "T-0009", "title": "잔해 소품 + PCG 배치", "owner": "TA", "st": "doing", "when": ""}, {"id": "T-0010", "title": "G1 영상 v001", "owner": "PB", "st": "todo", "when": ""}, {"id": "T-0011", "title": "사망 후 리스폰 수정 (B-0001)", "owner": "TD", "st": "done", "when": ""}, {"id": "T-0012", "title": "솔저 텍스처 이름 T_ 접두사 정리", "owner": "QA", "st": "done", "when": ""}, {"id": "T-0013", "title": "리스폰 보호 (스폰 캠핑 방지)", "owner": "GD", "st": "done", "when": ""}, {"id": "T-0014", "title": "ADS 왼손 IK + 조준 피치 보정", "owner": "AN", "st": "doing", "when": ""}, {"id": "T-0015", "title": "스프린트 1 통합 테스트", "owner": "QA", "st": "done", "when": ""}, {"id": "T-0016", "title": "스프린트 1 테스트 영상", "owner": "PB", "st": "review", "when": ""}, {"id": "T-0017", "title": "HUD HP 표시 0 아래로 내려가지 않게", "owner": "UI", "st": "review", "when": ""}, {"id": "T-0018", "title": "반동·카메라 흔들림·ADS FOV", "owner": "AN", "st": "doing", "when": "10/28"}, {"id": "T-0019", "title": "적 피격 FX v2 + 방탄복 스파크", "owner": "TA", "st": "doing", "when": "10/28"}, {"id": "T-0020", "title": "적 사망 래그돌 + 애님 노티파이", "owner": "AN", "st": "review", "when": "10/29"}, {"id": "T-0021", "title": "총구 v2 + 섬광 라이트, 파편 낙하", "owner": "TA", "st": "review", "when": "10/29~30"}, {"id": "T-0022", "title": "Effect Type 예산 + 성능 측정", "owner": "TA", "st": "doing", "when": "10/30"}, {"id": "T-0023", "title": "Epic Niagara 예제 팩 + GASP 5.7→5.8 변환", "owner": "PD", "st": "todo", "when": "10/31"}, {"id": "T-0024", "title": "재장전 2종·탄창 낙하·질주·제자리 회전·낮은 엄폐", "owner": "AN", "st": "todo", "when": "11/02~05"}, {"id": "T-0025", "title": "트레이서·총구 연기·데칼 v2·흙 v2·실내 먼지·NDC", "owner": "TA", "st": "todo", "when": "11/02~05"}, {"id": "T-0026", "title": "L_GunRange FX·애니 검증, 120fps, 영상 재녹화", "owner": "QA", "st": "todo", "when": "11/06~08"}, {"id": "T-0027", "title": "적 머리 위 'Reloading' 디버그 글자", "owner": "QA", "st": "todo", "when": ""}], "tests": [{"n": 0, "name": "프로젝트 정리", "owner": "사격장", "st": "pass", "note": "커밋 fa75ef1, UE 5.8.3 시작 오류 0개, MapCheck 0/0"}, {"n": 1, "name": "맵·충돌·표면 재질", "owner": "사격장", "st": "pass", "note": "3번째 실행 통과(HG 승인 후 Blender 수정): 28개 판정선 모두 에디터=PIE, 통과 0. 커밋 ee1cf31"}, {"n": 2, "name": "주인공 배치·카메라", "owner": "사격장", "st": "pass", "note": "2번째 실행 통과(1번째는 테스트 스크립트 버그): 오차 0cm, 카메라 일치, 적 0명. 커밋 d9439f8"}, {"n": 3, "name": "무기 발사", "owner": "PD", "st": "pass", "note": "조준 버그 수정 후 v003 통과: 50발 50명중, 모든 탄이 조준선 퍼짐 각도(1.2°) 안. 커밋 4273c0c"}, {"n": 4, "name": "사격 표적", "owner": "사격장", "st": "pass", "note": "v003 통과: 7개 표적 명중 수 정확히 일치. 커밋 52c4596"}, {"n": 5, "name": "반동·애니메이션", "owner": "PD", "st": "doing", "note": "HG 요청: 왼손을 총열 아래 손잡이에, 총구는 정면으로. 측정: 총구 +12°, 위아래 1.5배, 왼손 8cm 떨어짐 → 수정 중"}, {"n": 6, "name": "표면별 탄착 FX", "owner": "FX", "st": "wait", "note": "직접 만든 v1·v2, 표면당 5발, 기본값으로 빠짐 0"}, {"n": 7, "name": "총구 화염·탄피·예광탄·조명", "owner": "FX", "st": "wait", "note": "10발 모두 4가지 표시"}, {"n": 8, "name": "Niagara 팩 FX", "owner": "FX", "st": "hold", "note": "HG 결정으로 보류. 3회 실패 원인 정리 완료, 깨끗한 5.8 복사본 준비됨"}, {"n": 9, "name": "사운드", "owner": "PD", "st": "wait", "note": "SFX_RifleShot 실제 녹음, 매일 밤 01:00~08:00 KST"}, {"n": 10, "name": "HUD", "owner": "PD", "st": "wait", "note": "명중 표시, 디버그 글자 0개 (T-0027)"}, {"n": 11, "name": "통합·120fps·영상", "owner": "PD", "st": "wait", "note": "RTX 5080 1440p Epic 평균 120fps, 매일 밤 01:00~08:00 KST"}], "bugs": [{"id": "B-0001", "title": "플레이어 사망 후 리스폰 실패", "st": "fixed"}, {"id": "B-0002", "title": "PIE 화면 왼쪽에 라이플이 떠 있음", "st": "fixed"}, {"id": "B-0003", "title": "다른 스레드 임포트가 잔해 메시를 다시 임포트", "st": "closed"}, {"id": "B-0004", "title": "탄착마다 'missing property Systems' 오류", "st": "closed"}, {"id": "B-0005", "title": "사격장 모든 표면이 기본 표면 재질", "st": "open"}], "skills": [{"name": "studio-ceo-report", "desc": "CEO 보고 규칙: 계획·완료·지연·단계·테스트 단계·반복 보고, 즉시 알림, 중간 작업 위임", "on": true}, {"name": "studio-ticket", "desc": "티켓 템플릿 생성·상태 변경·의존성 검사", "on": false}, {"name": "handoff", "desc": "핸드오프 템플릿, 다음 담당 지정", "on": false}, {"name": "gate-review", "desc": "게이트 체크리스트 수집 → 리드별 판정 → 리포트 + HG 결정 카드", "on": false}, {"name": "asset-check", "desc": "UE 명명 규칙, 텍스처 크기, 참조 누락, LOD·Nanite 확인", "on": false}, {"name": "render-video", "desc": "MRQ 렌더 + ffmpeg 오디오 합성, YYMMDD_urbanstrike_… 명명", "on": false}, {"name": "build-package", "desc": "RunUAT BuildCookRun, 버전 태그, 아카이브", "on": false}, {"name": "crash-triage", "desc": "크래시 로그 수집·예외 분류·메모리 확인 명령·C-#### 티켓 작성·CEO 크래시 보고", "on": true}, {"name": "stage-test", "desc": "공정별 순서 테스트(2026-10-27 HG): 테스트를 공정·에셋 단위로 나눠 한 번에 하나씩 순서대로(맵·충돌 → 주인공·카메라 → 발사 → 표적 → 반동·애님 → 탄착 FX → 총구 FX → 외부 팩 FX → 사운드 → HUD → 통합·성능). 단계마다 시간 제한·통과 기준, 통과해야 다음, 그 에셋 파일만 커밋, 단계별 즉시 보고. 시도마다 동영상 urbanstrike_st##_테스트명_v###_t##.mp4. 공용 모듈 stage_test_lib.py + 저장 없는 미리 실행(10초) 먼저, 읽기·측정은 미러 프로젝트 헤드리스, 저장·PIE·녹화만 본 에디터. 소리·성능·통합 영상·쇼케이스 녹화는 PC 비는 시간(매일 밤 01:00~08:00 KST, HG 2026-10-27 승인)에만 돌리고, 시작 전 알림·끝나면 결과 보고.", "on": true}, {"name": "game-bug-fix", "desc": "게임 테스트 버그 수정 루프: 재현 → 원인 가설 1개 → 최소 수정 → 재테스트(시간 제한) → 같은 실패 2회면 되돌리고 보고. 재시도 전 반복 보고, qa_smoke 통과 후에만 커밋, B-#### 기록·회귀 테스트 추가", "on": true}, {"name": "patch-release", "desc": "패치 노트, 회귀 테스트 목록, 롤백 빌드 확인", "on": false}], "decisions": [["10-25", "GitHub에 올리지 않고 D드라이브 로컬 git만 사용"], ["10-26", "HG = CEO, 제작은 에이전트 리드 14명이 설계·실행"], ["10-26", "보고 규칙: 실행 전 계획, 실행 후 완료, 10분 초과 지연 보고, 작은 모듈"], ["10-26", "스프린트 1 시작 승인, 목표 G1 버티컬 슬라이스"], ["10-26", "FX는 엔진 안 Niagara로 제작, Houdini 보류"], ["10-26", "에디터는 editor.lock을 잡은 세션만 열고 저장"], ["10-26", "새 단계·티켓 전 레퍼런스 조사 먼저"], ["10-27", "중간 단계 위임: 묻지 않고 진행 후 보고"], ["10-27", "애니·FX 에셋 계획 전체 승인 (T-0018~T-0026)"], ["10-27", "주 맵 L_GunRange로 교체, 테스트는 주인공만"], ["10-27", "반복 테스트는 다시 돌리기 전에 보고"], ["10-27", "공정별 순서 테스트 12단계 승인, 팩 FX 보류"], ["10-27", "앞으로 모든 테스트는 공정별로 나눠 순서대로"], ["10-27", "테스트 시도마다 동영상: urbanstrike_st##_테스트명_v###_t##"], ["10-27", "무기 조준 버그: 수정 먼저, 그 다음 재테스트"], ["10-27", "선택지는 추천안을 1번에, 10분 답 없으면 1번 자동 선택"], ["10-27", "조준 재테스트는 각도로 판정"], ["10-27", "총 반동은 유지, 왼손·총구 방향 수정"], ["10-27", "속도 개선: 공용 테스트 모듈, 미리 실행, 에디터 나눠 쓰기, 알림 줄이기"]], "commits": [["52c4596", "4단계 표적 통과"], ["4273c0c", "조준 수정: 카메라 조준선으로 발사"], ["557d0b3", "3단계 무기 발사 v001 통과, 녹화 도우미"], ["d9439f8", "2단계 주인공 배치·카메라 통과"], ["ee1cf31", "1단계 통과: 철판 거치대 충돌 상자 4개, 바닥 타일 충돌"], ["fd30a73", "시작 오류 확인 도구 (헤드리스)"], ["fa75ef1", "사격장: 적 서브레벨 기본 끔, 사격 위치 시작, 표적 BP, 표면 재질"], ["799e8d2", "Niagara 예제 근접 미리보기 (이전 없음)"], ["e81f784", "T-0022 Effect Type 예산 17개 시스템, qa_smoke 통과"], ["a65c75b", "T-0022 레퍼런스, T-0027 디버그 글자 스크립트"], ["34e14b2", "표적 테스트 준비"], ["ef3ef12", "PIE 테스트 시간 제한·안전 종료"], ["f539974", "qa_smoke L_GunRange 통과"], ["e44e79e", "주 맵 L_GunRange 교체"], ["d564734", "T-0021 파편 낙하 v2"], ["3cd477e", "T-0021 총구 조명"]], "links": [["하네스 설계 문서 (v10)", "urbanstrike-studio-harness.html"]], "rules": {"hg": ["비전·방향 설정, 게이트(G0~G5, P#) 최종 승인", "스토어·SNS·YouTube 등 외부 공개 게시", "예산: 유료 구매·구독, 라이선스 동의, 계정 가입·로그인 (무료 설치·다운로드는 리드 자율)", "Epic Launcher·UAC 승인 클릭 (PC 앞에서만 가능)", "엔진 버전 업그레이드, 에셋 대량 삭제", "GitHub 업로드 (금지 규칙, 바꾸려면 HG가 직접 말해야 함)"], "reports": [{"k": "계획 보고", "when": "실행 전", "what": "단계·모듈을 시작하기 전에 조사한 레퍼런스, 목표, 모듈 목록, 예상 시간, 필요한 설치·다운로드, 위험을 보고하고 바로 진행. 게이트와 CEO 결정 항목만 승인을 기다림."}, {"k": "완료 보고", "when": "실행 후", "what": "결과물 위치, 완료 기준 통과 여부, 측정값·스크린샷, 남은 문제, 다음 모듈."}, {"k": "지연 보고", "when": "10분 초과", "what": "한 모듈이 예상보다 10분 넘게 걸리면 즉시: 어디서 막혔는지, 시도한 것, 다음 시도, 새 예상 시간."}, {"k": "즉시 알림", "when": "완료·승인·답변 필요 시 바로", "what": "작업이 끝났거나, 중간에 CEO 승인이 필요하거나, CEO 답변이 필요하면 기다리지 말고 그 즉시 CEO에게 보여줌: 승인·질문은 선택 카드로, CEO가 직접 할 일은 실행할 명령이나 링크를 함께. 다음 정기 보고까지 미루지 않음. 답을 기다리는 동안 추천안으로 되돌릴 수 있는 작업은 계속."}, {"k": "알림 줄이기", "when": "항상", "what": "알림은 단계 통과·실패, HG 결정·답변 필요, 완료에만. 재시도·중간 진행은 체크리스트·웹 콘솔·Studio/log에, 반복 보고는 한 줄. 선택 카드는 프로젝트 채팅에도 같이 올려 10분 시계를 시작 (2026-10-27)."}, {"k": "10분 자동 선택", "when": "선택지를 올릴 때", "what": "가장 추천하는 방법을 1번에 둔다. 10분 동안 HG 답이 없으면 1번으로 자동 진행하고 '자동 선택'이라고 보고. 예외(기다림): 유료 결제, 가입·로그인, UAC, 되돌릴 수 없는 삭제, 게이트 승인, 외부 공개 (2026-10-27 HG)."}, {"k": "반복 보고", "when": "같은 테스트·단계를 다시 할 때 바로", "what": "같은 테스트나 단계를 다시 돌리거나 재시도하게 되면, 돌리기 전에 즉시 CEO에게 보고: 몇 번째인지, 왜 다시 하는지(이전 결과·실패 원인), 이번에 무엇을 바꿨는지, 언제까지 끝낼지. 같은 실패 2회면 crash-triage 규칙으로 중지 (2026-10-27 HG)."}, {"k": "단계 보고", "when": "중요 단계마다", "what": "단계(S0~S6) 진입·종료, 게이트 리포트, 스프린트 시작·회고는 반드시 CEO에게 보고 후 진행."}, {"k": "테스트 단계 보고", "when": "공정별 테스트 한 단계가 끝날 때마다 바로", "what": "몇 번 단계, 대상 에셋, 통과 기준 대비 결과, 커밋 해시, 다음 단계"}], "debug": [{"k": "멈춤", "v": "같은 크래시·에러가 2번 나면 그대로 재시도하지 않는다. 현재 모듈을 멈추고 잠금(editor.lock)을 푼다."}, {"k": "수집", "v": "Saved/Crashes/<id>/ (CrashContext.runtime-xml, UEMinidump.dmp), Saved/Logs/*.log, 실행 명령줄, 마지막 성공 커밋을 모은다."}, {"k": "분류", "v": "예외 종류로 나눈다: EXCEPTION_ACCESS_VIOLATION(0x0 근처면 null, 엉뚱한 주소면 해제 후 사용·덮어쓰기), Assertion/check·ensure, Out of memory, GPU(D3D device removed·TDR), 헤드리스 전용(-nullrhi, 렌더 없는 Niagara·머티리얼 컴파일)."}, {"k": "메모리 확인", "v": "반복 실행하며 메모리 추이 기록: stat memory, memreport -full, -llm. 의심되면 -stompmalloc(해제 후 사용 탐지), -d3ddebug, -onethread로 재현."}, {"k": "최소 재현", "v": "모듈을 더 쪼개고 이분 탐색으로 원인 노드·에셋·스크립트 줄을 좁힌다. 같은 조건으로 3번 재현되면 확정."}, {"k": "기록", "v": "Studio/bugs/crash/C-####.md: 증상, 횟수, 로그 경로, 콜스택 상위 5줄, 가설, 시도한 것, 우회책, 리스크, 근본 해결 계획."}, {"k": "우회와 근본 해결 분리", "v": "우회(예: 헤드리스 대신 에디터 GUI에서 실행, 기능 끄기)는 workaround로 표시하고 근본 해결 티켓을 따로 연다."}, {"k": "보고", "v": "2번째 크래시에서 CEO에게 크래시 보고(원인 가설·다음 시도·새 예상). 서로 다른 시도 3번이 실패하면 TD 에스컬레이션 + CEO 결정(범위 축소·대체 방식)."}, {"k": "회귀 테스트", "v": "고친 크래시는 qa_integration.py에 재현 테스트로 추가해 다시 나오지 않는지 매번 확인."}]}};
+const $ = s => document.querySelector(s);
+const esc = s => String(s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const ST = {done:'완료',review:'검토',doing:'진행',todo:'할 일',pass:'통과',fail:'실패',wait:'대기',hold:'보류',fixed:'수정됨',closed:'닫힘',open:'열림'};
+const pill = s => `<span class="pill s-${s}">${ST[s]||s}</span>`;
+const OWN = {PD:'제작 총괄',GD:'게임디자인',LD:'레벨디자인',AD:'아트 디렉터',A3:'3D 에셋',TD:'테크니컬 디렉터',TA:'TA·FX',AN:'애니메이션',SD:'사운드',UI:'UI/UX',QA:'QA',BR:'빌드·릴리즈',PB:'퍼블리싱',LO:'라이브옵스'};
+
+$('#snap').textContent = `스냅샷 · ${D.snap}`;
+const cnt = st => D.board.filter(b=>b.st===st).length;
+const tPass = D.tests.filter(t=>t.st==='pass').length;
+$('#statusbar').innerHTML = [
+  ['현재 단계', `${D.stage} 프리프로덕션`, '후반'],
+  ['다음 게이트', `${D.gate}`, '버티컬 슬라이스'],
+  ['스프린트', `#${D.sprint.id}`, `${D.sprint.start.slice(5)} ~ ${D.sprint.end.slice(5)}`],
+  ['티켓', `${cnt('done')} / ${D.board.length}`, `완료 · 진행 ${cnt('doing')} · 검토 ${cnt('review')}`],
+  ['공정별 테스트', `${tPass} / ${D.tests.length}`, '단계 통과'],
+  ['열린 버그', `${D.bugs.filter(b=>b.st==='open').length}`, 'B-#### 기준'],
+].map(([k,v,s])=>`<div><small>${k}</small><b>${esc(v)}</b><small>${esc(s)}</small></div>`).join('');
+
+const blocked = D.tests.find(t=>t.st==='fail');
+$('#alert').innerHTML = blocked ? `<div><b>HG 결정 필요</b> · 공정별 테스트 ${blocked.n}단계 ${esc(blocked.name)}: ${esc(blocked.note)}</div>` : '';
+if(!blocked) $('#alert').hidden = true;
+
+/* tabs */
+const TABS = [['overview','개요'],['tests','공정별 테스트'],['board','스프린트 보드'],['team','리드 14명'],['rules','규칙'],['skills','스킬'],['log','결정·커밋']];
+$('#tabs').innerHTML = TABS.map(([id,l])=>`<button role="tab" id="t-${id}" aria-controls="v-${id}" data-id="${id}">${l}</button>`).join('');
+function show(id){
+  if(!TABS.some(t=>t[0]===id)) id='overview';
+  TABS.forEach(([t])=>{ $('#v-'+t).hidden = t!==id; $('#t-'+t).setAttribute('aria-selected', t===id); });
+}
+$('#tabs').addEventListener('click', e=>{ const b=e.target.closest('button'); if(!b) return; location.hash=b.dataset.id; });
+addEventListener('hashchange', ()=>show(location.hash.slice(1)));
+
+/* overview */
+const nowIdx = D.stages.findIndex(s=>s.code===D.stage);
+function stageDetail(i){
+  const s=D.stages[i]; const leads=D.agents.filter(a=>a.stages.includes(i)).map(a=>a.code).join(' · ');
+  $('#stgdetail').innerHTML = `<div style="display:flex;gap:8px;align-items:baseline;flex-wrap:wrap"><h3>${s.code} ${esc(s.name)} <span class="muted mono" style="font-weight:400">${esc(s.en)}</span></h3><span class="pill s-review">${s.gate} ${esc(s.gname)}</span></div>
+  <div class="grid2" style="margin-top:8px"><div><p class="muted" style="font-size:.78rem">산출물</p><ul class="plain">${s.outs.map(o=>`<li>${esc(o)}</li>`).join('')}</ul></div>
+  <div style="display:flex;flex-direction:column;gap:8px"><div><p class="muted" style="font-size:.78rem">게이트 통과 기준</p><p>${esc(s.crit)}</p></div><div><p class="muted" style="font-size:.78rem">참여 리드</p><p class="mono">${leads}</p></div></div></div>`;
+  document.querySelectorAll('.stg').forEach((b,j)=>b.setAttribute('aria-pressed', j===i));
+}
+const tp = D.tests.map(t=>({pass:'var(--ok)',fail:'var(--bad)',hold:'var(--line)',wait:'var(--sunk)',doing:'var(--warn)'}[t.st]));
+$('#v-overview').innerHTML = `
+  <div class="panel" style="display:flex;flex-direction:column;gap:12px">
+    <h2>제작 단계와 게이트</h2>
+    <div class="track">${D.stages.map((s,i)=>`<button class="stg ${i<nowIdx?'past':''} ${i===nowIdx?'now':''}" data-i="${i}"><span class="c">${s.code}${i===nowIdx?' · 지금':''}</span><span class="n">${esc(s.name)}</span><span class="g">${s.gate} ${esc(s.gname)}</span></button>`).join('')}</div>
+    <div id="stgdetail"></div>
+  </div>
+  <div class="grid2">
+    <div class="panel" style="display:flex;flex-direction:column;gap:10px">
+      <div style="display:flex;justify-content:space-between;align-items:baseline"><h2>공정별 테스트</h2><a href="#tests" class="mono" style="color:var(--info);font-size:.8rem">자세히</a></div>
+      <div class="meter" role="img" aria-label="12단계 중 통과 ${tPass}">${D.tests.map((t,i)=>`<i style="width:${100/D.tests.length}%;background:${tp[i]};border-right:1px solid var(--panel)"></i>`).join('')}</div>
+      <ul class="plain">${D.tests.filter(t=>t.st!=='wait').map(t=>`<li>${t.n}. ${esc(t.name)} ${pill(t.st)}</li>`).join('')}<li class="muted">나머지 ${D.tests.filter(t=>t.st==='wait').length}단계 대기</li></ul>
+    </div>
+    <div class="panel" style="display:flex;flex-direction:column;gap:10px">
+      <div style="display:flex;justify-content:space-between;align-items:baseline"><h2>이번 주 진행 중</h2><a href="#board" class="mono" style="color:var(--info);font-size:.8rem">보드</a></div>
+      <ul class="plain">${D.board.filter(b=>b.st==='doing'||b.st==='review').map(b=>`<li><span class="mono">${b.id}</span> ${esc(b.title)} <span class="muted">${b.owner}</span> ${pill(b.st)}</li>`).join('')}</ul>
+    </div>
+  </div>
+  <div class="panel links"><h2>관련 문서</h2>${D.links.map(([t,u])=>`<a href="${u}" target="_blank" rel="noopener">${esc(t)} ↗</a>`).join('')}</div>`;
+document.querySelectorAll('.stg').forEach(b=>b.addEventListener('click',()=>stageDetail(+b.dataset.i)));
+stageDetail(nowIdx);
+
+/* tests */
+$('#v-tests').innerHTML = `<div class="panel" style="display:flex;flex-direction:column;gap:10px">
+  <h2>공정별 순서 테스트 · L_GunRange · UE 5.8.3</h2>
+  <p class="muted">에셋 하나씩, 정해진 순서로. 단계마다 시간 제한과 통과 기준, 통과해야 다음 단계. 같은 실패 2번이면 멈추고 HG에게 보고.</p>
+  <div class="steps">${D.tests.map(t=>`<div class="step ${t.st}"><span class="num">${t.n}</span><div class="body"><h3>${esc(t.name)}</h3><p>${esc(t.note)}</p><span class="who">담당 ${esc(t.owner)}</span></div>${pill(t.st)}</div>`).join('')}</div></div>`;
+
+/* board */
+let ownerF = 'ALL';
+const COLS = [['todo','할 일'],['doing','진행'],['review','검토'],['done','완료']];
+function renderBoard(){
+  const owners = ['ALL',...new Set(D.board.map(b=>b.owner))];
+  const list = D.board.filter(b=>ownerF==='ALL'||b.owner===ownerF);
+  $('#v-board').innerHTML = `<div class="filters"><span class="muted" style="font-size:.8rem">담당</span>${owners.map(o=>`<button class="chipbtn" aria-pressed="${o===ownerF}" data-o="${o}">${o==='ALL'?'전체':o}</button>`).join('')}</div>
+  <div class="kanban">${COLS.map(([s,l])=>{const items=list.filter(b=>b.st===s);return `<div class="col"><h3><span>${l}</span><span class="mono muted">${items.length}</span></h3>${items.map(b=>`<div class="card"><div class="top"><span>${b.id}</span><span>${b.owner}${b.when?' · '+b.when:''}</span></div><div class="t">${esc(b.title)}</div></div>`).join('')||'<div class="empty">없음</div>'}</div>`}).join('')}</div>
+  <div class="panel"><h2 style="margin-bottom:8px">버그</h2><div class="tbl"><table><thead><tr><th>번호</th><th>내용</th><th>상태</th></tr></thead><tbody>${D.bugs.map(b=>`<tr><td class="mono">${b.id}</td><td>${esc(b.title)}</td><td>${pill(b.st)}</td></tr>`).join('')}</tbody></table></div></div>`;
+  document.querySelectorAll('.chipbtn[data-o]').forEach(b=>b.addEventListener('click',()=>{ownerF=b.dataset.o;renderBoard();}));
+}
+renderBoard();
+
+/* team */
+$('#v-team').innerHTML = `<p class="muted">막대 7칸은 S0~S6 중 참여하는 단계입니다.</p><div class="team">${D.agents.map(a=>`<div class="lead"><div class="hd"><span class="code">${a.code}</span><h3>${esc(a.name)}</h3><span class="mono muted" style="font-size:.72rem">${esc(a.en)}</span></div>
+<div class="dots" aria-label="참여 단계">${[0,1,2,3,4,5,6].map(i=>`<i class="${a.stages.includes(i)?'on':''}" title="S${i}"></i>`).join('')}</div>
+<ul>${a.duties.map(d=>`<li>${esc(d)}</li>`).join('')}</ul>
+<p class="meta">산출물: ${esc(a.out)}</p><p class="meta">도구: ${esc(a.tools)}</p><p class="meta">모델 ${esc(a.model)} · 리뷰: ${esc(a.review)}</p></div>`).join('')}</div>`;
+
+/* rules */
+$('#v-rules').innerHTML = `<div class="panel" style="border-left:4px solid var(--accent)"><h2 style="margin-bottom:8px">CEO(HG)만 결정하는 일</h2><ul class="plain">${D.rules.hg.map(x=>`<li>${esc(x)}</li>`).join('')}</ul><p class="muted" style="margin-top:8px;font-size:.84rem">그 밖의 중간 작업(런처·도구 조작, 무료 설치·다운로드, 설정 변경, 스크립트 실행, 에디터 재시작)은 리드가 묻지 않고 하고 결과만 보고합니다.</p></div>
+<div class="panel"><h2 style="margin-bottom:8px">CEO 보고 규칙</h2><div class="tbl"><table><thead><tr><th>보고</th><th>시점</th><th>내용</th></tr></thead><tbody>${D.rules.reports.map(r=>`<tr><td style="white-space:nowrap"><b>${esc(r.k)}</b></td><td>${esc(r.when)}</td><td>${esc(r.what)}</td></tr>`).join('')}</tbody></table></div></div>
+<div class="grid2"><div class="panel"><h2 style="margin-bottom:8px">테스트·버그 규칙</h2><ul class="plain">
+<li>테스트는 공정·에셋 하나씩 정해진 순서로. 묶음 테스트 금지 (stage-test)</li>
+<li>단계마다 시간 제한·통과 기준, 통과해야 다음 단계</li>
+<li>통과하면 그 단계 파일만 경로 지정해 로컬 커밋</li>
+<li>시도마다 동영상: urbanstrike_st##_테스트명_v###_t##.mp4 (Saved/MovieRenders/StageTest, 덮어쓰기 금지)</li>
+<li>다시 돌리기 전에 반복 보고: 몇 번째, 왜, 무엇을 바꿨는지, 예상 시간</li>
+<li>같은 실패 2번이면 멈추고 HG에게 보고 (game-bug-fix)</li>
+<li>공용 테스트 모듈 + 저장 없는 미리 실행(10초) 먼저. 읽기·측정은 미러 프로젝트 헤드리스, 저장·PIE·녹화만 본 에디터</li>
+<li>선택지는 추천안을 1번에. 10분 동안 답이 없으면 1번 자동 선택 후 보고 (유료·로그인·UAC·삭제·게이트는 기다림)</li>
+<li>에디터는 editor.lock을 잡은 세션만 열고 저장, 끝나면 바로 해제</li>
+<li>소리·성능·녹화는 PC 비는 시간(매일 밤 01:00~08:00 KST, HG 04:43 승인)에만. 시작 전 알림, 끝나면 결과 보고</li></ul></div>
+<div class="panel"><h2 style="margin-bottom:8px">크래시 대응 순서</h2><ol style="margin:0;padding-left:1.2em;display:flex;flex-direction:column;gap:4px">${D.rules.debug.map(d=>`<li><b>${esc(d.k)}</b> · ${esc(d.v)}</li>`).join('')}</ol></div></div>
+<div class="panel"><h2 style="margin-bottom:8px">항상 지키는 것</h2><ul class="plain"><li>Unreal 프로젝트는 GitHub에 올리지 않음. D드라이브 로컬 git만</li><li>다운로드는 프로젝트 옆 _Downloads 폴더</li><li>성능 목표: RTX 5080, 1440p Epic, 120fps</li><li>새 단계·티켓 전에 레퍼런스 조사 먼저 (Studio/refs)</li><li>작업은 30분 이내 모듈로</li></ul></div>`;
+
+/* skills */
+$('#v-skills').innerHTML = `<div class="panel"><h2 style="margin-bottom:4px">스킬</h2><p class="muted" style="margin-bottom:8px;font-size:.84rem">설치됨 = HG 계정에 저장되어 지금 쓰는 스킬. 설계만 = 하네스 설계에 있고 아직 만들지 않은 스킬.</p>
+${D.skills.map(s=>`<div class="skill"><span class="pill ${s.on?'s-done':'s-todo'}">${s.on?'설치됨':'설계만'}</span><div><code>${esc(s.name)}</code><p style="font-size:.86rem">${esc(s.desc)}</p></div></div>`).join('')}</div>`;
+
+/* log */
+$('#v-log').innerHTML = `<div class="grid2"><div class="panel"><h2 style="margin-bottom:8px">결정 기록</h2><div class="tbl"><table><tbody>${D.decisions.slice().reverse().map(([d,t])=>`<tr><td class="mono" style="white-space:nowrap">${d}</td><td>${esc(t)}</td></tr>`).join('')}</tbody></table></div></div>
+<div class="panel"><h2 style="margin-bottom:8px">최근 커밋 (로컬 git)</h2><div class="tbl"><table><tbody>${D.commits.map(([h,t])=>`<tr><td class="mono">${h}</td><td>${esc(t)}</td></tr>`).join('')}</tbody></table></div></div></div>`;
+
+$('#foot').textContent = `데이터: HG PC의 Studio/state.yaml, Studio/board, Studio/bugs, .claude/agents, git log를 ${D.snap}에 읽은 스냅샷. 새로 고치려면 PD에게 갱신을 요청하세요.`;
+show(location.hash.slice(1));
+</script>
+
+</body></html>
