@@ -242,6 +242,6 @@ I've organized the studio design and its current state into two web docs.
 - [UrbanStrike studio harness design](/NeoDevBlog/en/docs/urbanstrike-studio-harness.html): roles and workflows of the 14 leads, deliverables for each stage, the frame budget, responsibility split (RACI), and the harness structure
 - [UrbanStrike studio console](/NeoDevBlog/en/docs/urbanstrike-studio-console.html): the current stage and gates, test results for each step, the sprint board, and my decision log (snapshot from 2026-10-27)
 
-## Still a work in progress
+## I'll keep updating this together with AI
 
 The studio rules and the pipeline are both still being refined. When new problems show up I'll add rules one at a time, and I'll keep recording that process too. Next time I'll bring the road toward the vertical slice (G1). Thank you for reading.
