@@ -1,0 +1,28 @@
+---
+// 명함의 노드 그래프 모양을 본뜬 장식 그림입니다. 색은 currentColor를 따릅니다.
+interface Props {
+  class?: string;
+}
+const { class: className } = Astro.props;
+---
+
+<svg class={className} viewBox="0 0 240 150" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
+  <path d="M42 80 C 70 80, 70 40, 96 40" />
+  <path d="M42 80 C 70 80, 70 118, 96 118" />
+  <path d="M124 40 C 150 40, 150 62, 170 62" />
+  <path d="M124 118 C 150 118, 150 92, 168 92" />
+  <path d="M182 74 L 186 84" />
+  <rect x="14" y="72" width="28" height="16" rx="3" />
+  <rect x="96" y="30" width="28" height="20" rx="3" />
+  <rect x="96" y="108" width="28" height="20" rx="3" />
+  <circle cx="180" cy="62" r="11" />
+  <rect x="168" y="86" width="34" height="14" rx="3" />
+  <g fill="currentColor" stroke="none">
+    <circle cx="8" cy="66" r="3" /><circle cx="8" cy="94" r="3" />
+    <circle cx="96" cy="22" r="3" /><circle cx="124" cy="22" r="3" />
+    <circle cx="96" cy="136" r="3" /><circle cx="124" cy="136" r="3" />
+    <circle cx="180" cy="42" r="3" /><circle cx="198" cy="50" r="3" />
+    <circle cx="212" cy="86" r="3" /><circle cx="212" cy="100" r="3" />
+  </g>
+  <path d="M14 72 L 8 66 M14 88 L 8 94 M96 30 L 96 22 M124 30 L 124 22 M96 128 L 96 136 M124 128 L 124 136 M180 51 L 180 42 M188 54 L 198 50 M202 90 L 212 86 M202 96 L 212 100" />
+</svg>

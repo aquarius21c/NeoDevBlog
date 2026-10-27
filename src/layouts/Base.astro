@@ -5,16 +5,18 @@ import { url } from '../utils';
 interface Props {
   title?: string;
   description?: string;
+  /** 홈 화면처럼 상단 헤더 없이 페이지가 직접 레이아웃을 그릴 때 true */
+  bare?: boolean;
 }
 
-const siteTitle = 'NeoDevBlog';
-const { title, description = '언리얼 엔진 AI로 콜 오브 듀티 스타일 게임을 만드는 개발 기록' } = Astro.props;
+const siteTitle = 'Neo Atelier';
+const { title, description = 'Houdini FX 아티스트 HG의 1인 AI 스튜디오, Neo Atelier의 작업 기록', bare = false } = Astro.props;
 const pageTitle = title ? `${title} | ${siteTitle}` : siteTitle;
 const path = Astro.url.pathname;
 const nav = [
-  { href: url(''), label: '글 목록' },
+  { href: url(''), label: '홈' },
+  { href: url('archive/'), label: '전체 글' },
   { href: url('tags/'), label: '태그' },
-  { href: url('about/'), label: '소개' },
 ];
 ---
 
@@ -29,27 +31,34 @@ const nav = [
     <meta property="og:description" content={description} />
     <meta property="og:type" content="website" />
     <link rel="icon" href={url('favicon.svg')} type="image/svg+xml" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css" />
   </head>
-  <body>
-    <header class="site-header">
-      <div class="wrap header-inner">
-        <a class="logo" href={url('')}><span class="logo-mark">▲</span> {siteTitle}</a>
-        <nav>
-          {
-            nav.map((item) => (
-              <a href={item.href} aria-current={path === item.href || (item.href !== url('') && path.startsWith(item.href)) ? 'page' : undefined}>
-                {item.label}
-              </a>
-            ))
-          }
-        </nav>
-      </div>
-    </header>
-    <main class="wrap">
-      <slot />
-    </main>
-    <footer class="site-footer wrap">
-      <p>© {new Date().getFullYear()} HG · 언리얼 AI 개발기</p>
-    </footer>
+  <body class:list={{ bare }}>
+    {
+      bare ? (
+        <slot />
+      ) : (
+        <Fragment>
+          <header class="site-header">
+            <div class="wrap header-inner">
+              <a class="logo" href={url('')}><span class="logo-mark">▲</span> {siteTitle}</a>
+              <nav>
+                {nav.map((item) => (
+                  <a href={item.href} aria-current={path === item.href || (item.href !== url('') && path.startsWith(item.href)) ? 'page' : undefined}>
+                    {item.label}
+                  </a>
+                ))}
+              </nav>
+            </div>
+          </header>
+          <main class="wrap">
+            <slot />
+          </main>
+          <footer class="site-footer wrap">
+            <p>© {new Date().getFullYear()} HG · Neo Atelier</p>
+          </footer>
+        </Fragment>
+      )
+    }
   </body>
 </html>
